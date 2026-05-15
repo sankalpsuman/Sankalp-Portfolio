@@ -1,10 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 
-const API_KEY = process.env.GEMINI_API_KEY;
-
 export async function generateAIResponse(prompt: string, userInput: string) {
+  const API_KEY = process.env.GEMINI_API_KEY;
+
   if (!API_KEY) {
-    throw new Error('GEMINI_API_KEY is not configured');
+    throw new Error('GEMINI_API_KEY is not configured. Please add it in Settings > Secrets.');
   }
 
   try {
