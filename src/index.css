@@ -7,6 +7,12 @@
   --font-display: "Space Grotesk", sans-serif;
 }
 
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 :root {
   color-scheme: dark;
 }

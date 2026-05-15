@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { getCollection } from '../../services/firestoreService';
 import { ExternalLink, Github, Layers, PlayCircle, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import LazyImage from '../ui/LazyImage';
 
 interface Project {
   id: string;
@@ -106,10 +107,11 @@ export default function Projects() {
                 }}
               />
 
-              <img 
+              <LazyImage 
                 src={project.imageUrl || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop"} 
                 alt={project.title}
-                className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+                className="grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+                wrapperClassName="w-full h-full"
               />
               
               {/* Overlay Gradient & Grain */}
