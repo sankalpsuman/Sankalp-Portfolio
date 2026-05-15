@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
 import { Target, Plus, Trash2, Edit2, Loader2, Save, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
 
 interface ImpactStory {
   id?: string;
@@ -18,6 +19,7 @@ export default function ImpactStoriesEditor() {
   const [stories, setStories] = useState<ImpactStory[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<ImpactStory | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { loadStories(); }, []);
@@ -27,6 +29,15 @@ export default function ImpactStoriesEditor() {
     const data = await getCollection<ImpactStory>('impactStories', 'order');
     setStories(data);
     setLoading(false);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteModal.id) return;
+    setSaving(true);
+    await deleteCollectionDocument('impactStories', deleteModal.id);
+    setDeleteModal({ isOpen: false, id: null });
+    setSaving(false);
+    loadStories();
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -54,13 +65,22 @@ export default function ImpactStoriesEditor() {
         {stories.map(story => (
           <div key={story.id} className="bg-white/5 border border-white/10 p-4 rounded-xl flex justify-between items-center group">
             <div><h3 className="font-bold">{story.title}</h3><p className="text-xs text-gray-500 line-clamp-1">{story.impact}</p></div>
-            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => setEditing(story)} className="p-2 hover:bg-white/10 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-              <button onClick={() => deleteCollectionDocument('impactStories', story.id!).then(loadStories)} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+            <div className="flex gap-2">
+              <button onClick={() => setEditing(story)} className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"><Edit2 className="w-4 h-4" /></button>
+              <button onClick={() => setDeleteModal({ isOpen: true, id: story.id! })} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
             </div>
           </div>
         ))}
       </div>
+
+      <DeleteConfirmModal 
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, id: null })}
+        onConfirm={handleDelete}
+        isLoading={saving}
+        title="Delete Impact Story"
+        message="Are you sure you want to delete this impact story? This action cannot be reversed."
+      />
 
       <AnimatePresence>
         {editing && (

@@ -69,19 +69,40 @@ export default function AIPlayground() {
                whileInView={{ opacity: 1, y: 0 }}
                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-400 text-sm font-semibold"
              >
-               <Sparkles className="w-4 h-4" /> AI Innovation
+               <Sparkles className="w-4 h-4" /> Core Innovation Showcase
              </motion.div>
-             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">QA Catalyst <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">AI Playground</span></h2>
-             <p className="text-gray-400 max-w-2xl mx-auto">Interactive AI-powered tools designed to accelerate quality engineering processes, from test case generation to bug reporting.</p>
+             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">QA Catalyst <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600 italic">AI Playground</span></h2>
+             <div className="max-w-2xl mx-auto space-y-4">
+                <p className="text-gray-400 text-lg leading-relaxed">
+                   Interactive AI-powered tools designed to accelerate quality engineering processes, from test case generation to bug reporting.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+                   <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold uppercase tracking-widest text-emerald-400">
+                      <Check className="w-3 h-3" /> Developed by Sankalp
+                   </div>
+                   <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-[10px] font-bold uppercase tracking-widest text-purple-400">
+                      <Sparkles className="w-3 h-3" /> Gemini 3 Flash Hybrid
+                   </div>
+                   <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[10px] font-bold uppercase tracking-widest text-blue-400">
+                      <RefreshCw className="w-3 h-3" /> Live Production App
+                   </div>
+                </div>
+             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
              {/* Toolbar */}
-             <div className="lg:col-span-4 space-y-4">
+             <div className="lg:col-span-4 space-y-6">
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
-                   <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-6 flex items-center gap-2">
-                     <Command className="w-4 h-4" /> Select Tool
-                   </h3>
+                   <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                        <Command className="w-4 h-4" /> Tool Arsenal
+                      </h3>
+                      <div className="flex gap-1">
+                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50"></div>
+                      </div>
+                   </div>
                    <div className="space-y-2">
                       {tools.map(tool => (
                         <button
@@ -96,8 +117,8 @@ export default function AIPlayground() {
                         >
                            <div className="flex items-center gap-3">
                               <div className={cn(
-                                "p-2 rounded-lg",
-                                selectedTool?.id === tool.id ? "bg-blue-500 text-white" : "bg-white/5 text-gray-500 group-hover:bg-white/10"
+                                "p-2 rounded-lg transition-transform group-hover:scale-110",
+                                selectedTool?.id === tool.id ? "bg-blue-500 text-white" : "bg-white/5 text-gray-500"
                               )}>
                                  <Bot className="w-4 h-4" />
                               </div>
@@ -107,6 +128,13 @@ export default function AIPlayground() {
                         </button>
                       ))}
                    </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-600/10 to-transparent border border-blue-500/10 space-y-4">
+                   <h4 className="text-xs font-bold uppercase tracking-widest text-blue-400">Innovation Impact</h4>
+                   <p className="text-[11px] text-gray-500 leading-loose">
+                      This platform is a testament to the power of combining deep QA expertise with generative AI. It's designed to solve real-world problems like manual regression overhead and requirement ambiguity.
+                   </p>
                 </div>
              </div>
 
@@ -157,13 +185,13 @@ export default function AIPlayground() {
                                <label className="text-xs font-mono text-gray-500 uppercase tracking-widest pl-1">Generated Output</label>
                                <div className="flex gap-2">
                                   {output && (
-                                    <button 
-                                      onClick={handleCopy}
-                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-gray-400 hover:text-white transition-all border border-white/5"
-                                    >
-                                       {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                                       {copied ? 'Copied' : 'Copy Output'}
-                                    </button>
+                                     <button 
+                                       onClick={handleCopy}
+                                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-gray-400 hover:text-white transition-all border border-white/5"
+                                     >
+                                        {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                                        {copied ? 'Copied' : 'Copy'}
+                                     </button>
                                   )}
                                   <button 
                                     onClick={() => { setOutput(''); setInput(''); }}
@@ -174,7 +202,7 @@ export default function AIPlayground() {
                                </div>
                             </div>
 
-                            <div className="flex-1 bg-black/40 border border-white/5 rounded-2xl p-6 overflow-y-auto max-h-[300px] custom-scrollbar">
+                            <div className="flex-1 bg-black/40 border border-white/5 rounded-2xl overflow-hidden min-h-[300px] flex flex-col">
                                <AnimatePresence mode="wait">
                                   {loading ? (
                                     <motion.div 
@@ -195,12 +223,14 @@ export default function AIPlayground() {
                                       key="output"
                                       initial={{ opacity: 0, y: 10 }}
                                       animate={{ opacity: 1, y: 0 }}
-                                      className="prose prose-invert prose-sm max-w-none prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 font-mono text-[13px] leading-relaxed"
+                                      className="flex-1 flex flex-col h-full overflow-hidden"
                                     >
-                                       <ReactMarkdown>{output}</ReactMarkdown>
+                                       <div className="p-6 overflow-y-auto custom-scrollbar flex-1 prose prose-invert prose-sm max-w-none prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 font-mono text-[13px] leading-relaxed">
+                                          <ReactMarkdown>{output}</ReactMarkdown>
+                                       </div>
                                     </motion.div>
                                   ) : (
-                                    <div className="flex flex-col items-center justify-center h-full py-12 text-center opacity-20">
+                                    <div className="flex flex-col items-center justify-center h-full py-12 text-center opacity-20 flex-1">
                                        <Bot className="w-12 h-12 mb-4" />
                                        <p className="text-xs font-mono">System Ready. Waiting for input.</p>
                                     </div>

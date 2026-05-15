@@ -3,6 +3,7 @@ import { getCollection, addCollectionDocument, updateCollectionDocument, deleteC
 import { Bot, Plus, Trash2, Edit2, Loader2, Save, X, ToggleLeft, ToggleRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
+import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
 
 interface AITool {
   id?: string;
@@ -19,6 +20,7 @@ export default function AIToolsEditor() {
   const [tools, setTools] = useState<AITool[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<AITool | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { loadTools(); }, []);
@@ -28,6 +30,15 @@ export default function AIToolsEditor() {
     const data = await getCollection<AITool>('aiTools', 'order');
     setTools(data);
     setLoading(false);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteModal.id) return;
+    setSaving(true);
+    await deleteCollectionDocument('aiTools', deleteModal.id);
+    setDeleteModal({ isOpen: false, id: null });
+    setSaving(false);
+    loadTools();
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -60,14 +71,23 @@ export default function AIToolsEditor() {
             </div>
             <div className="flex gap-2">
               <button onClick={() => updateCollectionDocument('aiTools', tool.id!, { enabled: !tool.enabled }).then(loadTools)} className="p-2 hover:bg-white/10 rounded-lg">{tool.enabled ? <ToggleRight className="text-purple-500" /> : <ToggleLeft className="text-gray-600" />}</button>
-              <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                 <button onClick={() => setEditing(tool)} className="p-2 hover:bg-white/10 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-                 <button onClick={() => deleteCollectionDocument('aiTools', tool.id!).then(loadTools)} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+              <div className="flex items-center gap-2">
+                 <button onClick={() => setEditing(tool)} className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors" title="Edit Tool"><Edit2 className="w-4 h-4" /></button>
+                 <button onClick={() => setDeleteModal({ isOpen: true, id: tool.id! })} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors" title="Delete Tool"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
           </div>
         ))}
       </div>
+
+      <DeleteConfirmModal 
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, id: null })}
+        onConfirm={handleDelete}
+        isLoading={saving}
+        title="Delete AI Tool"
+        message="Are you sure you want to delete this AI tool? This will remove its prompt logic and configurations."
+      />
 
       <AnimatePresence>
         {editing && (

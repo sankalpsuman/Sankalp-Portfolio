@@ -3,6 +3,7 @@ import { getCollection, addCollectionDocument, updateCollectionDocument, deleteC
 import { Milestone, Plus, Trash2, Edit2, Loader2, Save, X, MoveUp, MoveDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
+import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
 
 interface TimelineMilestone {
   id?: string;
@@ -20,6 +21,7 @@ export default function TimelineEditor() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<TimelineMilestone | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
 
   useEffect(() => {
     loadMilestones();
@@ -52,9 +54,12 @@ export default function TimelineEditor() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this milestone?')) return;
-    await deleteCollectionDocument('timeline', id);
+  const handleDelete = async () => {
+    if (!deleteModal.id) return;
+    setSaving(true);
+    await deleteCollectionDocument('timeline', deleteModal.id);
+    setDeleteModal({ isOpen: false, id: null });
+    setSaving(false);
     loadMilestones();
   };
 
@@ -89,11 +94,20 @@ export default function TimelineEditor() {
             </div>
             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => setEditing(item)} className="p-2 hover:bg-white/10 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-              <button onClick={() => handleDelete(item.id!)} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+              <button onClick={() => setDeleteModal({ isOpen: true, id: item.id! })} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg"><Trash2 className="w-4 h-4" /></button>
             </div>
           </div>
         ))}
       </div>
+
+      <DeleteConfirmModal 
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, id: null })}
+        onConfirm={handleDelete}
+        isLoading={saving}
+        title="Delete Milestone"
+        message="Are you sure you want to delete this career milestone? This cannot be undone."
+      />
 
       <AnimatePresence>
         {editing && (

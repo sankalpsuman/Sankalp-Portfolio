@@ -9,11 +9,10 @@ export async function generateAIResponse(prompt: string, userInput: string) {
 
   try {
     const ai = new GoogleGenAI({ apiKey: API_KEY });
-    const fullPrompt = `${prompt}\n\nUser Input: ${userInput}`;
-    
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: fullPrompt
+      systemInstruction: "You are a professional Quality Engineering AI Assistant. Your task is to provide EXACTLY what is requested. No conversational filler, no introductions, no 'Here is your result', no pleasantries. If asked for test cases, provide only test cases. If asked for a bug report, provide only the bug report. Be concise, technical, and accurate.",
+      contents: [{ role: 'user', parts: [{ text: `${prompt}\n\nUser Input: ${userInput}` }] }]
     });
 
     return response.text || "";

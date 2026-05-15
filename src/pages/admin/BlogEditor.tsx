@@ -3,6 +3,7 @@ import { getCollection, addCollectionDocument, updateCollectionDocument, deleteC
 import { FileText, Plus, Trash2, Edit2, Loader2, Save, X, Eye, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
+import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
 
 interface BlogPost {
   id?: string;
@@ -22,6 +23,7 @@ export default function BlogEditor() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
 
   useEffect(() => {
     loadBlogs();
@@ -54,9 +56,12 @@ export default function BlogEditor() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this article?')) return;
-    await deleteCollectionDocument('blogs', id);
+  const handleDelete = async () => {
+    if (!deleteModal.id) return;
+    setSaving(true);
+    await deleteCollectionDocument('blogs', deleteModal.id);
+    setDeleteModal({ isOpen: false, id: null });
+    setSaving(false);
     loadBlogs();
   };
 
@@ -95,11 +100,20 @@ export default function BlogEditor() {
             </div>
             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => setEditing(blog)} className="p-2 hover:bg-white/10 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-              <button onClick={() => handleDelete(blog.id!)} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+              <button onClick={() => setDeleteModal({ isOpen: true, id: blog.id! })} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg"><Trash2 className="w-4 h-4" /></button>
             </div>
           </div>
         ))}
       </div>
+
+      <DeleteConfirmModal 
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, id: null })}
+        onConfirm={handleDelete}
+        isLoading={saving}
+        title="Delete Blog Post"
+        message="Are you sure you want to delete this article? This action cannot be undone."
+      />
 
       <AnimatePresence>
         {editing && (
