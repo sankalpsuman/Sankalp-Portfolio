@@ -54,7 +54,7 @@ export default function PortfolioHome() {
   }, []);
 
   return (
-    <div className="bg-[#050816] selection:bg-blue-500/30 selection:text-white overflow-hidden">
+    <div id="portfolio-home" className="bg-[#050816] selection:bg-blue-500/30 selection:text-white overflow-hidden">
       <Navbar />
       <main>
         <Hero />

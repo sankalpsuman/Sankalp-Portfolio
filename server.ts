@@ -8,7 +8,7 @@ async function startServer() {
   const app = express();
   app.use(express.json());
 
-  // API routes go here
+  // API check
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
   });

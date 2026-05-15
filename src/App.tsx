@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './services/firebase';
+import { Toaster } from 'react-hot-toast';
 
 // Pages
 import PortfolioHome from './pages/PortfolioHome';
@@ -34,18 +35,21 @@ export default function App() {
   const isAdmin = user?.email === 'sankalpsmn@gmail.com';
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<PortfolioHome />} />
-        <Route path="/blog" element={<BlogList />} />
-        <Route path="/blog/:slug" element={<BlogDetail />} />
-        <Route path="/now" element={<NowPage />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route 
-          path="/admin/*" 
-          element={isAdmin ? <AdminDashboard /> : <Navigate to="/admin/login" />} 
-        />
-      </Routes>
-    </Router>
+    <>
+      <Toaster position="bottom-right" reverseOrder={false} />
+      <Router>
+        <Routes>
+          <Route path="/" element={<PortfolioHome />} />
+          <Route path="/blog" element={<BlogList />} />
+          <Route path="/blog/:slug" element={<BlogDetail />} />
+          <Route path="/now" element={<NowPage />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route 
+            path="/admin/*" 
+            element={isAdmin ? <AdminDashboard /> : <Navigate to="/admin/login" />} 
+          />
+        </Routes>
+      </Router>
+    </>
   );
 }

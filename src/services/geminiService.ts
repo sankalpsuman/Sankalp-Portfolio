@@ -11,8 +11,10 @@ export async function generateAIResponse(prompt: string, userInput: string) {
     const ai = new GoogleGenAI({ apiKey: API_KEY });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      systemInstruction: "You are a professional Quality Engineering AI Assistant. Your task is to provide EXACTLY what is requested. No conversational filler, no introductions, no 'Here is your result', no pleasantries. If asked for test cases, provide only test cases. If asked for a bug report, provide only the bug report. Be concise, technical, and accurate.",
-      contents: [{ role: 'user', parts: [{ text: `${prompt}\n\nUser Input: ${userInput}` }] }]
+      contents: [{ role: 'user', parts: [{ text: `${prompt}\n\nUser Input: ${userInput}` }] }],
+      config: {
+        systemInstruction: "You are a professional Quality Engineering AI Assistant. Your task is to provide EXACTLY what is requested. No conversational filler, no introductions, no 'Here is your result', no pleasantries. If asked for test cases, provide only test cases. If asked for a bug report, provide only the bug report. Be concise, technical, and accurate.",
+      }
     });
 
     return response.text || "";
