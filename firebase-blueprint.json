@@ -1,0 +1,187 @@
+{
+  "entities": {
+    "hero": {
+      "title": "Hero Section",
+      "description": "Content for the hero section of the portfolio.",
+      "type": "object",
+      "properties": {
+        "headline": { "type": "string" },
+        "titles": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": "string" },
+        "resumeUrl": { "type": "string" },
+        "linkedinUrl": { "type": "string" },
+        "githubUrl": { "type": "string" }
+      },
+      "required": ["headline", "titles", "description"]
+    },
+    "about": {
+      "title": "About Section",
+      "description": "Content for the about section.",
+      "type": "object",
+      "properties": {
+        "content": { "type": "string" },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "value": { "type": "string" }
+            }
+          }
+        },
+        "imageUrl": { "type": "string" }
+      }
+    },
+    "experience": {
+      "title": "Experience",
+      "description": "Work experience entries.",
+      "type": "object",
+      "properties": {
+        "company": { "type": "string" },
+        "role": { "type": "string" },
+        "period": { "type": "string" },
+        "description": { "type": "string" },
+        "order": { "type": "number" }
+      }
+    },
+    "skill": {
+      "title": "Skill",
+      "description": "Skills categorized by type.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "level": { "type": "number" },
+        "icon": { "type": "string" }
+      }
+    },
+    "project": {
+      "title": "Project",
+      "description": "Portfolio projects.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "techStack": { "type": "array", "items": { "type": "string" } },
+        "liveUrl": { "type": "string" },
+        "githubUrl": { "type": "string" },
+        "order": { "type": "number" }
+      }
+    },
+    "certification": {
+      "title": "Certification",
+      "description": "Professional certifications.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "issuer": { "type": "string" },
+        "date": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "order": { "type": "number" }
+      }
+    },
+    "post": {
+      "title": "Post",
+      "description": "Thought leadership / LinkedIn posts.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "url": { "type": "string" },
+        "date": { "type": "string" },
+        "imageUrl": { "type": "string" }
+      }
+    },
+    "contact": {
+      "title": "Contact",
+      "description": "Contact information.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "linkedin": { "type": "string" }
+      }
+    },
+    "seo": {
+      "title": "SEO",
+      "description": "SEO metadata.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "keywords": { "type": "array", "items": { "type": "string" } },
+        "ogImage": { "type": "string" }
+      }
+    },
+    "ai": {
+      "title": "AI in QA",
+      "description": "Content for the AI in QA section.",
+      "type": "object",
+      "properties": {
+        "headline": { "type": "string" },
+        "subheadline": { "type": "string" },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "desc": { "type": "string" },
+              "icon": { "type": "string" }
+            }
+          }
+        },
+        "efficiency": { "type": "string" },
+        "reliability": { "type": "string" }
+      },
+      "required": ["headline", "subheadline", "steps", "efficiency", "reliability"]
+    }
+  },
+  "firestore": {
+    "hero/content": {
+      "schema": "hero",
+      "description": "Singleton for hero content."
+    },
+    "about/content": {
+      "schema": "about",
+      "description": "Singleton for about content."
+    },
+    "experience": {
+      "schema": "experience",
+      "description": "Collection of experiences."
+    },
+    "skills": {
+      "schema": "skill",
+      "description": "Collection of skills."
+    },
+    "projects": {
+      "schema": "project",
+      "description": "Collection of projects."
+    },
+    "certifications": {
+      "schema": "certification",
+      "description": "Collection of certifications."
+    },
+    "posts": {
+      "schema": "post",
+      "description": "Collection of thought leadership posts."
+    },
+    "contact/info": {
+      "schema": "contact",
+      "description": "Singleton for contact info."
+    },
+    "seo/config": {
+      "schema": "seo",
+      "description": "Singleton for SEO config."
+    },
+    "ai/content": {
+      "schema": "ai",
+      "description": "Singleton for AI in QA content."
+    }
+  }
+}

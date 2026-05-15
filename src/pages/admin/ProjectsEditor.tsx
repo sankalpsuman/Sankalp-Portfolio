@@ -1,0 +1,375 @@
+import { useState, useEffect, ChangeEvent } from 'react';
+import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
+import { Save, Plus, Trash2, Loader2, Layers, ExternalLink, Github, Image as ImageIcon, X, FileUp } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { uploadToCloudinary } from '../../lib/cloudinary';
+import { ImageCropper } from '../../components/admin/ImageCropper';
+import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
+import { AnimatePresence } from 'framer-motion';
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  techStack: string[];
+  liveUrl?: string;
+  githubUrl?: string;
+  order: number;
+}
+
+export default function ProjectsEditor() {
+  const [items, setItems] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [activeItem, setActiveItem] = useState<Project | null>(null);
+  const [localItem, setLocalItem] = useState<Project | null>(null);
+  const [newTech, setNewTech] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [tempImage, setTempImage] = useState<string | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
+
+  useEffect(() => {
+    async function load() {
+      const data = await getCollection<Project>('projects', 'order');
+      setItems(data);
+      setLoading(false);
+    }
+    load();
+  }, []);
+
+  const handleSelect = (item: Project) => {
+    setActiveItem(item);
+    setLocalItem(item);
+  };
+
+  const handleCreate = async () => {
+    const newItem = {
+      title: 'New Project',
+      description: 'Project description goes here...',
+      techStack: [],
+      order: items.length
+    };
+    setSaving(true);
+    const id = await addCollectionDocument('projects', newItem);
+    const item = { ...newItem, id };
+    setItems([...items, item]);
+    setActiveItem(item);
+    setLocalItem(item);
+    setSaving(false);
+  };
+
+  const handleLocalUpdate = (updates: Partial<Project>) => {
+    if (localItem) {
+      setLocalItem({ ...localItem, ...updates });
+    }
+  };
+
+  const handleSave = async () => {
+    if (!localItem || !activeItem) return;
+    
+    setSaving(true);
+    try {
+      await updateCollectionDocument('projects', activeItem.id, localItem);
+      const updatedItems = items.map(item => item.id === activeItem.id ? localItem : item);
+      setItems(updatedItems);
+      setActiveItem(localItem);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      alert('Save failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    setDeleteModal({ isOpen: true, id });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteModal.id) return;
+    const id = deleteModal.id;
+    setSaving(true);
+    try {
+      await deleteCollectionDocument('projects', id);
+      setItems(items.filter(i => i.id !== id));
+      if (activeItem?.id === id) {
+        setActiveItem(null);
+        setLocalItem(null);
+      }
+      setDeleteModal({ isOpen: false, id: null });
+    } catch (error) {
+      alert('Delete failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addTech = () => {
+    if (!localItem || !newTech.trim()) return;
+    
+    // Support comma separated tags
+    const stackToAdd = newTech.split(',')
+      .map(t => t.trim())
+      .filter(t => t && !localItem.techStack.includes(t));
+
+    if (stackToAdd.length > 0) {
+      const updatedStack = [...localItem.techStack, ...stackToAdd];
+      handleLocalUpdate({ techStack: updatedStack });
+    }
+    setNewTech('');
+  };
+
+  const handleImageSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTempImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleCropComplete = async (blob: Blob) => {
+    if (!localItem) return;
+    setTempImage(null);
+    const file = new File([blob], 'project.jpg', { type: 'image/jpeg' });
+    
+    try {
+      setUploading(true);
+      const url = await uploadToCloudinary(file);
+      handleLocalUpdate({ imageUrl: url });
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeTech = (tech: string) => {
+    if (localItem) {
+      const updatedStack = localItem.techStack.filter(t => t !== tech);
+      handleLocalUpdate({ techStack: updatedStack });
+    }
+  };
+
+  if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-blue-500" /></div>;
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
+      <DeleteConfirmModal 
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, id: null })}
+        onConfirm={confirmDelete}
+        isLoading={saving}
+        title="Delete Project"
+        message="Are you sure you want to delete this project? All associated data will be removed permanently."
+      />
+      <AnimatePresence>
+        {tempImage && (
+          <ImageCropper 
+            imageSrc={tempImage}
+            onCropComplete={handleCropComplete}
+            onCancel={() => setTempImage(null)}
+            // Removed fixed aspect
+          />
+        )}
+      </AnimatePresence>
+      {/* List Column */}
+      <div className="lg:col-span-1 space-y-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-gray-400 uppercase text-xs tracking-widest">Portfolio Projects</h3>
+          <button 
+            onClick={handleCreate}
+            disabled={saving}
+            className="p-1 px-3 bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-md text-xs font-bold flex items-center gap-1 hover:bg-blue-600/20 transition-all"
+          >
+            <Plus className="w-3 h-3" /> New Project
+          </button>
+        </div>
+        
+        <div className="space-y-3">
+          {items.map(item => (
+            <div 
+              key={item.id}
+              onClick={() => handleSelect(item)}
+              className={cn(
+                "p-4 bg-[#050816] border rounded-xl transition-all cursor-pointer group flex items-center gap-4",
+                activeItem?.id === item.id ? "border-blue-500" : "border-white/5 hover:border-white/10"
+              )}
+            >
+              <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 overflow-hidden flex-shrink-0">
+                 {item.imageUrl ? <img src={item.imageUrl} className="w-full h-full object-cover" /> : <ImageIcon className="w-full h-full p-3 text-gray-700" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-sm text-white group-hover:text-blue-400 transition-colors truncate">{item.title}</h4>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest">{item.techStack.length} Technologies</p>
+              </div>
+              <button 
+                onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
+                className="p-2 -m-1 text-gray-500 hover:text-red-400 transition-colors"
+                title="Delete Project"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Editor Column */}
+      <div className="lg:col-span-2">
+        {localItem ? (
+          <div className="bg-[#050816] border border-white/5 rounded-2xl p-6 lg:p-8 space-y-8 sticky top-24">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+               <h3 className="text-xl font-bold">Edit Project</h3>
+               <button 
+                 onClick={handleSave} 
+                 disabled={saving}
+                 className={cn(
+                   "flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all text-sm font-bold",
+                   saved ? "bg-emerald-600 hover:bg-emerald-700" : "bg-blue-600 hover:bg-blue-700",
+                   saving && "opacity-50"
+                 )}
+               >
+                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                 {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+               </button>
+               <div className="flex gap-2">
+                  {localItem.liveUrl && <a href={localItem.liveUrl} target="_blank" className="p-2 bg-white/5 rounded-lg hover:text-blue-400"><ExternalLink className="w-4 h-4" /></a>}
+                  {localItem.githubUrl && <a href={localItem.githubUrl} target="_blank" className="p-2 bg-white/5 rounded-lg hover:text-blue-400"><Github className="w-4 h-4" /></a>}
+               </div>
+            </div>
+
+            <div className="space-y-6">
+               <div className="space-y-2">
+                 <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Project Title</label>
+                 <input 
+                   value={localItem.title}
+                   onChange={(e) => handleLocalUpdate({ title: e.target.value })}
+                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 outline-none text-white text-lg font-bold"
+                 />
+               </div>
+
+               <div className="space-y-2">
+                 <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Project Image</label>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="relative aspect-video rounded-xl overflow-hidden bg-white/5 border border-white/10 group">
+                      {localItem.imageUrl ? (
+                        <img src={localItem.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
+                          <ImageIcon className="w-8 h-8 mb-2" />
+                          <span className="text-xs">No image uploaded</span>
+                        </div>
+                      )}
+                      {uploading && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col justify-center gap-3">
+                      <label className="flex items-center justify-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl hover:border-blue-500/50 hover:bg-white/10 transition-all cursor-pointer group">
+                        <input type="file" className="hidden" accept="image/*" onChange={handleImageSelect} disabled={uploading} />
+                        <FileUp className="w-4 h-4 text-gray-400 group-hover:text-blue-400" />
+                        <span className="text-sm font-medium">Upload Image</span>
+                      </label>
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-gray-500 uppercase tracking-widest block">Or enter URL</span>
+                        <input 
+                          value={localItem.imageUrl || ''}
+                          onChange={(e) => handleLocalUpdate({ imageUrl: e.target.value })}
+                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 focus:border-blue-500 outline-none text-xs"
+                          placeholder="Image URL..."
+                        />
+                      </div>
+                    </div>
+                 </div>
+               </div>
+
+               <div className="space-y-2">
+                 <label className="text-xs text-gray-400 uppercase font-mono tracking-widest font-bold">Tech Stack</label>
+                 <p className="text-[10px] text-gray-500 italic mb-2">Separate technologies with commas or press Enter</p>
+                 <div className="flex flex-wrap gap-2 mb-3">
+                   {localItem.techStack.map(tech => (
+                     <span key={tech} className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full text-[10px] font-bold animate-in fade-in zoom-in duration-200">
+                       {tech}
+                       <button onClick={() => removeTech(tech)} className="hover:text-red-400 transition-colors"><X className="w-3 h-3" /></button>
+                     </span>
+                   ))}
+                 </div>
+                 <div className="flex gap-2">
+                    <input 
+                      value={newTech}
+                      onChange={(e) => setNewTech(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addTech();
+                        }
+                      }}
+                      className="flex-1 bg-white/[0.03] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-blue-500/50 focus:bg-white/[0.05] outline-none transition-all placeholder:text-gray-600"
+                      placeholder="e.g. React, Node.js, AWS..."
+                    />
+                    <button 
+                      onClick={addTech} 
+                      className="p-2 bg-blue-600/10 border border-blue-500/30 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white active:scale-95 transition-all"
+                      title="Add Tech"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                 </div>
+               </div>
+
+               <div className="space-y-2">
+                 <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Description</label>
+                 <textarea 
+                   value={localItem.description}
+                   onChange={(e) => handleLocalUpdate({ description: e.target.value })}
+                   rows={6}
+                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 outline-none resize-none text-gray-300"
+                 />
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Live URL</label>
+                    <input 
+                      value={localItem.liveUrl || ''}
+                      onChange={(e) => handleLocalUpdate({ liveUrl: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">GitHub URL</label>
+                    <input 
+                      value={localItem.githubUrl || ''}
+                      onChange={(e) => handleLocalUpdate({ githubUrl: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none text-sm"
+                    />
+                  </div>
+               </div>
+            </div>
+
+            <div className="pt-4 flex justify-between items-center text-xs text-gray-500 italic">
+               <div className="flex items-center gap-2">
+                  <Layers className="w-4 h-4" /> Changes must be manually saved
+               </div>
+               <span>Order Index: {localItem.order}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="h-96 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-gray-500 italic">
+            <Layers className="w-12 h-12 mb-4 opacity-20" />
+            Select a project to manifest its properties
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

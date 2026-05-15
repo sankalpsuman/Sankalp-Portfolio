@@ -1,0 +1,172 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'sankalpsmn@gmail.com';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Helpers ---
+
+    function isValidHero(data) {
+      return data.keys().hasAll(['headline', 'titles', 'description']) &&
+             data.headline is string && data.headline.size() <= 200 &&
+             data.titles is list && data.titles.size() <= 10 &&
+             data.description is string && data.description.size() <= 1000;
+    }
+
+    function isValidAbout(data) {
+      return data.keys().hasAll(['content', 'metrics']) &&
+             data.content is string && data.content.size() <= 2000 &&
+             data.metrics is list && data.metrics.size() <= 10;
+    }
+
+    function isValidExperience(data) {
+      return data.keys().hasAll(['company', 'role', 'period', 'description']) &&
+             data.company is string && data.company.size() <= 100 &&
+             data.role is string && data.role.size() <= 100 &&
+             data.period is string && data.period.size() <= 100 &&
+             data.description is string && data.description.size() <= 2000 &&
+             (!data.keys().hasAny(['tags']) || (data.tags is list && data.tags.size() <= 10));
+    }
+
+    function isValidSkill(data) {
+      return data.keys().hasAll(['name', 'category', 'level']) &&
+             data.name is string && data.name.size() <= 100 &&
+             data.category is string && data.category.size() <= 50 &&
+             data.level is number && data.level >= 0 && data.level <= 100;
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['title', 'description', 'techStack']) &&
+             data.title is string && data.title.size() <= 100 &&
+             data.description is string && data.description.size() <= 2000 &&
+             data.techStack is list && data.techStack.size() <= 20;
+    }
+
+    function isValidCertification(data) {
+      return data.keys().hasAll(['name', 'issuer', 'date']) &&
+             data.name is string && data.name.size() <= 200 &&
+             data.issuer is string && data.issuer.size() <= 100;
+    }
+
+    function isValidPost(data) {
+      return data.keys().hasAll(['title', 'content', 'url']) &&
+             data.title is string && data.title.size() <= 200 &&
+             data.content is string && data.content.size() <= 2000;
+    }
+
+    function isValidContact(data) {
+      return data.keys().hasAll(['email', 'phone', 'location']) &&
+             data.email is string && data.email.size() <= 100 &&
+             data.phone is string && data.phone.size() <= 100 &&
+             data.location is string && data.location.size() <= 200 &&
+             (!data.keys().hasAny(['linkedin']) || (data.linkedin is string && data.linkedin.size() <= 200)) &&
+             (!data.keys().hasAny(['name']) || (data.name is string && data.name.size() <= 100));
+    }
+
+    function isValidSEO(data) {
+      return data.keys().hasAll(['title', 'description', 'keywords']) &&
+             data.title is string && data.title.size() <= 100 &&
+             data.description is string && data.description.size() <= 300 &&
+             data.keywords is list;
+    }
+
+    function isValidAI(data) {
+      return data.keys().hasAll(['headline', 'subheadline', 'steps', 'efficiency', 'reliability']) &&
+             data.headline is string && data.headline.size() <= 200 &&
+             data.subheadline is string && data.subheadline.size() <= 200 &&
+             data.steps is list && data.steps.size() <= 10 &&
+             data.efficiency is string && data.efficiency.size() <= 20 &&
+             data.reliability is string && data.reliability.size() <= 20;
+    }
+
+    // --- Collection Routes ---
+
+    match /hero/{docId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidHero(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /about/{docId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidAbout(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /experience/{experienceId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidId(experienceId) && isValidExperience(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /skills/{skillId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidId(skillId) && isValidSkill(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidId(projectId) && isValidProject(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /certifications/{certId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidId(certId) && isValidCertification(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /posts/{postId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidId(postId) && isValidPost(incoming());
+      allow delete: if isAdmin() && isValidId(postId);
+    }
+
+    match /contact/{docId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidContact(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /seo/{docId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidSEO(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /ai/{docId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidAI(incoming());
+      allow delete: if isAdmin();
+    }
+  }
+}
