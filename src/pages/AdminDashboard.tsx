@@ -17,7 +17,15 @@ import {
   Zap,
   Globe,
   Sparkles,
-  MessageSquare
+  MessageSquare,
+  FileText,
+  Star,
+  Milestone,
+  BarChart3,
+  Settings2,
+  Clock,
+  Bot,
+  Target
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -34,19 +42,35 @@ import AIEditor from './admin/AIEditor';
 import ContactEditor from './admin/ContactEditor';
 import SEOEditor from './admin/SEOEditor';
 import Inquiries from './admin/Inquiries';
+import BlogEditor from './admin/BlogEditor';
+import TestimonialsEditor from './admin/TestimonialsEditor';
+import TimelineEditor from './admin/TimelineEditor';
+import ImpactStoriesEditor from './admin/ImpactStoriesEditor';
+import QAMetricsEditor from './admin/QAMetricsEditor';
+import AIToolsEditor from './admin/AIToolsEditor';
+import SettingsEditor from './admin/SettingsEditor';
+import NowEditor from './admin/NowEditor';
 
 const NAV_ITEMS = [
   { path: '', label: 'Overview', icon: LayoutDashboard },
   { path: 'hero', label: 'Hero Section', icon: Zap },
   { path: 'about', label: 'About Me', icon: User },
   { path: 'experience', label: 'Experience', icon: Briefcase },
-  { path: 'skills', label: 'Skills', icon: Code },
+  { path: 'skills', label: 'Toolkit', icon: Code },
+  { path: 'timeline', label: 'Career Journey', icon: Milestone },
   { path: 'ai', label: 'AI in QA', icon: Sparkles },
+  { path: 'aitools', label: 'AI Tools', icon: Bot },
   { path: 'projects', label: 'Projects', icon: Layers },
+  { path: 'impact', label: 'Impact Stories', icon: Target },
+  { path: 'metrics', label: 'QA Metrics', icon: BarChart3 },
   { path: 'certifications', label: 'Certifications', icon: Award },
+  { path: 'blogs', label: 'Blog', icon: FileText },
+  { path: 'testimonials', label: 'Testimonials', icon: Star },
+  { path: 'now', label: 'Now Page', icon: Clock },
   { path: 'inquiries', label: 'Inquiries', icon: MessageSquare },
   { path: 'contact', label: 'Contact Settings', icon: Mail },
   { path: 'seo', label: 'SEO & Metadata', icon: Search },
+  { path: 'settings', label: 'Global Settings', icon: Settings2 },
 ];
 
 export default function AdminDashboard() {
@@ -99,7 +123,7 @@ export default function AdminDashboard() {
             <span className="font-bold text-lg tracking-tight">Admin CMS</span>
           </div>
 
-          <nav className="flex-1 space-y-1 overflow-y-auto custom-scrollbar pr-2">
+          <nav className="flex-1 space-y-1 overflow-y-auto custom-scrollbar pr-2 -mr-2">
             {NAV_ITEMS.map((item) => {
               const fullPath = `/admin${item.path ? `/${item.path}` : ''}`;
               const isActive = location.pathname === fullPath;
@@ -112,15 +136,15 @@ export default function AdminDashboard() {
                     if (window.innerWidth < 1024) setSidebarOpen(false);
                   }}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group border",
+                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-all group border whitespace-nowrap",
                     isActive
                       ? "bg-blue-600/10 text-blue-400 border-blue-500/20 shadow-[0_0_15px_rgba(37,99,235,0.1)]"
                       : "text-gray-400 border-transparent hover:bg-white/5 hover:text-white"
                   )}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <item.icon className={cn("w-5 h-5 transition-transform group-hover:scale-110", isActive && "text-blue-500")} />
-                  <span className="font-medium text-sm">{item.label}</span>
+                  <item.icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive && "text-blue-500")} />
+                  <span className="font-medium text-xs">{item.label}</span>
                 </Link>
               );
             })}
@@ -181,6 +205,14 @@ export default function AdminDashboard() {
             <Route path="/inquiries" element={<Inquiries />} />
             <Route path="/contact" element={<ContactEditor />} />
             <Route path="/seo" element={<SEOEditor />} />
+            <Route path="/blogs" element={<BlogEditor />} />
+            <Route path="/testimonials" element={<TestimonialsEditor />} />
+            <Route path="/timeline" element={<TimelineEditor />} />
+            <Route path="/impact" element={<ImpactStoriesEditor />} />
+            <Route path="/metrics" element={<QAMetricsEditor />} />
+            <Route path="/aitools" element={<AIToolsEditor />} />
+            <Route path="/settings" element={<SettingsEditor />} />
+            <Route path="/now" element={<NowEditor />} />
           </Routes>
         </div>
       </main>

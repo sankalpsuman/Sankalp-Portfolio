@@ -30,9 +30,17 @@ export default function AdminLogin() {
         setError('Access Denied. Only authorized administrators are allowed.');
         await auth.signOut();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('Login failed. Please try again.');
+      if (err.code === 'auth/unauthorized-domain') {
+        setError('Login failed: This domain is not authorized in Firebase. Please add this URL to your Firebase Console under Authentication > Settings > Authorized domains.');
+      } else if (err.code === 'auth/popup-blocked') {
+        setError('Login failed: The popup was blocked by your browser. Please allow popups for this site.');
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setError('Login failed: The sign-in window was closed before completion.');
+      } else {
+        setError('Login failed. Please verify your internet connection and try again.');
+      }
     }
   };
 

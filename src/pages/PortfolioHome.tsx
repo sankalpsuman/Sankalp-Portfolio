@@ -6,10 +6,16 @@ import Navbar from '../components/portfolio/Navbar';
 import Hero from '../components/portfolio/Hero';
 import About from '../components/portfolio/About';
 import Experience from '../components/portfolio/Experience';
+import CareerTimeline from '../components/portfolio/CareerTimeline';
 import Skills from '../components/portfolio/Skills';
 import AISection from '../components/portfolio/AISection';
+import AIPlayground from '../components/portfolio/AIPlayground';
+import QADashboard from '../components/portfolio/QADashboard';
 import Projects from '../components/portfolio/Projects';
+import ImpactStories from '../components/portfolio/ImpactStories';
 import Certifications from '../components/portfolio/Certifications';
+import Testimonials from '../components/portfolio/Testimonials';
+import BlogPreview from '../components/portfolio/BlogPreview';
 import Contact from '../components/portfolio/Contact';
 import Footer from '../components/portfolio/Footer';
 
@@ -48,16 +54,22 @@ export default function PortfolioHome() {
   }, []);
 
   return (
-    <div className="bg-[#050816] selection:bg-blue-500/30 selection:text-white">
+    <div className="bg-[#050816] selection:bg-blue-500/30 selection:text-white overflow-hidden">
       <Navbar />
       <main>
         <Hero />
         <About />
         <Experience />
+        <CareerTimeline />
         <Skills />
         <AISection />
+        <AIPlayground />
+        <QADashboard />
         <Projects />
+        <ImpactStories />
         <Certifications />
+        <Testimonials />
+        <BlogPreview />
         <Contact />
       </main>
       <Footer />

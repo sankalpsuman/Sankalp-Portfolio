@@ -140,6 +140,130 @@
         "reliability": { "type": "string" }
       },
       "required": ["headline", "subheadline", "steps", "efficiency", "reliability"]
+    },
+    "message": {
+      "title": "Inquiry Message",
+      "description": "Inbound messages from the contact form.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "email", "message", "createdAt"]
+    },
+    "blog": {
+      "title": "Blog Post",
+      "description": "Article with rich text/markdown content.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "content": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "category": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "imageUrl": { "type": "string" },
+        "publishedAt": { "type": "string" },
+        "status": { "type": "string", "enum": ["draft", "published"] },
+        "seoTitle": { "type": "string" },
+        "seoDescription": { "type": "string" }
+      },
+      "required": ["title", "slug", "content"]
+    },
+    "testimonial": {
+      "title": "Testimonial",
+      "description": "Client or colleague feedback.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "company": { "type": "string" },
+        "content": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "rating": { "type": "number" },
+        "order": { "type": "number" }
+      }
+    },
+    "milestone": {
+      "title": "Journey Milestone",
+      "description": "Key event in career timeline.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "company": { "type": "string" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "icon": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "color": { "type": "string" },
+        "achievements": { "type": "array", "items": { "type": "string" } },
+        "order": { "type": "number" }
+      }
+    },
+    "metric": {
+      "title": "QA Metric",
+      "description": "Quality assurance data point for dashboard.",
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" },
+        "value": { "type": "string" },
+        "trend": { "type": "string" },
+        "type": { "type": "string", "enum": ["counter", "percentage", "health"] },
+        "order": { "type": "number" }
+      }
+    },
+    "impactStory": {
+      "title": "Impact Story",
+      "description": "Business impact case study.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "problem": { "type": "string" },
+        "solution": { "type": "string" },
+        "metrics": { "type": "array", "items": { "type": "string" } },
+        "tools": { "type": "array", "items": { "type": "string" } },
+        "impact": { "type": "string" },
+        "order": { "type": "number" }
+      }
+    },
+    "settings": {
+      "title": "Global Settings",
+      "description": "Centralized site configuration.",
+      "type": "object",
+      "properties": {
+        "themeColor": { "type": "string" },
+        "enableBlog": { "type": "boolean" },
+        "enableAI": { "type": "boolean" },
+        "enableTimeline": { "type": "boolean" },
+        "calendlyUrl": { "type": "string" },
+        "resumeLink": { "type": "string" }
+      }
+    },
+    "aiTool": {
+      "title": "AI Tool",
+      "description": "Definition for AI QA Playground tool.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "prompt": { "type": "string" },
+        "icon": { "type": "string" },
+        "placeholder": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "order": { "type": "number" }
+      }
+    },
+    "now": {
+      "title": "Now Page",
+      "description": "Content for the /now page.",
+      "type": "object",
+      "properties": {
+        "content": { "type": "string" },
+        "lastUpdated": { "type": "string" }
+      }
     }
   },
   "firestore": {
@@ -182,6 +306,42 @@
     "ai/content": {
       "schema": "ai",
       "description": "Singleton for AI in QA content."
+    },
+    "messages": {
+      "schema": "message",
+      "description": "Collection of contact inquiries."
+    },
+    "blogs": {
+      "schema": "blog",
+      "description": "Collection of blog articles."
+    },
+    "testimonials": {
+      "schema": "testimonial",
+      "description": "Collection of testimonials."
+    },
+    "timeline": {
+      "schema": "milestone",
+      "description": "Collection of career milestones."
+    },
+    "qaMetrics": {
+      "schema": "metric",
+      "description": "Collection of QA dashboard metrics."
+    },
+    "impactStories": {
+      "schema": "impactStory",
+      "description": "Collection of impact stories."
+    },
+    "settings/global": {
+      "schema": "settings",
+      "description": "Singleton for global settings."
+    },
+    "aiTools": {
+      "schema": "aiTool",
+      "description": "Collection of AI playground tools."
+    },
+    "now/content": {
+      "schema": "now",
+      "description": "Singleton for now page content."
     }
   }
 }

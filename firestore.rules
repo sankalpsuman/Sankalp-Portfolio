@@ -107,6 +107,57 @@ service cloud.firestore {
              data.reliability is string && data.reliability.size() <= 20;
     }
 
+    function isValidMessage(data) {
+      return data.keys().hasAll(['name', 'email', 'message', 'createdAt']) &&
+             data.keys().size() == 4 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.email is string && data.email.size() <= 100 &&
+             data.message is string && data.message.size() <= 5000 &&
+             data.createdAt is string;
+     }
+
+    function isValidBlog(data) {
+      return data.keys().hasAll(['title', 'slug', 'content']) &&
+             data.title is string && data.title.size() <= 200 &&
+             data.slug is string && data.slug.size() <= 200 &&
+             data.content is string && data.content.size() <= 50000;
+    }
+
+    function isValidTestimonial(data) {
+      return data.keys().hasAll(['name', 'content']) &&
+             data.name is string && data.name.size() <= 100 &&
+             data.content is string && data.content.size() <= 2000;
+    }
+
+    function isValidMilestone(data) {
+      return data.keys().hasAll(['title', 'date', 'description']) &&
+             data.title is string && data.title.size() <= 200;
+    }
+
+    function isValidMetric(data) {
+      return data.keys().hasAll(['label', 'value', 'type']) &&
+             data.label is string && data.label.size() <= 100;
+    }
+
+    function isValidImpactStory(data) {
+      return data.keys().hasAll(['title', 'problem', 'solution', 'impact']) &&
+             data.title is string && data.title.size() <= 200;
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAny(['themeColor', 'enableBlog', 'enableAI']);
+    }
+
+    function isValidAITool(data) {
+      return data.keys().hasAll(['name', 'prompt']) &&
+             data.name is string && data.name.size() <= 100;
+    }
+
+    function isValidNow(data) {
+      return data.keys().hasAll(['content']) &&
+             data.content is string && data.content.size() <= 5000;
+    }
+
     // --- Collection Routes ---
 
     match /hero/{docId} {
@@ -166,6 +217,59 @@ service cloud.firestore {
     match /ai/{docId} {
       allow read: if true;
       allow create, update: if isAdmin() && isValidAI(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /messages/{messageId} {
+      allow create: if isValidMessage(incoming());
+      allow read, list, delete: if isAdmin();
+    }
+
+    match /blogs/{blogId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidBlog(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /testimonials/{testId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidTestimonial(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /timeline/{mileId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidMilestone(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /qaMetrics/{metricId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidMetric(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /impactStories/{storyId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidImpactStory(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidSettings(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /aiTools/{toolId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidAITool(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /now/{docId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidNow(incoming());
       allow delete: if isAdmin();
     }
   }

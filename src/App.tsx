@@ -7,6 +7,9 @@ import { auth } from './services/firebase';
 import PortfolioHome from './pages/PortfolioHome';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
+import BlogList from './pages/BlogList';
+import BlogDetail from './pages/BlogDetail';
+import NowPage from './pages/NowPage';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -34,6 +37,9 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<PortfolioHome />} />
+        <Route path="/blog" element={<BlogList />} />
+        <Route path="/blog/:slug" element={<BlogDetail />} />
+        <Route path="/now" element={<NowPage />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route 
           path="/admin/*" 
