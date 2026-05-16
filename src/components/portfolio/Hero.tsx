@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getDocument, HERO_DOC } from '../../services/firestoreService';
-import { Download, Linkedin, Send } from 'lucide-react';
+import { Download, Linkedin, Send, Calendar } from 'lucide-react';
 
 interface HeroData {
   headline: string;
@@ -19,15 +19,24 @@ const DEFAULT_TITLES = [
   'Prompt Engineering Professional'
 ];
 
+interface GlobalSettings {
+  calendlyUrl: string;
+}
+
 export default function Hero() {
   const [data, setData] = useState<HeroData | null>(null);
+  const [settings, setSettings] = useState<GlobalSettings | null>(null);
   const [titleIndex, setTitleIndex] = useState(0);
 
   useEffect(() => {
     async function load() {
       try {
-        const hero = await getDocument<HeroData>(HERO_DOC);
+        const [hero, globalSettings] = await Promise.all([
+          getDocument<HeroData>(HERO_DOC),
+          getDocument<GlobalSettings>('settings/global')
+        ]);
         if (hero) setData(hero);
+        if (globalSettings) setSettings(globalSettings);
       } catch (err) {
         console.warn("Hero data load failed, using fallbacks:", err);
       }
@@ -112,6 +121,18 @@ export default function Hero() {
                 <Send className="w-5 h-5" />
                 Contact Me
               </a>
+
+              {settings?.calendlyUrl && (
+                <a 
+                  href={settings.calendlyUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-blue-500/10"
+                >
+                  <Calendar className="w-5 h-5" />
+                  Strategy Session
+                </a>
+              )}
               <a 
                 href={data?.linkedinUrl || "https://www.linkedin.com/in/sankalpsuman"} 
                 target="_blank"

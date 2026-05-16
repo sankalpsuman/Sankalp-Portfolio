@@ -1,9 +1,24 @@
 import { motion } from 'motion/react';
-import { Cpu, Github, Linkedin, Mail, Twitter } from 'lucide-react';
+import { Cpu, Github, Linkedin, Mail, Twitter, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { getDocument } from '../../services/firestoreService';
+
+interface GlobalSettings {
+  calendlyUrl: string;
+}
 
 export default function Footer() {
+  const [settings, setSettings] = useState<GlobalSettings | null>(null);
   const currentYear = new Date().getFullYear();
+
+  useEffect(() => {
+    async function load() {
+      const data = await getDocument<GlobalSettings>('settings/global');
+      if (data) setSettings(data);
+    }
+    load();
+  }, []);
 
   return (
     <footer className="bg-[#050816] border-t border-white/5 pt-20 pb-10 overflow-hidden relative">
@@ -43,6 +58,19 @@ export default function Footer() {
                   <a href={`#${item.toLowerCase()}`} className="text-gray-500 hover:text-blue-400 transition-colors text-sm">{item}</a>
                 </li>
               ))}
+              {settings?.calendlyUrl && (
+                <li>
+                  <a 
+                    href={settings.calendlyUrl} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="text-blue-400 hover:text-blue-300 transition-colors text-sm font-bold flex items-center gap-2"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    Book Session
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
 

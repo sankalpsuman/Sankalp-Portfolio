@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Target, ArrowRight, Zap, TrendingUp, ShieldCheck, Box, Layers, Globe } from 'lucide-react';
-import { getCollection } from '../../services/firestoreService';
+import { getCollection, getDocument } from '../../services/firestoreService';
 import { cn } from '../../lib/utils';
 
 interface ImpactStory {
@@ -15,14 +15,23 @@ interface ImpactStory {
   order: number;
 }
 
+interface GlobalSettings {
+  calendlyUrl: string;
+}
+
 export default function ImpactStories() {
   const [stories, setStories] = useState<ImpactStory[]>([]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [settings, setSettings] = useState<GlobalSettings | null>(null);
 
   useEffect(() => {
     async function load() {
-      const data = await getCollection<ImpactStory>('impactStories', 'order');
-      setStories(data);
+      const [storiesData, settingsData] = await Promise.all([
+        getCollection<ImpactStory>('impactStories', 'order'),
+        getDocument<GlobalSettings>('settings/global')
+      ]);
+      setStories(storiesData);
+      setSettings(settingsData);
     }
     load();
   }, []);
@@ -115,9 +124,14 @@ export default function ImpactStories() {
                 <h3 className="text-3xl font-bold">Have a <span className="text-blue-500">Quality Challenge</span>?</h3>
                 <p className="text-gray-400">Let's discuss how data-driven QA can transform your deployment cycles and software reliability.</p>
              </div>
-             <button className="bg-white text-black font-bold px-10 py-4 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/10">
+             <a 
+               href={settings?.calendlyUrl || "#contact"}
+               target={settings?.calendlyUrl ? "_blank" : "_self"}
+               rel="noreferrer"
+               className="bg-white text-black font-bold px-10 py-4 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/10"
+             >
                 Book a Strategy Session
-             </button>
+             </a>
           </div>
        </div>
     </section>
