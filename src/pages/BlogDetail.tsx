@@ -94,7 +94,7 @@ export default function BlogDetail() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                    <div className="lg:col-span-8">
-                      <div className="markdown-body prose prose-invert prose-blue max-w-none prose-headings:font-bold prose-p:text-gray-300 prose-p:leading-loose prose-pre:bg-black/50 prose-pre:border prose-pre:border-white/10 prose-img:rounded-3xl">
+                      <div className="markdown-body max-w-none">
                          <ReactMarkdown>{blog.content}</ReactMarkdown>
                       </div>
 

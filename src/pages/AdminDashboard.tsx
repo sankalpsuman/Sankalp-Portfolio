@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../services/firebase';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { 
   LayoutDashboard, 
   User, 
@@ -25,31 +26,32 @@ import {
   Settings2,
   Clock,
   Bot,
-  Target
+  Target,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
-// Admin Sections
-import DashboardOverview from './admin/DashboardOverview';
-import HeroEditor from './admin/HeroEditor';
-import AboutEditor from './admin/AboutEditor';
-import ExperienceEditor from './admin/ExperienceEditor';
-import SkillsEditor from './admin/SkillsEditor';
-import ProjectsEditor from './admin/ProjectsEditor';
-import CertificationsEditor from './admin/CertificationsEditor';
-import AIEditor from './admin/AIEditor';
-import ContactEditor from './admin/ContactEditor';
-import SEOEditor from './admin/SEOEditor';
-import Inquiries from './admin/Inquiries';
-import BlogEditor from './admin/BlogEditor';
-import TestimonialsEditor from './admin/TestimonialsEditor';
-import TimelineEditor from './admin/TimelineEditor';
-import ImpactStoriesEditor from './admin/ImpactStoriesEditor';
-import QAMetricsEditor from './admin/QAMetricsEditor';
-import AIToolsEditor from './admin/AIToolsEditor';
-import SettingsEditor from './admin/SettingsEditor';
-import NowEditor from './admin/NowEditor';
+// Lazy load admin sections
+const DashboardOverview = lazy(() => import('./admin/DashboardOverview'));
+const HeroEditor = lazy(() => import('./admin/HeroEditor'));
+const AboutEditor = lazy(() => import('./admin/AboutEditor'));
+const ExperienceEditor = lazy(() => import('./admin/ExperienceEditor'));
+const SkillsEditor = lazy(() => import('./admin/SkillsEditor'));
+const ProjectsEditor = lazy(() => import('./admin/ProjectsEditor'));
+const CertificationsEditor = lazy(() => import('./admin/CertificationsEditor'));
+const AIEditor = lazy(() => import('./admin/AIEditor'));
+const ContactEditor = lazy(() => import('./admin/ContactEditor'));
+const SEOEditor = lazy(() => import('./admin/SEOEditor'));
+const Inquiries = lazy(() => import('./admin/Inquiries'));
+const BlogEditor = lazy(() => import('./admin/BlogEditor'));
+const TestimonialsEditor = lazy(() => import('./admin/TestimonialsEditor'));
+const TimelineEditor = lazy(() => import('./admin/TimelineEditor'));
+const ImpactStoriesEditor = lazy(() => import('./admin/ImpactStoriesEditor'));
+const QAMetricsEditor = lazy(() => import('./admin/QAMetricsEditor'));
+const AIToolsEditor = lazy(() => import('./admin/AIToolsEditor'));
+const SettingsEditor = lazy(() => import('./admin/SettingsEditor'));
+const NowEditor = lazy(() => import('./admin/NowEditor'));
 
 const NAV_ITEMS = [
   { path: '', label: 'Overview', icon: LayoutDashboard },
@@ -88,10 +90,21 @@ export default function AdminDashboard() {
     navigate('/');
   };
 
-  const activeSection = NAV_ITEMS.find(item => {
-    const fullPath = `/admin${item.path ? `/${item.path}` : ''}`;
-    return location.pathname === fullPath;
-  })?.label || 'Dashboard';
+  const activeSection = useMemo(() => {
+    return NAV_ITEMS.find(item => {
+      const fullPath = `/admin${item.path ? `/${item.path}` : ''}`;
+      return location.pathname === fullPath;
+    })?.label || 'Dashboard';
+  }, [location.pathname]);
+
+  const LoadingFallback = () => (
+    <div className="flex-1 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+        <p className="text-xs text-gray-500 font-mono animate-pulse">Initializing Interface...</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#02040a] text-white flex">
@@ -120,7 +133,7 @@ export default function AdminDashboard() {
             <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
               <Settings className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-lg tracking-tight">Admin CMS</span>
+            <span className="font-bold text-lg tracking-tight text-white">Admin CMS</span>
           </div>
 
           <nav className="flex-1 space-y-1 overflow-y-auto custom-scrollbar pr-2 -mr-2">
@@ -156,7 +169,7 @@ export default function AdminDashboard() {
               className="flex items-center gap-3 w-full px-3 py-2.5 text-gray-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-colors group"
             >
               <LogOut className="w-5 h-5" />
-              <span className="font-medium text-sm">Logout</span>
+              <span className="font-medium text-sm text-white">Logout</span>
             </button>
           </div>
         </div>
@@ -165,13 +178,13 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Header */}
-        <header className="h-16 bg-[#050816]/50 backdrop-blur-md border-bottom border-white/5 flex items-center justify-between px-4 lg:px-8 shrink-0">
+        <header className="h-16 bg-[#050816]/50 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 lg:px-8 shrink-0">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setSidebarOpen(!isSidebarOpen)}
               className="p-2 hover:bg-white/5 rounded-lg lg:hidden"
             >
-              {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isSidebarOpen ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5 text-white" />}
             </button>
             <h2 className="font-semibold text-lg text-white/90">{activeSection}</h2>
           </div>
@@ -179,7 +192,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4">
             <Link 
               to="/" 
-              className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-colors text-sm font-medium"
+              className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-colors text-sm font-medium text-white"
             >
               <Globe className="w-4 h-4 text-blue-400" />
               View Site
@@ -193,27 +206,31 @@ export default function AdminDashboard() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
-          <Routes>
-            <Route path="/" element={<DashboardOverview />} />
-            <Route path="/hero" element={<HeroEditor />} />
-            <Route path="/about" element={<AboutEditor />} />
-            <Route path="/experience" element={<ExperienceEditor />} />
-            <Route path="/skills" element={<SkillsEditor />} />
-            <Route path="/projects" element={<ProjectsEditor />} />
-            <Route path="/certifications" element={<CertificationsEditor />} />
-            <Route path="/ai" element={<AIEditor />} />
-            <Route path="/inquiries" element={<Inquiries />} />
-            <Route path="/contact" element={<ContactEditor />} />
-            <Route path="/seo" element={<SEOEditor />} />
-            <Route path="/blogs" element={<BlogEditor />} />
-            <Route path="/testimonials" element={<TestimonialsEditor />} />
-            <Route path="/timeline" element={<TimelineEditor />} />
-            <Route path="/impact" element={<ImpactStoriesEditor />} />
-            <Route path="/metrics" element={<QAMetricsEditor />} />
-            <Route path="/aitools" element={<AIToolsEditor />} />
-            <Route path="/settings" element={<SettingsEditor />} />
-            <Route path="/now" element={<NowEditor />} />
-          </Routes>
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<DashboardOverview />} />
+                <Route path="/hero" element={<HeroEditor />} />
+                <Route path="/about" element={<AboutEditor />} />
+                <Route path="/experience" element={<ExperienceEditor />} />
+                <Route path="/skills" element={<SkillsEditor />} />
+                <Route path="/projects" element={<ProjectsEditor />} />
+                <Route path="/certifications" element={<CertificationsEditor />} />
+                <Route path="/ai" element={<AIEditor />} />
+                <Route path="/inquiries" element={<Inquiries />} />
+                <Route path="/contact" element={<ContactEditor />} />
+                <Route path="/seo" element={<SEOEditor />} />
+                <Route path="/blogs" element={<BlogEditor />} />
+                <Route path="/testimonials" element={<TestimonialsEditor />} />
+                <Route path="/timeline" element={<TimelineEditor />} />
+                <Route path="/impact" element={<ImpactStoriesEditor />} />
+                <Route path="/metrics" element={<QAMetricsEditor />} />
+                <Route path="/aitools" element={<AIToolsEditor />} />
+                <Route path="/settings" element={<SettingsEditor />} />
+                <Route path="/now" element={<NowEditor />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
         </div>
       </main>
     </div>

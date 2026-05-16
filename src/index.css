@@ -26,6 +26,66 @@ body {
   font-family: var(--font-sans);
 }
 
+.markdown-body {
+  @apply text-gray-300 leading-relaxed;
+}
+
+.markdown-body h1 {
+  @apply text-3xl font-bold text-white mt-8 mb-4 font-display;
+}
+
+.markdown-body h2 {
+  @apply text-2xl font-bold text-white mt-8 mb-4 font-display;
+}
+
+.markdown-body h3 {
+  @apply text-xl font-bold text-white mt-6 mb-3 font-display;
+}
+
+.markdown-body p {
+  @apply mb-6 text-gray-300 leading-loose;
+}
+
+.markdown-body ul, .markdown-body ol {
+  @apply mb-6 ml-6 space-y-2;
+}
+
+.markdown-body ul {
+  @apply list-disc;
+}
+
+.markdown-body ol {
+  @apply list-decimal;
+}
+
+.markdown-body li {
+  @apply pl-2;
+}
+
+.markdown-body code {
+  @apply bg-white/10 px-1.5 py-0.5 rounded font-mono text-sm text-blue-400;
+}
+
+.markdown-body pre {
+  @apply bg-black/40 border border-white/10 rounded-2xl p-6 mb-8 overflow-x-auto;
+}
+
+.markdown-body pre code {
+  @apply bg-transparent p-0 text-gray-300;
+}
+
+.markdown-body blockquote {
+  @apply border-l-4 border-blue-500 pl-6 italic my-8 text-gray-400;
+}
+
+.markdown-body img {
+  @apply rounded-3xl border border-white/5 my-8 shadow-2xl mx-auto;
+}
+
+.markdown-body a {
+  @apply text-blue-400 font-semibold hover:underline;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }

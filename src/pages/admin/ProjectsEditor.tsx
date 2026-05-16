@@ -1,11 +1,11 @@
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent, useMemo, memo } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { Save, Plus, Trash2, Loader2, Layers, ExternalLink, Github, Image as ImageIcon, X, FileUp } from 'lucide-react';
+import { Save, Plus, Trash2, Loader2, Layers, ExternalLink, Github, Image as ImageIcon, X, FileUp, Search } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 import { ImageCropper } from '../../components/admin/ImageCropper';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface Project {
   id: string;
@@ -18,6 +18,39 @@ interface Project {
   order: number;
 }
 
+const ProjectListItem = memo(({ item, isActive, onSelect, onDelete }: { 
+  item: Project; 
+  isActive: boolean; 
+  onSelect: (item: Project) => void;
+  onDelete: (id: string) => void;
+}) => (
+  <motion.div 
+    layout
+    initial={{ opacity: 0, x: -20 }}
+    animate={{ opacity: 1, x: 0 }}
+    onClick={() => onSelect(item)}
+    className={cn(
+      "p-4 bg-[#050816] border rounded-xl transition-all cursor-pointer group flex items-center gap-4",
+      isActive ? "border-blue-500 bg-blue-500/5 shadow-lg shadow-blue-500/10" : "border-white/5 hover:border-white/10"
+    )}
+  >
+    <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 overflow-hidden flex-shrink-0">
+       {item.imageUrl ? <img src={item.imageUrl} className="w-full h-full object-cover" loading="lazy" /> : <ImageIcon className="w-full h-full p-3 text-gray-700" />}
+    </div>
+    <div className="flex-1 min-w-0">
+      <h4 className="font-bold text-sm text-white group-hover:text-blue-400 transition-colors truncate">{item.title}</h4>
+      <p className="text-[10px] text-gray-500 uppercase tracking-widest">{item.techStack.length} Technologies</p>
+    </div>
+    <button 
+      onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
+      className="p-2 -m-1 text-gray-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+      title="Delete Project"
+    >
+      <Trash2 className="w-4 h-4" />
+    </button>
+  </motion.div>
+));
+
 export default function ProjectsEditor() {
   const [items, setItems] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +59,7 @@ export default function ProjectsEditor() {
   const [activeItem, setActiveItem] = useState<Project | null>(null);
   const [localItem, setLocalItem] = useState<Project | null>(null);
   const [newTech, setNewTech] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
   const [tempImage, setTempImage] = useState<string | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
@@ -39,9 +73,18 @@ export default function ProjectsEditor() {
     load();
   }, []);
 
+  const filteredItems = useMemo(() => {
+    if (!searchQuery) return items;
+    const query = searchQuery.toLowerCase();
+    return items.filter(item => 
+      item.title.toLowerCase().includes(query) || 
+      item.techStack.some(t => t.toLowerCase().includes(query))
+    );
+  }, [items, searchQuery]);
+
   const handleSelect = (item: Project) => {
     setActiveItem(item);
-    setLocalItem(item);
+    setLocalItem({...item}); // Deep copy for local editing
   };
 
   const handleCreate = async () => {
@@ -181,43 +224,45 @@ export default function ProjectsEditor() {
       </AnimatePresence>
       {/* List Column */}
       <div className="lg:col-span-1 space-y-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-gray-400 uppercase text-xs tracking-widest">Portfolio Projects</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-bold text-white uppercase text-[10px] tracking-widest opacity-50">Portfolio Projects</h3>
           <button 
             onClick={handleCreate}
             disabled={saving}
-            className="p-1 px-3 bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-md text-xs font-bold flex items-center gap-1 hover:bg-blue-600/20 transition-all"
+            className="p-1 px-3 bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-md text-[10px] font-bold flex items-center gap-1 hover:bg-blue-600/20 transition-all active:scale-95 disabled:opacity-50"
           >
-            <Plus className="w-3 h-3" /> New Project
+            <Plus className="w-3 h-3" /> New
           </button>
         </div>
+
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <input 
+            type="text"
+            placeholder="Search projects or tech..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-[#050816] border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:border-blue-500/50 outline-none transition-all placeholder:text-gray-600"
+          />
+        </div>
         
-        <div className="space-y-3">
-          {items.map(item => (
-            <div 
-              key={item.id}
-              onClick={() => handleSelect(item)}
-              className={cn(
-                "p-4 bg-[#050816] border rounded-xl transition-all cursor-pointer group flex items-center gap-4",
-                activeItem?.id === item.id ? "border-blue-500" : "border-white/5 hover:border-white/10"
-              )}
-            >
-              <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 overflow-hidden flex-shrink-0">
-                 {item.imageUrl ? <img src={item.imageUrl} className="w-full h-full object-cover" /> : <ImageIcon className="w-full h-full p-3 text-gray-700" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-sm text-white group-hover:text-blue-400 transition-colors truncate">{item.title}</h4>
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest">{item.techStack.length} Technologies</p>
-              </div>
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
-                className="p-2 -m-1 text-gray-500 hover:text-red-400 transition-colors"
-                title="Delete Project"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+        <div className="space-y-3 max-h-[60vh] overflow-y-auto px-1 -mx-1 custom-scrollbar">
+          <AnimatePresence mode="popLayout">
+            {filteredItems.map(item => (
+              <ProjectListItem 
+                key={item.id}
+                item={item}
+                isActive={activeItem?.id === item.id}
+                onSelect={handleSelect}
+                onDelete={handleDelete}
+              />
+            ))}
+          </AnimatePresence>
+          {filteredItems.length === 0 && (
+            <div className="text-center py-10 text-gray-600 text-xs italic">
+              No projects matching your search.
             </div>
-          ))}
+          )}
         </div>
       </div>
 
