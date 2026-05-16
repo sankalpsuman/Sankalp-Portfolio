@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Lenis from '@studio-freight/lenis';
+import SEO from '../components/SEO';
 
 // Components
 import Navbar from '../components/portfolio/Navbar';
@@ -22,14 +23,12 @@ import Footer from '../components/portfolio/Footer';
 import { getDocument, SEO_DOC } from '../services/firestoreService';
 
 export default function PortfolioHome() {
+  const [seoData, setSeoData] = useState<any>(null);
+
   useEffect(() => {
     async function loadSEO() {
       const seo = await getDocument<any>(SEO_DOC);
-      if (seo?.title) {
-        document.title = seo.title;
-      } else {
-        document.title = "Sankalp Suman | AI-Driven QA Lead";
-      }
+      setSeoData(seo);
     }
     loadSEO();
 
@@ -55,6 +54,11 @@ export default function PortfolioHome() {
 
   return (
     <div id="portfolio-home" className="bg-[#050816] selection:bg-blue-500/30 selection:text-white overflow-hidden">
+      <SEO 
+        title={seoData?.title} 
+        description={seoData?.description} 
+        image={seoData?.ogImage} 
+      />
       <Navbar />
       <main>
         <Hero />

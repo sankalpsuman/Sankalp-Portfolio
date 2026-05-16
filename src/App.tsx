@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './services/firebase';
 import { Toaster } from 'react-hot-toast';
+import { HelmetProvider } from 'react-helmet-async';
 
 // Pages
 import PortfolioHome from './pages/PortfolioHome';
@@ -35,7 +36,7 @@ export default function App() {
   const isAdmin = user?.email === 'sankalpsmn@gmail.com';
 
   return (
-    <>
+    <HelmetProvider>
       <Toaster position="bottom-right" reverseOrder={false} />
       <Router>
         <Routes>
@@ -50,6 +51,6 @@ export default function App() {
           />
         </Routes>
       </Router>
-    </>
+    </HelmetProvider>
   );
 }

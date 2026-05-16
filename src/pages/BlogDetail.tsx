@@ -6,6 +6,7 @@ import { getCollection } from '../services/firestoreService';
 import ReactMarkdown from 'react-markdown';
 import Navbar from '../components/portfolio/Navbar';
 import Footer from '../components/portfolio/Footer';
+import SEO from '../components/SEO';
 
 interface BlogPost {
   id: string;
@@ -51,6 +52,13 @@ export default function BlogDetail() {
 
   return (
     <div className="bg-[#050816] min-h-screen text-white">
+       <SEO 
+         title={blog.title}
+         description={blog.excerpt}
+         image={blog.imageUrl}
+         url={window.location.href}
+         type="article"
+       />
        <Navbar />
 
        <main className="pt-32 pb-20 px-4">

@@ -5,6 +5,7 @@ import { getCollection } from '../services/firestoreService';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/portfolio/Navbar';
 import Footer from '../components/portfolio/Footer';
+import SEO from '../components/SEO';
 
 interface BlogPost {
   id: string;
@@ -39,6 +40,11 @@ export default function BlogList() {
 
   return (
     <div className="bg-[#050816] min-h-screen text-white flex flex-col">
+       <SEO 
+         title="Engineering Blog | Sankalp Suman" 
+         description="Insights on Quality Engineering, AI-driven automation, and modern software testing strategies."
+         url="https://ais-pre-f6bmxsvqedm4r3t2gz5255-638313012041.asia-southeast1.run.app/blog"
+       />
        <Navbar />
        
        <header className="pt-32 pb-16 px-4 border-b border-white/5 relative overflow-hidden">
