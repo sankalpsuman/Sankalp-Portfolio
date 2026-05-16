@@ -49,6 +49,39 @@ export default function QADashboard() {
     }
   };
 
+  const handleDownloadReport = () => {
+    const reportContent = `
+QUALITY ASSURANCE AUDIT REPORT
+Generated on: ${new Date().toLocaleString()}
+-------------------------------------------
+
+METRICS SUMMARY:
+${metrics.map(m => `- ${m.label}: ${m.value} (${m.trend})`).join('\n')}
+
+EXECUTION HEALTH:
+- Smoke Test Stability: 92%
+- Environment Readiness: 100%
+
+DISTRIBUTION:
+- Passed: ${PIE_DATA[0].value}%
+- Failed: ${PIE_DATA[1].value}%
+- Skipped: ${PIE_DATA[2].value}%
+
+-------------------------------------------
+This is an automated audit report generated from the Live Quality Dashboard.
+    `.trim();
+
+    const blob = new Blob([reportContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `QA_Audit_Report_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <section id="qa-dashboard" className="py-24 bg-[#02040a] relative">
        <div className="max-w-7xl mx-auto px-4">
@@ -192,7 +225,12 @@ export default function QADashboard() {
                       <div className="text-xs font-mono text-cyan-400 uppercase tracking-widest font-bold">Release Readiness</div>
                       <h4 className="text-2xl font-bold">Automated QA Governance</h4>
                       <p className="text-xs text-gray-500 leading-relaxed">Integrated CICD pipelines with 95% automation coverage across core business logic flows.</p>
-                      <button className="text-xs font-bold text-white border-b border-white/20 pb-0.5 hover:border-cyan-400 transition-all">Download Audit Report</button>
+                      <button 
+                        onClick={handleDownloadReport}
+                        className="text-xs font-bold text-white border-b border-white/20 pb-0.5 hover:border-cyan-400 transition-all"
+                      >
+                        Download Audit Report
+                      </button>
                    </div>
                 </div>
              </div>
