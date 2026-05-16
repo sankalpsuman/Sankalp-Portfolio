@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Cpu, Menu, X, Globe, Sparkles } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Link, useLocation } from 'react-router-dom';
+import { getDocument } from '../../services/firestoreService';
 
 const NAV_LINKS = [
   { label: 'About', href: '/#about', type: 'anchor' },
@@ -18,7 +19,16 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const location = useLocation();
+
+  useEffect(() => {
+    async function loadSettings() {
+      const settings = await getDocument<any>('settings/global');
+      if (settings?.logoUrl) setLogoUrl(settings.logoUrl);
+    }
+    loadSettings();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -71,8 +81,12 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group relative">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-[0_0_20px_rgba(37,99,235,0.3)]">
-            <Cpu className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-[0_0_20px_rgba(37,99,235,0.3)] overflow-hidden">
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            ) : (
+              <Cpu className="w-6 h-6 text-white" />
+            )}
           </div>
           <div className="flex flex-col">
             <span className="text-xl font-black text-white tracking-tighter uppercase leading-none">Sankalp</span>

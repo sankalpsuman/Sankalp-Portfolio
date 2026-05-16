@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { SEO_DOC, getDocument, saveDocument } from '../../services/firestoreService';
-import { Save, Loader2, Search, X, Plus } from 'lucide-react';
+import { Save, Loader2, Search, X, Plus, FileUp, Link as LinkIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { cn } from '../../lib/utils';
+import { uploadToCloudinary } from '../../lib/cloudinary';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
 
 export default function SEOEditor() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [newKeyword, setNewKeyword] = useState('');
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; keyword: string | null }>({ isOpen: false, keyword: null });
   const { register, handleSubmit, setValue, watch } = useForm();
@@ -64,6 +66,21 @@ export default function SEOEditor() {
     setDeleteModal({ isOpen: false, keyword: null });
   };
 
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const url = await uploadToCloudinary(file);
+      setValue('ogImage', url);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-blue-500" /></div>;
 
   return (
@@ -100,6 +117,66 @@ export default function SEOEditor() {
            <div className="space-y-2">
               <label className="text-xs text-gray-500 uppercase tracking-widest font-mono">Meta Description</label>
               <textarea {...register('description')} rows={3} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none resize-none" placeholder="Brief site description for search engines..." />
+           </div>
+
+           <div className="space-y-3">
+              <label className="text-xs text-gray-500 uppercase tracking-widest font-mono">OG Preview Image</label>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl p-6 hover:border-blue-500/50 transition-colors cursor-pointer group bg-white/2">
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                    />
+                    {uploading ? (
+                      <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                    ) : (
+                      <FileUp className="w-8 h-8 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                    )}
+                    <div className="text-center mt-3">
+                      <span className="text-sm font-medium text-gray-400 group-hover:text-white block">
+                        {uploading ? 'Uploading...' : 'Upload Preview Image'}
+                      </span>
+                    </div>
+                  </label>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500">Or Paste URL Directly</span>
+                      {watch('ogImage') && (
+                        <button 
+                          type="button"
+                          onClick={() => setValue('ogImage', '')}
+                          className="text-[10px] text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
+                        >
+                          <X className="w-2.5 h-2.5" /> Clear Image
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <input 
+                        {...register('ogImage')} 
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-blue-500 outline-none pr-10" 
+                        placeholder="https://unsplash.com/..." 
+                      />
+                      <LinkIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    </div>
+                  </div>
+                </div>
+
+                {watch('ogImage') && (
+                  <div className="aspect-video rounded-xl overflow-hidden border border-white/10 bg-white/5 relative group">
+                    <img src={watch('ogImage')} className="w-full h-full object-cover" alt="Preview" referrerPolicy="no-referrer" />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="text-[10px] font-bold text-white uppercase tracking-widest">OG Preview</span>
+                    </div>
+                  </div>
+                )}
+              </div>
            </div>
 
            <div className="space-y-4">

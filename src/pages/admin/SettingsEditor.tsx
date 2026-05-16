@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import { getDocument, saveDocument } from '../../services/firestoreService';
-import { Settings2, Save, Loader2, Palette, Globe, Shield, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Settings2, Save, Loader2, Palette, Globe, Shield, ToggleLeft, ToggleRight, FileUp, Link as LinkIcon, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
+import { uploadToCloudinary } from '../../lib/cloudinary';
 
 interface GlobalSettings {
   themeColor: string;
@@ -16,6 +17,7 @@ interface GlobalSettings {
   resumeUrl: string;
   githubUrl: string;
   linkedinUrl: string;
+  logoUrl: string;
 }
 
 const SETTINGS_DOC = 'settings/global';
@@ -24,6 +26,7 @@ export default function SettingsEditor() {
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -42,7 +45,8 @@ export default function SettingsEditor() {
           calendlyUrl: '',
           resumeUrl: '',
           githubUrl: '',
-          linkedinUrl: ''
+          linkedinUrl: '',
+          logoUrl: ''
         });
       }
       setLoading(false);
@@ -58,7 +62,22 @@ export default function SettingsEditor() {
     setSaving(false);
   };
 
-  if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin" /></div>;
+  const handleLogoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !settings) return;
+
+    try {
+      setUploading(true);
+      const url = await uploadToCloudinary(file);
+      setSettings({ ...settings, logoUrl: url });
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-blue-500" /></div>;
   if (!settings) return null;
 
   return (
@@ -149,6 +168,68 @@ export default function SettingsEditor() {
                   />
                 </div>
               ))}
+              <div className="space-y-2 md:col-span-2 pt-4 border-t border-white/5">
+                <label className="text-xs text-gray-400">Site Logo (OG Preview & Navbar Fallback)</label>
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                  <div className="flex-1 w-full space-y-4">
+                    <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl p-6 hover:border-blue-500/50 transition-colors cursor-pointer group bg-white/2">
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        disabled={uploading}
+                      />
+                      {uploading ? (
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                      ) : (
+                        <FileUp className="w-8 h-8 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                      )}
+                      <div className="text-center mt-3">
+                        <span className="text-sm font-medium text-gray-400 group-hover:text-white block">
+                          {uploading ? 'Uploading Image...' : 'Upload Logo Image'}
+                        </span>
+                        <span className="text-[10px] text-gray-500 mt-1 block">PNG, JPG or SVG (Max 5MB)</span>
+                      </div>
+                    </label>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500">Or Paste URL Directly</span>
+                        {settings.logoUrl && (
+                          <button 
+                            type="button"
+                            onClick={() => setSettings({...settings, logoUrl: ''})}
+                            className="text-[10px] text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
+                          >
+                            <X className="w-2.5 h-2.5" /> Clear Logo
+                          </button>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <input 
+                          type="url"
+                          value={settings.logoUrl || ''}
+                          onChange={e => setSettings({...settings, logoUrl: e.target.value})}
+                          placeholder="https://your-logo-url.png"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 pr-10"
+                        />
+                        <LinkIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-gray-500">This image will appear in social previews when a specific page image is missing.</p>
+                  </div>
+                  
+                  {settings.logoUrl && (
+                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden border border-white/10 flex-shrink-0 bg-white/5 p-4 flex items-center justify-center relative group">
+                      <img src={settings.logoUrl} className="w-full h-full object-contain" alt="Logo Preview" referrerPolicy="no-referrer" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-white uppercase tracking-widest">Logo Preview</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
            </div>
         </div>
 

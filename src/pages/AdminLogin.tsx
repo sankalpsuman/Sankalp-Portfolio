@@ -7,6 +7,7 @@ import { LogIn, ShieldAlert } from 'lucide-react';
 
 export default function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,7 +21,12 @@ export default function AdminLogin() {
   }, [navigate]);
 
   const handleLogin = async () => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    setError(null);
     const provider = new GoogleAuthProvider();
+    
     try {
       const result = await signInWithPopup(auth, provider);
       if (result.user.email === 'sankalpsmn@gmail.com') {
@@ -31,16 +37,27 @@ export default function AdminLogin() {
         await auth.signOut();
       }
     } catch (err: any) {
-      console.error(err);
+      console.error('Login Error:', err);
+      
+      // Specifically handle the cancelled request error which can happen if multiple popups are attempted
+      if (err.code === 'auth/cancelled-popup-request') {
+        // Just ignore this as another request is already in flight or handles it
+        return;
+      }
+      
       if (err.code === 'auth/unauthorized-domain') {
         setError('Login failed: This domain is not authorized in Firebase. Please add this URL to your Firebase Console under Authentication > Settings > Authorized domains.');
       } else if (err.code === 'auth/popup-blocked') {
         setError('Login failed: The popup was blocked by your browser. Please allow popups for this site.');
       } else if (err.code === 'auth/popup-closed-by-user') {
         setError('Login failed: The sign-in window was closed before completion.');
+      } else if (err.code === 'auth/internal-error' && err.message.includes('Pending promise')) {
+        setError('A browser error occurred. Please refresh the page and try again.');
       } else {
         setError('Login failed. Please verify your internet connection and try again.');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -74,10 +91,15 @@ export default function AdminLogin() {
 
         <button
           onClick={handleLogin}
-          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20"
+          disabled={isLoading}
+          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-70 text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20"
         >
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5 bg-white rounded-full p-0.5" />
-          Sign in with Google
+          {isLoading ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5 bg-white rounded-full p-0.5" />
+          )}
+          {isLoading ? 'Signing in...' : 'Sign in with Google'}
         </button>
 
         <p className="mt-8 text-center text-xs text-gray-500">

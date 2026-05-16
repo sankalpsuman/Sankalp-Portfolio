@@ -89,16 +89,35 @@ async function startServer() {
     }
   });
 
-  const getMetadata = async (urlPath: string) => {
+  const getMetadata = async (urlPath: string, host: string, protocol: string) => {
     let title = "Sankalp Suman | QA Engineering & AI Portfolio";
     let description = "Advanced AI-Powered QA Engineering Portfolio. Features interactive AI playgrounds, live quality dashboards, impact stories, and professional career insights.";
     let image = "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200&h=630";
-    let url = `https://ais-pre-f6bmxsvqedm4r3t2gz5255-638313012041.asia-southeast1.run.app${urlPath}`;
+    let url = `${protocol}://${host}${urlPath}`;
 
-    if (db && urlPath.startsWith('/blog/')) {
-      const slug = urlPath.replace('/blog/', '');
-      try {
-        const blogsRef = collection(db, 'blogs');
+    try {
+      // 1. Get Global Settings for potential logo fallback
+      const settingsSnap = await getDoc(doc(db!, 'settings/global'));
+      if (settingsSnap.exists()) {
+        const settingsData = settingsSnap.data();
+        if (settingsData.logoUrl) {
+          image = settingsData.logoUrl;
+        }
+      }
+
+      // 2. Get Global SEO for defaults
+      const seoSnap = await getDoc(doc(db!, 'seo/config'));
+      if (seoSnap.exists()) {
+        const seoData = seoSnap.data();
+        title = seoData.title || title;
+        description = seoData.description || description;
+        image = seoData.ogImage || image;
+      }
+
+      // 3. Page specific overrides
+      if (urlPath.startsWith('/blog/')) {
+        const slug = urlPath.replace('/blog/', '');
+        const blogsRef = collection(db!, 'blogs');
         const q = query(blogsRef, where('slug', '==', slug));
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
@@ -107,21 +126,9 @@ async function startServer() {
           description = blogData.excerpt || blogData.seoDescription || description;
           image = blogData.imageUrl || image;
         }
-      } catch (e) {
-        console.error('Error fetching blog metadata:', e);
       }
-    } else if (db && urlPath === '/') {
-      try {
-        const seoSnap = await getDoc(doc(db, 'seo/config'));
-        if (seoSnap.exists()) {
-          const seoData = seoSnap.data();
-          title = seoData.title || title;
-          description = seoData.description || description;
-          image = seoData.ogImage || image;
-        }
-      } catch (e) {
-        console.warn('Global SEO fetch failed:', e);
-      }
+    } catch (e) {
+      console.warn('Metadata fetch partially failed:', e);
     }
 
     return { title, description, image, url };
@@ -129,17 +136,17 @@ async function startServer() {
 
   const injectMetadata = (html: string, metadata: { title: string, description: string, image: string, url: string }) => {
     return html
-      .replace(/<title>.*?<\/title>/g, `<title>${metadata.title}</title>`)
-      .replace(/<meta name="title" content=".*?" \/>/g, `<meta name="title" content="${metadata.title}" />`)
-      .replace(/<meta name="description" content=".*?" \/>/g, `<meta name="description" content="${metadata.description}" />`)
-      .replace(/<meta property="og:title" content=".*?" \/>/g, `<meta property="og:title" content="${metadata.title}" />`)
-      .replace(/<meta property="og:description" content=".*?" \/>/g, `<meta property="og:description" content="${metadata.description}" />`)
-      .replace(/<meta property="og:image" content=".*?" \/>/g, `<meta property="og:image" content="${metadata.image}" />`)
-      .replace(/<meta property="og:url" content=".*?" \/>/g, `<meta property="og:url" content="${metadata.url}" />`)
-      .replace(/<meta property="twitter:title" content=".*?" \/>/g, `<meta property="twitter:title" content="${metadata.title}" />`)
-      .replace(/<meta property="twitter:description" content=".*?" \/>/g, `<meta property="twitter:description" content="${metadata.description}" />`)
-      .replace(/<meta property="twitter:image" content=".*?" \/>/g, `<meta property="twitter:image" content="${metadata.image}" />`)
-      .replace(/<meta property="twitter:url" content=".*?" \/>/g, `<meta property="twitter:url" content="${metadata.url}" />`);
+      .replace(/<title>.*?<\/title>/, `<title>${metadata.title}</title>`)
+      .replace(/<meta name="title" content=".*?" \/>/, `<meta name="title" content="${metadata.title}" />`)
+      .replace(/<meta name="description" content=".*?" \/>/, `<meta name="description" content="${metadata.description}" />`)
+      .replace(/<meta property="og:title" content=".*?" \/>/, `<meta property="og:title" content="${metadata.title}" />`)
+      .replace(/<meta property="og:description" content=".*?" \/>/, `<meta property="og:description" content="${metadata.description}" />`)
+      .replace(/<meta property="og:image" content=".*?" \/>/, `<meta property="og:image" content="${metadata.image}" />`)
+      .replace(/<meta property="og:url" content=".*?" \/>/, `<meta property="og:url" content="${metadata.url}" />`)
+      .replace(/<meta property="twitter:title" content=".*?" \/>/, `<meta property="twitter:title" content="${metadata.title}" />`)
+      .replace(/<meta property="twitter:description" content=".*?" \/>/, `<meta property="twitter:description" content="${metadata.description}" />`)
+      .replace(/<meta property="twitter:image" content=".*?" \/>/, `<meta property="twitter:image" content="${metadata.image}" />`)
+      .replace(/<meta property="twitter:url" content=".*?" \/>/, `<meta property="twitter:url" content="${metadata.url}" />`);
   };
 
   // Vite middleware for development
@@ -154,7 +161,8 @@ async function startServer() {
     app.get('*', async (req, res, next) => {
       try {
         const url = req.originalUrl;
-        const metadata = await getMetadata(url);
+        const protocol = req.protocol === 'http' && req.headers['x-forwarded-proto'] ? req.headers['x-forwarded-proto'] as string : req.protocol;
+        const metadata = await getMetadata(url, req.get('host') || 'localhost', protocol);
         let template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
         template = await vite.transformIndexHtml(url, template);
         const html = injectMetadata(template, metadata);
@@ -184,7 +192,8 @@ async function startServer() {
         return res.status(404).send('Asset not found');
       }
 
-      const metadata = await getMetadata(req.path);
+      const protocol = req.protocol === 'http' && req.headers['x-forwarded-proto'] ? req.headers['x-forwarded-proto'] as string : req.protocol;
+      const metadata = await getMetadata(req.path, req.get('host') || 'localhost', protocol);
       const html = injectMetadata(indexHtml, metadata);
       res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
     });
