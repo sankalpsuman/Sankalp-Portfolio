@@ -52,6 +52,7 @@ export default function App() {
               path="/admin/*" 
               element={isAdmin ? <AdminDashboard /> : <Navigate to="/admin/login" />} 
             />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </Router>

@@ -195,20 +195,26 @@ async function startServer() {
 
     const indexHtml = fs.readFileSync(path.join(distPath, 'index.html'), 'utf-8');
 
-    // For all other GET requests, serve index.html
-    app.get('*', async (req, res) => {
-      if (req.path.startsWith('/api/')) {
-        return res.status(404).json({ error: 'API route not found' });
-      }
-      if (path.extname(req.path)) {
-        return res.status(404).send('Asset not found');
-      }
+      // For all other GET requests, serve index.html with meta injection
+      app.get('*', async (req, res) => {
+        const urlPath = req.path;
 
-      const protocol = req.protocol === 'http' && req.headers['x-forwarded-proto'] ? req.headers['x-forwarded-proto'] as string : req.protocol;
-      const metadata = await getMetadata(req.path, req.get('host') || 'localhost', protocol);
-      const html = injectMetadata(indexHtml, metadata);
-      res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
-    });
+        // Skip API routes
+        if (urlPath.startsWith('/api/')) {
+          return res.status(404).json({ error: 'API route not found' });
+        }
+
+        // If it looks like an asset (has an extension) and we're here, it means express.static missed it
+        const knownAssets = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf'];
+        if (path.extname(urlPath) && knownAssets.includes(path.extname(urlPath).toLowerCase())) {
+          return res.status(404).send('Asset not found');
+        }
+
+        const protocol = req.protocol === 'http' && req.headers['x-forwarded-proto'] ? req.headers['x-forwarded-proto'] as string : req.protocol;
+        const metadata = await getMetadata(urlPath, req.get('host') || 'localhost', protocol);
+        const html = injectMetadata(indexHtml, metadata);
+        res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
+      });
   }
 
   app.listen(PORT, '0.0.0.0', () => {
