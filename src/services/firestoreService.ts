@@ -20,13 +20,28 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
   }
 }
 
-export async function getDocument<T>(path: string): Promise<T | null> {
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
+
+export async function getDocument<T>(path: string, bypassCache = false): Promise<T | null> {
   if (!path) return null;
+  
+  if (!bypassCache) {
+    const cached = cache.get(path);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return cached.data as T;
+    }
+  }
+
   try {
     return await withRetry(async () => {
       const docRef = doc(db, path);
       const docSnap = await getDoc(docRef);
-      return docSnap.exists() ? (docSnap.data() as T) : null;
+      const data = docSnap.exists() ? (docSnap.data() as T) : null;
+      if (data) {
+        cache.set(path, { data, timestamp: Date.now() });
+      }
+      return data;
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
@@ -45,14 +60,28 @@ export async function saveDocument<T extends object>(path: string, data: T): Pro
   }
 }
 
-export async function getCollection<T>(path: string, sortField?: string): Promise<T[]> {
+export async function getCollection<T>(path: string, sortField?: string, limitCount?: number, bypassCache = false): Promise<T[]> {
   if (!path) return [];
+  
+  const cacheKey = `${path}_${sortField || 'none'}_${limitCount || 'all'}`;
+  if (!bypassCache) {
+    const cached = cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return cached.data as T[];
+    }
+  }
+
   try {
     return await withRetry(async () => {
       const colRef = collection(db, path);
-      const q = sortField ? query(colRef, orderBy(sortField)) : colRef;
+      let q = sortField ? query(colRef, orderBy(sortField)) : colRef;
+      if (limitCount) {
+        q = query(q, limit(limitCount));
+      }
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
+      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
+      cache.set(cacheKey, { data, timestamp: Date.now() });
+      return data;
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);

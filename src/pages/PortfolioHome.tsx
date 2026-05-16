@@ -1,37 +1,35 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import Lenis from '@studio-freight/lenis';
 import SEO from '../components/SEO';
 
-// Components
+// Core Components (Eager)
 import Navbar from '../components/portfolio/Navbar';
 import Hero from '../components/portfolio/Hero';
 import About from '../components/portfolio/About';
-import Experience from '../components/portfolio/Experience';
-import CareerTimeline from '../components/portfolio/CareerTimeline';
-import Skills from '../components/portfolio/Skills';
-import AISection from '../components/portfolio/AISection';
-import AIPlayground from '../components/portfolio/AIPlayground';
-import QADashboard from '../components/portfolio/QADashboard';
-import Projects from '../components/portfolio/Projects';
-import ImpactStories from '../components/portfolio/ImpactStories';
-import Certifications from '../components/portfolio/Certifications';
-import Testimonials from '../components/portfolio/Testimonials';
-import BlogPreview from '../components/portfolio/BlogPreview';
-import Contact from '../components/portfolio/Contact';
-import Footer from '../components/portfolio/Footer';
 
-import { getDocument, SEO_DOC } from '../services/firestoreService';
+// Below-the-fold Components (Lazy)
+const Experience = lazy(() => import('../components/portfolio/Experience'));
+const CareerTimeline = lazy(() => import('../components/portfolio/CareerTimeline'));
+const Skills = lazy(() => import('../components/portfolio/Skills'));
+const AISection = lazy(() => import('../components/portfolio/AISection'));
+const AIPlayground = lazy(() => import('../components/portfolio/AIPlayground'));
+const QADashboard = lazy(() => import('../components/portfolio/QADashboard'));
+const Projects = lazy(() => import('../components/portfolio/Projects'));
+const ImpactStories = lazy(() => import('../components/portfolio/ImpactStories'));
+const Certifications = lazy(() => import('../components/portfolio/Certifications'));
+const Testimonials = lazy(() => import('../components/portfolio/Testimonials'));
+const BlogPreview = lazy(() => import('../components/portfolio/BlogPreview'));
+const Contact = lazy(() => import('../components/portfolio/Contact'));
+const Footer = lazy(() => import('../components/portfolio/Footer'));
+
+const SectionLoader = () => (
+  <div className="h-40 flex items-center justify-center opacity-20">
+    <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 export default function PortfolioHome() {
-  const [seoData, setSeoData] = useState<any>(null);
-
   useEffect(() => {
-    async function loadSEO() {
-      const seo = await getDocument<any>(SEO_DOC);
-      setSeoData(seo);
-    }
-    loadSEO();
-
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -54,29 +52,29 @@ export default function PortfolioHome() {
 
   return (
     <div id="portfolio-home" className="bg-[#050816] selection:bg-blue-500/30 selection:text-white overflow-hidden">
-      <SEO 
-        title={seoData?.title} 
-        description={seoData?.description} 
-        image={seoData?.ogImage} 
-      />
+      <SEO />
       <Navbar />
       <main>
         <Hero />
         <About />
-        <Experience />
-        <CareerTimeline />
-        <Skills />
-        <AISection />
-        <AIPlayground />
-        <QADashboard />
-        <Projects />
-        <ImpactStories />
-        <Certifications />
-        <Testimonials />
-        <BlogPreview />
-        <Contact />
+        <Suspense fallback={<SectionLoader />}>
+          <Experience />
+          <CareerTimeline />
+          <Skills />
+          <AISection />
+          <AIPlayground />
+          <QADashboard />
+          <Projects />
+          <ImpactStories />
+          <Certifications />
+          <Testimonials />
+          <BlogPreview />
+          <Contact />
+        </Suspense>
       </main>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }

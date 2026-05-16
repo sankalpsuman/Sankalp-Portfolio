@@ -6,11 +6,15 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from 'dotenv';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import NodeCache from 'node-cache';
 
 dotenv.config();
 
 const PORT = 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+// Server-side cache for SEO and settings
+const metadataCache = new NodeCache({ stdTTL: 300 }); // 5 minutes cache
 
 // Initialize Firebase for server-side metadata fetching
 let firebaseConfig: any;
@@ -90,23 +94,29 @@ async function startServer() {
   });
 
   const getMetadata = async (urlPath: string, host: string, protocol: string) => {
+    const cacheKey = `metadata_${urlPath}`;
+    const cached = metadataCache.get(cacheKey);
+    if (cached) return cached as any;
+
     let title = "Sankalp Suman | QA Engineering & AI Portfolio";
     let description = "Advanced AI-Powered QA Engineering Portfolio. Features interactive AI playgrounds, live quality dashboards, impact stories, and professional career insights.";
     let image = "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200&h=630";
     let url = `${protocol}://${host}${urlPath}`;
 
     try {
-      // 1. Get Global Settings for potential logo fallback
-      const settingsSnap = await getDoc(doc(db!, 'settings/global'));
+      if (!db) throw new Error('DB not initialized');
+
+      // Efficiently load settings and seo in parallel
+      const [settingsSnap, seoSnap] = await Promise.all([
+        getDoc(doc(db, 'settings/global')),
+        getDoc(doc(db, 'seo/config'))
+      ]);
+
       if (settingsSnap.exists()) {
         const settingsData = settingsSnap.data();
-        if (settingsData.logoUrl) {
-          image = settingsData.logoUrl;
-        }
+        if (settingsData.logoUrl) image = settingsData.logoUrl;
       }
 
-      // 2. Get Global SEO for defaults
-      const seoSnap = await getDoc(doc(db!, 'seo/config'));
       if (seoSnap.exists()) {
         const seoData = seoSnap.data();
         title = seoData.title || title;
@@ -117,7 +127,7 @@ async function startServer() {
       // 3. Page specific overrides
       if (urlPath.startsWith('/blog/')) {
         const slug = urlPath.replace('/blog/', '');
-        const blogsRef = collection(db!, 'blogs');
+        const blogsRef = collection(db, 'blogs');
         const q = query(blogsRef, where('slug', '==', slug));
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
@@ -131,7 +141,9 @@ async function startServer() {
       console.warn('Metadata fetch partially failed:', e);
     }
 
-    return { title, description, image, url };
+    const metadata = { title, description, image, url };
+    metadataCache.set(cacheKey, metadata);
+    return metadata;
   };
 
   const injectMetadata = (html: string, metadata: { title: string, description: string, image: string, url: string }) => {

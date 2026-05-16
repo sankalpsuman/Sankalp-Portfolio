@@ -4,6 +4,7 @@ import { Cpu, Menu, X, Globe, Sparkles } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Link, useLocation } from 'react-router-dom';
 import { getDocument } from '../../services/firestoreService';
+import { throttle } from '../../lib/performance';
 
 const NAV_LINKS = [
   { label: 'About', href: '/#about', type: 'anchor' },
@@ -31,9 +32,9 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = throttle(() => {
       setScrolled(window.scrollY > 20);
-    };
+    }, 100);
 
     const observerOptions = {
       root: null,
@@ -50,15 +51,19 @@ export default function Navbar() {
     };
 
     const observer = new IntersectionObserver(observerCallback, observerOptions);
-    const sections = document.querySelectorAll('section[id]');
-    sections.forEach((section) => observer.observe(section));
+    
+    // Only observe if we are on the home page
+    if (location.pathname === '/') {
+      const sections = document.querySelectorAll('section[id]');
+      sections.forEach((section) => observer.observe(section));
+    }
 
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
       observer.disconnect();
     };
-  }, [location]);
+  }, [location.pathname]);
 
   const scrollToAnchor = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (location.pathname === '/' && href.startsWith('/#')) {

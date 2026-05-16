@@ -22,9 +22,12 @@ export default function BlogPreview() {
 
   useEffect(() => {
     async function load() {
-      const data = await getCollection<BlogPost>('blogs', 'publishedAt');
-      // Filter for published only and take latest 3
-      setBlogs(data.filter(b => b.status === 'published').reverse().slice(0, 3));
+      // Fetch only published and limit to 3 latest
+      // We'll need to fetch more and filter if we don't have a composite index, 
+      // but 'status' == 'published' + ordered by 'publishedAt' is common.
+      const data = await getCollection<BlogPost>('blogs', 'publishedAt', 6); // Fetch a few more to filter
+      const published = data.filter(b => b.status === 'published').reverse().slice(0, 3);
+      setBlogs(published);
     }
     load();
   }, []);
