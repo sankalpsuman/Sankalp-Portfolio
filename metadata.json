@@ -2,5 +2,5 @@
   "name": "Sankalp Suman Portfolio",
   "description": "Advanced AI-Powered QA Engineering Portfolio for Sankalp Suman. Features interactive AI playgrounds, live quality dashboards, impact stories, and professional career insights.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { FileText, Plus, Trash2, Edit2, Loader2, Save, X, Eye, ExternalLink, Search, Clock, Hash, Tag } from 'lucide-react';
+import { FileText, Plus, Trash2, Edit2, Loader2, Save, X, Eye, ExternalLink, Search, Clock, Hash, Tag, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
@@ -115,11 +115,51 @@ export default function BlogEditor() {
     setLocalItem(newItem);
   };
 
+  const handleAIGenerateImage = async () => {
+    if (!localItem) return;
+    setSaving(true);
+    try {
+      const response = await fetch('/api/ai/suggest-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: localItem.title, excerpt: localItem.excerpt }),
+      });
+      const data = await response.json();
+      if (data.keywords) {
+        const url = `https://images.unsplash.com/featured/1200x800?${encodeURIComponent(data.keywords)}`;
+        setLocalItem({ ...localItem, imageUrl: url });
+      }
+    } catch (error) {
+      console.error('Error suggesting image:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!localItem) return;
     setSaving(true);
     try {
-      const { id, ...data } = localItem;
+      let finalItem = { ...localItem };
+      
+      // Auto-generate image if missing
+      if (!finalItem.imageUrl) {
+        try {
+          const response = await fetch('/api/ai/suggest-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: finalItem.title, excerpt: finalItem.excerpt }),
+          });
+          const data = await response.json();
+          if (data.keywords) {
+            finalItem.imageUrl = `https://images.unsplash.com/featured/1200x800?${encodeURIComponent(data.keywords)}`;
+          }
+        } catch (e) {
+          console.warn('Silent failure on auto-image generation:', e);
+        }
+      }
+
+      const { id, ...data } = finalItem;
       if (id) {
         await updateCollectionDocument('blogs', id, data);
       } else {
@@ -312,13 +352,27 @@ export default function BlogEditor() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-1">Main Image URL</label>
+                  <div className="flex items-center justify-between pl-1">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Main Image URL</label>
+                    <button 
+                      onClick={handleAIGenerateImage}
+                      disabled={saving}
+                      className="text-[10px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors disabled:opacity-50"
+                    >
+                      <Sparkles className="w-3 h-3" /> Magic Image
+                    </button>
+                  </div>
                   <input 
                     value={localItem.imageUrl}
                     onChange={e => setLocalItem({...localItem, imageUrl: e.target.value})}
                     className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all placeholder:text-gray-700 font-mono text-white"
                     placeholder="https://..."
                   />
+                  {localItem.imageUrl && (
+                    <div className="mt-2 w-full h-32 rounded-xl border border-white/5 overflow-hidden">
+                      <img src={localItem.imageUrl} className="w-full h-full object-cover" alt="Preview" referrerPolicy="no-referrer" />
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
