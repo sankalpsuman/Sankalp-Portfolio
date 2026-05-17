@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Section from './Section';
 import { motion } from 'motion/react';
 import { getDocument, ABOUT_DOC } from '../../services/firestoreService';
-import { Target, Users, Zap, Award } from 'lucide-react';
+import { Zap, Award } from 'lucide-react';
 
 interface Metric {
   label: string;

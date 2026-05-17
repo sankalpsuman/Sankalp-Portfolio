@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
-import { Activity, Shield, CheckCircle2, AlertTriangle, Timer, Zap, BarChart3, TrendingUp, Filter } from 'lucide-react';
+import { Activity, Shield, AlertTriangle, Zap, BarChart3, TrendingUp, Filter } from 'lucide-react';
 import { getCollection } from '../../services/firestoreService';
 import { cn } from '../../lib/utils';
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cpu, Menu, X, Globe, Sparkles } from 'lucide-react';
+import { Cpu, Menu, X, Sparkles } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Link, useLocation } from 'react-router-dom';
 import { getDocument } from '../../services/firestoreService';

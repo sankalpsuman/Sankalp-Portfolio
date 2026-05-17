@@ -1,4 +1,3 @@
-import { motion } from 'motion/react';
 import { Cpu, Github, Linkedin, Mail, Twitter, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';

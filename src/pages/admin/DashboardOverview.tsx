@@ -10,7 +10,6 @@ import {
   Activity,
   ArrowUpRight,
   ShieldCheck,
-  Code,
   Zap,
   Briefcase,
   Mail

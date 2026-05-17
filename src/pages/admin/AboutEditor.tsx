@@ -7,7 +7,7 @@ import { Save, Loader2, Plus, Trash2, Image as ImageIcon, Video } from 'lucide-r
 import { cn } from '../../lib/utils';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 import { ImageCropper } from '../../components/admin/ImageCropper';
 

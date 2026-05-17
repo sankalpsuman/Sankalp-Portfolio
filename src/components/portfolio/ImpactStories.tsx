@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Target, ArrowRight, Zap, TrendingUp, ShieldCheck, Box, Layers, Globe } from 'lucide-react';
+import { Target, ArrowRight, Box, Globe } from 'lucide-react';
 import { getCollection, getDocument } from '../../services/firestoreService';
 import { cn } from '../../lib/utils';
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ChevronLeft, Calendar, Tag, Share2, ArrowLeft, Loader2, Bookmark, Clock } from 'lucide-react';
 import { getCollection } from '../services/firestoreService';
 import ReactMarkdown from 'react-markdown';

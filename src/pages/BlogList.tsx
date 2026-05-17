@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Search, Calendar, Tag, ArrowRight, Loader2, FileText, ChevronLeft } from 'lucide-react';
 import { getCollection } from '../services/firestoreService';
 import { Link } from 'react-router-dom';
@@ -43,7 +43,6 @@ export default function BlogList() {
        <SEO 
          title="Engineering Blog | Sankalp Suman" 
          description="Insights on Quality Engineering, AI-driven automation, and modern software testing strategies."
-         url="https://ais-pre-f6bmxsvqedm4r3t2gz5255-638313012041.asia-southeast1.run.app/blog"
        />
        <Navbar />
        

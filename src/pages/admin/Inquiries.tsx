@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCollection, deleteCollectionDocument } from '../../services/firestoreService';
-import { Mail, User, Clock, Trash2, Loader2, MessageSquare, ExternalLink, ChevronRight, Search, Filter } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Mail, User, Clock, Trash2, Loader2, MessageSquare, ExternalLink, ChevronRight, Search } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface Inquiry {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Clock, Loader2, ArrowLeft, Coffee, MapPin, Sparkles, Code2, Rocket } from 'lucide-react';
 import { getDocument } from '../services/firestoreService';
 import ReactMarkdown from 'react-markdown';

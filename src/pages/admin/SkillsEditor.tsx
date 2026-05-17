@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { Save, Plus, Trash2, Loader2, Code, GripVertical } from 'lucide-react';
+import { Save, Plus, Trash2, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
-import { motion, Reorder } from 'motion/react';
 
 interface Skill {
   id: string;

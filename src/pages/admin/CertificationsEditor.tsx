@@ -1,11 +1,11 @@
 import { useState, useEffect, ChangeEvent } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { Save, Plus, Trash2, Loader2, Award, ExternalLink, Image as ImageIcon, FileUp, X } from 'lucide-react';
+import { Save, Plus, Trash2, Loader2, Award, Image as ImageIcon, FileUp, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 import { ImageCropper } from '../../components/admin/ImageCropper';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface Certification {
   id: string;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { FileText, Plus, Trash2, Edit2, Loader2, Save, X, Eye, ExternalLink, Search, Clock, Hash, Tag, Sparkles } from 'lucide-react';
+import { FileText, Plus, Trash2, Loader2, Save, X, Search, Clock, Hash, Tag, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';

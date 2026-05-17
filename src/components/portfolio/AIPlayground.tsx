@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Bot, Send, Sparkles, Copy, Check, Loader2, RefreshCw, Terminal, Command, Info, Activity, Cpu, CheckCircle2 } from 'lucide-react';
 import { generateAIResponse } from '../../services/geminiService';
 import { getCollection } from '../../services/firestoreService';

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AI_DOC, getDocument, saveDocument } from '../../services/firestoreService';
-import { Save, Loader2, Sparkles, Plus, Trash2, Zap } from 'lucide-react';
+import { Save, Loader2, Plus, Trash2 } from 'lucide-react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';

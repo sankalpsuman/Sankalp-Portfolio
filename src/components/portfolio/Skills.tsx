@@ -7,7 +7,6 @@ import {
   Database, 
   Cpu, 
   Workflow, 
-  Terminal, 
   Users 
 } from 'lucide-react';
 

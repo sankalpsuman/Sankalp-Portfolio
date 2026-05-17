@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Section from './Section';
 import { motion } from 'motion/react';
 import { getCollection } from '../../services/firestoreService';
-import { Briefcase, Calendar, ChevronRight } from 'lucide-react';
+import { Briefcase, Calendar } from 'lucide-react';
 
 interface Experience {
   id: string;

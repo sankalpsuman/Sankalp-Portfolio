@@ -14,7 +14,6 @@ const heroSchema = z.object({
   titles: z.array(z.string()).min(1, 'At least one title is required'),
   resumeUrl: z.string().optional().or(z.literal('')),
   linkedinUrl: z.string().url().optional().or(z.literal('')),
-  githubUrl: z.string().url().optional().or(z.literal('')),
 });
 
 type HeroData = z.infer<typeof heroSchema>;
