@@ -32,13 +32,15 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
-// Lazy load admin sections
-const DashboardOverview = lazy(() => import('./admin/DashboardOverview'));
-const HeroEditor = lazy(() => import('./admin/HeroEditor'));
-const AboutEditor = lazy(() => import('./admin/AboutEditor'));
-const ExperienceEditor = lazy(() => import('./admin/ExperienceEditor'));
-const SkillsEditor = lazy(() => import('./admin/SkillsEditor'));
-const ProjectsEditor = lazy(() => import('./admin/ProjectsEditor'));
+// Critical core modules (Loaded immediately for instant switching)
+import DashboardOverview from './admin/DashboardOverview';
+import HeroEditor from './admin/HeroEditor';
+import AboutEditor from './admin/AboutEditor';
+import ExperienceEditor from './admin/ExperienceEditor';
+import SkillsEditor from './admin/SkillsEditor';
+import ProjectsEditor from './admin/ProjectsEditor';
+
+// Secondary/Data-heavy modules (Remain lazy)
 const CertificationsEditor = lazy(() => import('./admin/CertificationsEditor'));
 const AIEditor = lazy(() => import('./admin/AIEditor'));
 const ContactEditor = lazy(() => import('./admin/ContactEditor'));
@@ -81,6 +83,8 @@ export default function AdminDashboard() {
   const location = useLocation();
 
   useEffect(() => {
+    // If we are at exactly /admin or /admin/, always redirect to overview internally (URL stays same/similar)
+    // but the state will prioritize the overview content.
     localStorage.setItem('lastAdminPath', location.pathname);
   }, [location.pathname]);
 
@@ -91,18 +95,44 @@ export default function AdminDashboard() {
   };
 
   const activeSection = useMemo(() => {
-    return NAV_ITEMS.find(item => {
+    // Exact match first
+    const exactMatch = NAV_ITEMS.find(item => {
       const fullPath = `/admin${item.path ? `/${item.path}` : ''}`;
       return location.pathname === fullPath;
-    })?.label || 'Dashboard';
+    });
+    
+    if (exactMatch) return exactMatch.label;
+
+    // Fallback to Overview if we are at root admin path
+    if (location.pathname === '/admin' || location.pathname === '/admin/') {
+      return 'Overview';
+    }
+
+    return 'Dashboard';
   }, [location.pathname]);
 
   const LoadingFallback = () => (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-8 h-8 text-brand animate-spin" />
-        <p className="text-xs text-gray-500 font-mono animate-pulse">Initializing Interface...</p>
-      </div>
+    <div className="flex-1 flex items-center justify-center bg-[#02040a]">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex flex-col items-center gap-6"
+      >
+        <div className="relative">
+          <div className="absolute inset-0 bg-brand/20 blur-xl rounded-full animate-pulse"></div>
+          <Loader2 className="w-10 h-10 text-brand animate-spin relative z-10" />
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <p className="text-sm font-bold text-white tracking-widest uppercase">Propelling Interface</p>
+          <div className="w-32 h-1 bg-white/5 rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full bg-brand"
+              animate={{ x: [-128, 128] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+            />
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 
@@ -208,27 +238,38 @@ export default function AdminDashboard() {
         <div className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
           <ErrorBoundary>
             <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<DashboardOverview />} />
-                <Route path="/hero" element={<HeroEditor />} />
-                <Route path="/about" element={<AboutEditor />} />
-                <Route path="/experience" element={<ExperienceEditor />} />
-                <Route path="/skills" element={<SkillsEditor />} />
-                <Route path="/projects" element={<ProjectsEditor />} />
-                <Route path="/certifications" element={<CertificationsEditor />} />
-                <Route path="/ai" element={<AIEditor />} />
-                <Route path="/inquiries" element={<Inquiries />} />
-                <Route path="/contact" element={<ContactEditor />} />
-                <Route path="/seo" element={<SEOEditor />} />
-                <Route path="/blogs" element={<BlogEditor />} />
-                <Route path="/testimonials" element={<TestimonialsEditor />} />
-                <Route path="/timeline" element={<TimelineEditor />} />
-                <Route path="/impact" element={<ImpactStoriesEditor />} />
-                <Route path="/metrics" element={<QAMetricsEditor />} />
-                <Route path="/aitools" element={<AIToolsEditor />} />
-                <Route path="/settings" element={<SettingsEditor />} />
-                <Route path="/now" element={<NowEditor />} />
-              </Routes>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="h-full"
+                >
+                  <Routes location={location}>
+                    <Route path="/" element={<DashboardOverview />} />
+                    <Route path="/hero" element={<HeroEditor />} />
+                    <Route path="/about" element={<AboutEditor />} />
+                    <Route path="/experience" element={<ExperienceEditor />} />
+                    <Route path="/skills" element={<SkillsEditor />} />
+                    <Route path="/projects" element={<ProjectsEditor />} />
+                    <Route path="/certifications" element={<CertificationsEditor />} />
+                    <Route path="/ai" element={<AIEditor />} />
+                    <Route path="/inquiries" element={<Inquiries />} />
+                    <Route path="/contact" element={<ContactEditor />} />
+                    <Route path="/seo" element={<SEOEditor />} />
+                    <Route path="/blogs" element={<BlogEditor />} />
+                    <Route path="/testimonials" element={<TestimonialsEditor />} />
+                    <Route path="/timeline" element={<TimelineEditor />} />
+                    <Route path="/impact" element={<ImpactStoriesEditor />} />
+                    <Route path="/metrics" element={<QAMetricsEditor />} />
+                    <Route path="/aitools" element={<AIToolsEditor />} />
+                    <Route path="/settings" element={<SettingsEditor />} />
+                    <Route path="/now" element={<NowEditor />} />
+                  </Routes>
+                </motion.div>
+              </AnimatePresence>
             </Suspense>
           </ErrorBoundary>
         </div>
