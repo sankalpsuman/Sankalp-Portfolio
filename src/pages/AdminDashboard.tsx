@@ -95,20 +95,14 @@ export default function AdminDashboard() {
   };
 
   const activeSection = useMemo(() => {
-    // Exact match first
-    const exactMatch = NAV_ITEMS.find(item => {
-      const fullPath = `/admin${item.path ? `/${item.path}` : ''}`;
-      return location.pathname === fullPath;
+    const currentPath = location.pathname.replace(/\/$/, '') || '/admin';
+    
+    const matchedItem = NAV_ITEMS.find(item => {
+      const itemFullPath = `/admin${item.path ? `/${item.path}` : ''}`;
+      return currentPath === itemFullPath;
     });
     
-    if (exactMatch) return exactMatch.label;
-
-    // Fallback to Overview if we are at root admin path
-    if (location.pathname === '/admin' || location.pathname === '/admin/') {
-      return 'Overview';
-    }
-
-    return 'Dashboard';
+    return matchedItem ? matchedItem.label : 'Overview';
   }, [location.pathname]);
 
   const LoadingFallback = () => (
@@ -169,11 +163,12 @@ export default function AdminDashboard() {
           <nav className="flex-1 space-y-1 overflow-y-auto custom-scrollbar pr-2 -mr-2">
             {NAV_ITEMS.map((item) => {
               const fullPath = `/admin${item.path ? `/${item.path}` : ''}`;
-              const isActive = location.pathname === fullPath;
+              const currentPath = location.pathname.replace(/\/$/, '') || '/admin';
+              const isActive = currentPath === fullPath;
 
               return (
                 <Link
-                  key={item.path}
+                  key={item.label}
                   to={fullPath}
                   onClick={() => {
                     if (window.innerWidth < 1024) setSidebarOpen(false);
@@ -247,7 +242,7 @@ export default function AdminDashboard() {
                   transition={{ duration: 0.15, ease: "easeOut" }}
                   className="h-full"
                 >
-                  <Routes location={location}>
+                  <Routes>
                     <Route path="/" element={<DashboardOverview />} />
                     <Route path="/hero" element={<HeroEditor />} />
                     <Route path="/about" element={<AboutEditor />} />
