@@ -100,7 +100,7 @@ export default function AdminDashboard() {
   const LoadingFallback = () => (
     <div className="flex-1 flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-brand animate-spin" />
         <p className="text-xs text-gray-500 font-mono animate-pulse">Initializing Interface...</p>
       </div>
     </div>
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
       >
         <div className="flex flex-col h-full p-4">
           <div className="flex items-center gap-3 px-2 mb-8">
-            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+            <div className="w-8 h-8 bg-brand rounded flex items-center justify-center">
               <Settings className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-lg tracking-tight text-white">Admin CMS</span>
@@ -151,12 +151,12 @@ export default function AdminDashboard() {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg transition-all group border whitespace-nowrap",
                     isActive
-                      ? "bg-blue-600/10 text-blue-400 border-blue-500/20 shadow-[0_0_15px_rgba(37,99,235,0.1)]"
+                      ? "bg-brand/10 text-brand border-brand/20 shadow-[0_0_15px_rgba(var(--brand-primary-rgb),0.1)]"
                       : "text-gray-400 border-transparent hover:bg-white/5 hover:text-white"
                   )}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <item.icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive && "text-blue-500")} />
+                  <item.icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive && "text-brand")} />
                   <span className="font-medium text-xs">{item.label}</span>
                 </Link>
               );
@@ -194,12 +194,12 @@ export default function AdminDashboard() {
               to="/" 
               className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-colors text-sm font-medium text-white"
             >
-              <Globe className="w-4 h-4 text-blue-400" />
+              <Globe className="w-4 h-4 text-brand" />
               View Site
             </Link>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-400 hidden sm:inline">Sankalp Suman</span>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 border border-white/20"></div>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand to-purple-600 border border-white/20"></div>
             </div>
           </div>
         </header>

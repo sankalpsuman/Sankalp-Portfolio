@@ -97,7 +97,7 @@ export default function SettingsEditor() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-20 space-y-4">
-        <Loader2 className="animate-spin text-blue-500 w-8 h-8" />
+        <Loader2 className="animate-spin text-brand w-8 h-8" />
         <p className="text-gray-400 font-mono text-xs uppercase tracking-widest">Loading Configuration...</p>
       </div>
     );
@@ -116,7 +116,7 @@ export default function SettingsEditor() {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-            <div className="p-2 bg-blue-600 rounded-lg">
+            <div className="p-2 bg-brand rounded-lg">
               <Settings2 className="w-5 h-5 text-white" />
             </div>
             Global Settings
@@ -141,7 +141,7 @@ export default function SettingsEditor() {
             form="settings-form"
             type="submit" 
             disabled={saving}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 text-sm shadow-lg shadow-blue-600/20"
+            className="bg-brand hover:brightness-110 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 text-sm shadow-lg shadow-brand/20"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {saving ? 'Publishing...' : 'Save Changes'}
@@ -166,10 +166,10 @@ export default function SettingsEditor() {
                 {activeTab === tab.id && (
                   <motion.div 
                     layoutId="activeTab"
-                    className="absolute inset-0 bg-blue-600/20 border border-blue-500/20 rounded-xl"
+                    className="absolute inset-0 bg-brand/20 border border-brand/20 rounded-xl"
                   />
                 )}
-                <Icon className={cn("w-4 h-4 transition-colors", activeTab === tab.id ? "text-blue-400" : "group-hover:text-gray-300")} />
+                <Icon className={cn("w-4 h-4 transition-colors", activeTab === tab.id ? "text-brand" : "group-hover:text-gray-300")} />
                 <span className="text-sm font-bold relative z-10">{tab.label}</span>
               </button>
             );
@@ -208,7 +208,7 @@ export default function SettingsEditor() {
                             type="color" 
                             value={settings.themeColor}
                             onChange={e => setSettings({...settings, themeColor: e.target.value})}
-                            className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 p-1.5 cursor-pointer hover:border-blue-500/50 transition-colors"
+                            className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 p-1.5 cursor-pointer hover:border-brand/50 transition-colors"
                           />
                           <div className="flex-1 space-y-2">
                             <div className="relative group">
@@ -216,7 +216,7 @@ export default function SettingsEditor() {
                                 type="text" 
                                 value={settings.themeColor}
                                 onChange={e => setSettings({...settings, themeColor: e.target.value})}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono focus:border-blue-500 outline-none transition-all"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono focus:border-brand outline-none transition-all"
                               />
                             </div>
                             <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase tracking-tight">
@@ -257,7 +257,7 @@ export default function SettingsEditor() {
                         <div className="flex-1 w-full space-y-6">
                           <div className="space-y-4">
                             <label className="text-[10px] text-gray-400 font-black uppercase tracking-widest ml-1">SITE LOGO / AVATAR</label>
-                            <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-3xl p-10 hover:border-blue-500/50 transition-all cursor-pointer group bg-white/2 hover:bg-white/5 relative overflow-hidden shadow-2xl">
+                            <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-3xl p-10 hover:border-brand/50 transition-all cursor-pointer group bg-white/2 hover:bg-white/5 relative overflow-hidden shadow-2xl">
                               <input 
                                 type="file" 
                                 className="hidden" 
@@ -267,12 +267,12 @@ export default function SettingsEditor() {
                               />
                               {uploading ? (
                                 <div className="flex flex-col items-center gap-3">
-                                  <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
-                                  <span className="text-[10px] font-black text-blue-400 tracking-[0.25em] animate-pulse">UPLOADING...</span>
+                                  <Loader2 className="w-10 h-10 animate-spin text-brand" />
+                                  <span className="text-[10px] font-black text-brand tracking-[0.25em] animate-pulse">UPLOADING...</span>
                                 </div>
                               ) : (
                                 <>
-                                  <FileUp className="w-10 h-10 text-gray-500 group-hover:text-blue-500 transition-all transform group-hover:-translate-y-1" />
+                                  <FileUp className="w-10 h-10 text-gray-500 group-hover:text-brand transition-all transform group-hover:-translate-y-1" />
                                   <span className="text-sm font-black text-gray-400 group-hover:text-white mt-4">Drop Logo Here</span>
                                   <span className="text-[10px] text-gray-500 mt-2 font-bold uppercase tracking-wider">PNG, SVG or JPG (Best: 1:1)</span>
                                 </>
@@ -299,9 +299,9 @@ export default function SettingsEditor() {
                                 value={settings.logoUrl || ''}
                                 onChange={e => setSettings({...settings, logoUrl: e.target.value})}
                                 placeholder="https://cdn.image.com/logo.png"
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-blue-500 pr-10 transition-all"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-brand pr-10 transition-all"
                               />
-                              <LinkIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-blue-500 transition-colors" />
+                              <LinkIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-brand transition-colors" />
                             </div>
                           </div>
                         </div>
@@ -352,14 +352,14 @@ export default function SettingsEditor() {
                           className={cn(
                             "flex items-start gap-4 p-6 rounded-2xl border transition-all text-left group active:scale-[0.98] outline-none",
                             settings[item.key as keyof GlobalSettings] 
-                              ? "bg-blue-600/10 border-blue-500/30 ring-1 ring-blue-500/10" 
+                              ? "bg-brand/10 border-brand/30 ring-1 ring-brand/10" 
                               : "bg-white/2 border-white/5 hover:bg-white/5"
                           )}
                         >
                           <div className={cn(
                             "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-lg",
                             settings[item.key as keyof GlobalSettings] 
-                              ? "bg-blue-600 text-white shadow-blue-600/20" 
+                              ? "bg-brand text-white shadow-brand/20" 
                               : "bg-white/5 text-gray-600 group-hover:bg-white/10 group-hover:text-gray-400"
                           )}>
                             {settings[item.key as keyof GlobalSettings] ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
@@ -373,7 +373,7 @@ export default function SettingsEditor() {
                             </div>
                             <p className={cn(
                               "text-[10px] leading-relaxed font-bold uppercase tracking-wider transition-colors",
-                              settings[item.key as keyof GlobalSettings] ? "text-blue-200/60" : "text-gray-600"
+                              settings[item.key as keyof GlobalSettings] ? "text-brand/60" : "text-gray-600"
                             )}>
                               {item.desc}
                             </p>
@@ -423,17 +423,17 @@ export default function SettingsEditor() {
                         { key: 'linkedinUrl', label: 'LinkedIn Profile', placeholder: 'https://linkedin.com/in/user', icon: ExternalLink },
                       ].map(item => (
                         <div key={item.key} className="space-y-3 group">
-                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-focus-within:text-blue-400 transition-colors ml-1">{item.label}</label>
+                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-focus-within:text-brand transition-colors ml-1">{item.label}</label>
                           <div className="relative">
                             <input 
                               type="url"
                               value={settings[item.key as keyof GlobalSettings] as string}
                               onChange={e => setSettings({...settings, [item.key]: e.target.value})}
                               placeholder={item.placeholder}
-                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-sm outline-none focus:border-blue-500 focus:bg-blue-600/5 transition-all text-white placeholder:text-white/10 font-medium"
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-sm outline-none focus:border-brand focus:bg-brand/5 transition-all text-white placeholder:text-white/10 font-medium"
                             />
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-white/5 rounded-lg border border-white/10 pointer-events-none group-focus-within:border-blue-500/50 transition-colors">
-                              <item.icon className="w-3.5 h-3.5 text-gray-500 group-focus-within:text-blue-400 transition-colors" />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 bg-white/5 rounded-lg border border-white/10 pointer-events-none group-focus-within:border-brand/50 transition-colors">
+                              <item.icon className="w-3.5 h-3.5 text-gray-500 group-focus-within:text-brand transition-colors" />
                             </div>
                           </div>
                         </div>
@@ -452,7 +452,7 @@ export default function SettingsEditor() {
                       <div className="relative z-10">
                         <h4 className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Configuration Hint</h4>
                         <p className="text-[11px] text-gray-400 leading-relaxed font-medium">
-                          These identifiers power the dynamic CTA blocks sitewide. Verify that your URLs use the <code className="text-blue-400 font-mono">https://</code> protocol to ensure cross-origin safety and analytics tracking.
+                          These identifiers power the dynamic CTA blocks sitewide. Verify that your URLs use the <code className="text-brand font-mono">https://</code> protocol to ensure cross-origin safety and analytics tracking.
                         </p>
                       </div>
                     </div>

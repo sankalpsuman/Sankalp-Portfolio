@@ -4,7 +4,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './services/firebase';
 import { Toaster } from 'react-hot-toast';
 import { HelmetProvider } from 'react-helmet-async';
-import { getDocument } from './services/firestoreService';
+import { subscribeDocument } from './services/firestoreService';
 
 // Lazy load Pages
 const PortfolioHome = lazy(() => import('./pages/PortfolioHome'));
@@ -25,21 +25,39 @@ export default function App() {
   const [authInitialized, setAuthInitialized] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setAuthInitialized(true);
     });
 
-    // Fetch and apply theme color
-    async function applyTheme() {
-      const settings = await getDocument<{ themeColor?: string }>('settings/global');
+    // Subscribe and apply theme color in real-time
+    const unsubscribeTheme = subscribeDocument<{ themeColor?: string }>('settings/global', (settings) => {
       if (settings?.themeColor) {
-        document.documentElement.style.setProperty('--brand-primary', settings.themeColor);
+        const color = settings.themeColor;
+        document.documentElement.style.setProperty('--brand-primary', color);
+        
+        // Helper to convert hex to RGB for Tailwind opacity support
+        const hexToRgb = (hex: string) => {
+          const r = parseInt(hex.slice(1, 3), 16);
+          const g = parseInt(hex.slice(3, 5), 16);
+          const b = parseInt(hex.slice(5, 7), 16);
+          return `${r}, ${g}, ${b}`;
+        };
+        
+        try {
+          if (color.startsWith('#') && color.length === 7) {
+            document.documentElement.style.setProperty('--brand-primary-rgb', hexToRgb(color));
+          }
+        } catch (e) {
+          console.error("Failed to parse theme color for RGB:", e);
+        }
       }
-    }
-    applyTheme();
+    });
 
-    return unsubscribe;
+    return () => {
+      unsubscribeAuth();
+      unsubscribeTheme();
+    };
   }, []);
 
   const isAdmin = user?.email === 'sankalpsmn@gmail.com';

@@ -23,7 +23,7 @@ html {
 }
 
 body {
-  @apply bg-[#050816] text-white antialiased selection:bg-blue-500/30 selection:text-white;
+  @apply bg-[#050816] text-white antialiased selection:bg-brand/30 selection:text-white;
   font-family: var(--font-sans);
 }
 
@@ -64,7 +64,7 @@ body {
 }
 
 .markdown-body code {
-  @apply bg-white/10 px-1.5 py-0.5 rounded font-mono text-sm text-blue-400;
+  @apply bg-white/10 px-1.5 py-0.5 rounded font-mono text-sm text-brand;
 }
 
 .markdown-body pre {
@@ -76,7 +76,7 @@ body {
 }
 
 .markdown-body blockquote {
-  @apply border-l-4 border-blue-500 pl-6 italic my-8 text-gray-400;
+  @apply border-l-4 border-brand pl-6 italic my-8 text-gray-400;
 }
 
 .markdown-body img {
@@ -84,7 +84,7 @@ body {
 }
 
 .markdown-body a {
-  @apply text-blue-400 font-semibold hover:underline;
+  @apply text-brand font-semibold hover:underline;
 }
 
 .custom-scrollbar::-webkit-scrollbar {

@@ -71,10 +71,10 @@ export default function Skills() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: catIdx * 0.1 }}
-              className="p-8 bg-white/2 border border-white/5 rounded-3xl hover:border-blue-500/20 transition-all group hover:bg-white/5"
+              className="p-8 bg-white/2 border border-white/5 rounded-3xl hover:border-brand/20 transition-all group hover:bg-white/5"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className={`p-3 rounded-2xl bg-white/5 text-blue-400 border border-white/10 group-hover:scale-110 transition-transform`}>
+                <div className={`p-3 rounded-2xl bg-white/5 text-brand border border-white/10 group-hover:scale-110 transition-transform`}>
                   <cat.icon className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl font-bold text-white">{cat.name}</h3>
@@ -85,7 +85,7 @@ export default function Skills() {
                   <div key={skill.id} className="space-y-2">
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-300 font-medium">{skill.name}</span>
-                      <span className="text-blue-400 font-mono">{skill.level}%</span>
+                      <span className="text-brand font-mono">{skill.level}%</span>
                     </div>
                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden p-[1px]">
                       <motion.div
@@ -93,7 +93,7 @@ export default function Skills() {
                         whileInView={{ width: `${skill.level}%` }}
                         viewport={{ once: true }}
                         transition={{ duration: 1, delay: 0.5 }}
-                        className="h-full bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"
+                        className="h-full bg-gradient-to-r from-brand to-purple-600 rounded-full"
                       />
                     </div>
                   </div>

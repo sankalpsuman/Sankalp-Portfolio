@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, deleteDoc, query, orderBy, limit } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, deleteDoc, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
 import { handleFirestoreError, OperationType } from './firestoreErrors';
 
@@ -22,6 +22,16 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
 
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
+
+export function subscribeDocument<T>(path: string, onUpdate: (data: T | null) => void) {
+  const docRef = doc(db, path);
+  return onSnapshot(docRef, (docSnap) => {
+    const data = docSnap.exists() ? (docSnap.data() as T) : null;
+    onUpdate(data);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.GET, path);
+  });
+}
 
 export async function getDocument<T>(path: string, bypassCache = false): Promise<T | null> {
   if (!path) return null;

@@ -7,7 +7,7 @@ interface LazySectionProps {
 
 const SectionLoader = () => (
   <div className="h-40 flex items-center justify-center opacity-20">
-    <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
   </div>
 );
 

@@ -95,7 +95,7 @@ export default function Projects() {
               whileHover={{ y: -10 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               className={cn(
-                "relative rounded-3xl overflow-hidden border border-white/10 mb-6 group-hover:border-blue-500/30 transition-all shadow-2xl bg-[#02040a] cursor-pointer",
+                "relative rounded-3xl overflow-hidden border border-white/10 mb-6 group-hover:border-brand/30 transition-all shadow-2xl bg-[#02040a] cursor-pointer",
                 idx === 0 ? "w-full lg:w-3/5 aspect-video" : "aspect-video w-full"
               )}
             >
@@ -103,7 +103,7 @@ export default function Projects() {
               <div 
                 className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                 style={{
-                  background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(37, 99, 235, 0.15), transparent 40%)`
+                  background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(var(--brand-primary-rgb), 0.15), transparent 40%)`
                 }}
               />
 
@@ -126,7 +126,7 @@ export default function Projects() {
                     initial={{ opacity: 0, x: -10 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 + (i * 0.05) }}
-                    className="px-3 py-1 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-[9px] uppercase tracking-widest font-bold text-blue-400 group-hover:border-blue-500/30 transition-colors"
+                    className="px-3 py-1 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-[9px] uppercase tracking-widest font-bold text-brand group-hover:border-brand/30 transition-colors"
                   >
                     {tech}
                   </motion.span>
@@ -135,7 +135,7 @@ export default function Projects() {
 
               {/* View Project Button (Revealed on Hover) */}
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-90 group-hover:scale-100 z-20">
-                <div className="px-6 py-3 bg-blue-600 text-white rounded-full font-bold text-sm tracking-widest uppercase flex items-center gap-2 shadow-xl shadow-blue-600/20">
+                <div className="px-6 py-3 bg-brand text-white rounded-full font-bold text-sm tracking-widest uppercase flex items-center gap-2 shadow-xl shadow-brand/20">
                   <PlayCircle className="w-5 h-5" />
                   View Case Study
                 </div>
@@ -149,7 +149,7 @@ export default function Projects() {
             )}>
               <div className="flex items-center justify-between">
                 <h3 className={cn(
-                  "font-bold text-white group-hover:text-blue-400 transition-colors",
+                  "font-bold text-white group-hover:text-brand transition-colors",
                   idx === 0 ? "text-3xl md:text-5xl tracking-tight" : "text-2xl"
                 )}>
                   {project.title}
@@ -166,7 +166,7 @@ export default function Projects() {
                 {project.description}
               </p>
               <div className="flex items-center gap-2 pt-2">
-                 <Layers className="w-4 h-4 text-blue-400" />
+                 <Layers className="w-4 h-4 text-brand" />
                  <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
                    {idx === 0 ? 'Flagship Application' : 'Enterprise QA Solution'}
                  </span>
@@ -183,10 +183,10 @@ export default function Projects() {
         viewport={{ once: true }}
         className="mt-20 text-center"
       >
-         <button className="px-8 py-4 bg-white/2 hover:bg-white/5 border border-white/10 hover:border-blue-500/30 rounded-2xl transition-all text-sm font-bold tracking-widest uppercase inline-flex items-center gap-3">
+         <button className="px-8 py-4 bg-white/2 hover:bg-white/5 border border-white/10 hover:border-brand/30 rounded-2xl transition-all text-sm font-bold tracking-widest uppercase inline-flex items-center gap-3">
             Exploration Archive
-            <div className="w-8 h-8 rounded-full bg-blue-600/10 flex items-center justify-center">
-               <ChevronRight className="w-4 h-4 text-blue-400" />
+            <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center">
+               <ChevronRight className="w-4 h-4 text-brand" />
             </div>
          </button>
       </motion.div>
