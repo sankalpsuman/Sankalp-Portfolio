@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './services/firebase';
@@ -19,6 +19,26 @@ const LoadingFallback = () => (
     <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
   </div>
 );
+
+// Admin Guard component to handle deep linking and unauthorized access
+const AdminGuard = ({ children, user, authInitialized }: { children: React.ReactNode, user: User | null, authInitialized: boolean }) => {
+  const location = useLocation();
+  const isAdmin = user?.email === 'sankalpsmn@gmail.com';
+
+  if (!authInitialized) {
+    return <LoadingFallback />;
+  }
+
+  if (!isAdmin) {
+    // Save the intended destination to localStorage to survive refreshes during login
+    if (location.pathname.startsWith('/admin') && location.pathname !== '/admin/login') {
+      localStorage.setItem('lastAdminPath', location.pathname + location.search);
+    }
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -60,8 +80,6 @@ export default function App() {
     };
   }, []);
 
-  const isAdmin = user?.email === 'sankalpsmn@gmail.com';
-
   return (
     <HelmetProvider>
       <Toaster position="bottom-right" />
@@ -76,8 +94,9 @@ export default function App() {
             <Route 
               path="/admin/*" 
               element={
-                !authInitialized ? <LoadingFallback /> : 
-                isAdmin ? <AdminDashboard /> : <Navigate to="/admin/login" />
+                <AdminGuard user={user} authInitialized={authInitialized}>
+                  <AdminDashboard />
+                </AdminGuard>
               } 
             />
             <Route path="*" element={<Navigate to="/" replace />} />

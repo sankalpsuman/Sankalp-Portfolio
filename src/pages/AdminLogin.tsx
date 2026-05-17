@@ -1,6 +1,6 @@
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../services/firebase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { LogIn, ShieldAlert } from 'lucide-react';
@@ -9,16 +9,18 @@ export default function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user?.email === 'sankalpsmn@gmail.com') {
-        const lastPath = localStorage.getItem('lastAdminPath') || '/admin';
-        navigate(lastPath);
+        const from = location.state?.from?.pathname + (location.state?.from?.search || '') || localStorage.getItem('lastAdminPath') || '/admin';
+        localStorage.removeItem('lastAdminPath'); // Clear it so it doesn't persist across fresh browser sessions if not needed
+        navigate(from, { replace: true });
       }
     });
     return unsubscribe;
-  }, [navigate]);
+  }, [navigate, location]);
 
   const handleLogin = async () => {
     if (isLoading) return;
@@ -30,8 +32,9 @@ export default function AdminLogin() {
     try {
       const result = await signInWithPopup(auth, provider);
       if (result.user.email === 'sankalpsmn@gmail.com') {
-        const lastPath = localStorage.getItem('lastAdminPath') || '/admin';
-        navigate(lastPath);
+        const from = location.state?.from?.pathname + (location.state?.from?.search || '') || localStorage.getItem('lastAdminPath') || '/admin';
+        localStorage.removeItem('lastAdminPath');
+        navigate(from, { replace: true });
       } else {
         setError('Access Denied. Only authorized administrators are allowed.');
         await auth.signOut();
