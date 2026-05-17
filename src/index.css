@@ -15,6 +15,7 @@
 
 :root {
   --brand-primary: #3b82f6;
+  --brand-primary-rgb: 59, 130, 246;
   color-scheme: dark;
 }
 

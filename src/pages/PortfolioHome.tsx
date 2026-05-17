@@ -7,6 +7,7 @@ import { LazySection } from '../components/portfolio/LazySection';
 import Navbar from '../components/portfolio/Navbar';
 import Hero from '../components/portfolio/Hero';
 import About from '../components/portfolio/About';
+import { WelcomePopup } from '../components/portfolio/WelcomePopup';
 
 // Below-the-fold Components (Lazy)
 const Experience = lazy(() => import('../components/portfolio/Experience'));
@@ -47,6 +48,7 @@ export default function PortfolioHome() {
 
   return (
     <div id="portfolio-home" className="bg-[#050816] selection:bg-brand/30 selection:text-white overflow-hidden">
+      <WelcomePopup />
       <SEO />
       <Navbar />
       <main>
