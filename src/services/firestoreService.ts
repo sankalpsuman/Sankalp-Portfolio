@@ -54,6 +54,8 @@ export async function saveDocument<T extends object>(path: string, data: T): Pro
     await withRetry(async () => {
       const docRef = doc(db, path);
       await setDoc(docRef, data, { merge: true });
+      // Invalidate cache on write
+      cache.delete(path);
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
@@ -94,6 +96,12 @@ export async function addCollectionDocument<T extends object>(path: string, data
     return await withRetry(async () => {
       const colRef = collection(db, path);
       const docRef = await addDoc(colRef, data);
+      
+      // Invalidate collection caches
+      for (const key of cache.keys()) {
+        if (key.startsWith(path)) cache.delete(key);
+      }
+      
       return docRef.id;
     });
   } catch (error) {
@@ -107,6 +115,11 @@ export async function updateCollectionDocument<T extends object>(path: string, i
     await withRetry(async () => {
       const docRef = doc(db, path, id);
       await updateDoc(docRef, data as any);
+      
+      // Invalidate collection caches
+      for (const key of cache.keys()) {
+        if (key.startsWith(path)) cache.delete(key);
+      }
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `${path}/${id}`);
@@ -119,6 +132,11 @@ export async function deleteCollectionDocument(path: string, id: string): Promis
     await withRetry(async () => {
       const docRef = doc(db, path, id);
       await deleteDoc(docRef);
+      
+      // Invalidate collection caches
+      for (const key of cache.keys()) {
+        if (key.startsWith(path)) cache.delete(key);
+      }
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, `${path}/${id}`);

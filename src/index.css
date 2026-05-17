@@ -4,6 +4,7 @@
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --font-display: "Space Grotesk", sans-serif;
+  --color-brand: var(--brand-primary, #3b82f6);
 }
 
 @keyframes shimmer {
@@ -13,6 +14,7 @@
 }
 
 :root {
+  --brand-primary: #3b82f6;
   color-scheme: dark;
 }
 

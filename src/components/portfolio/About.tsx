@@ -52,7 +52,7 @@ export default function About() {
             className="space-y-6"
           >
             <h3 className="text-2xl lg:text-3xl font-bold text-white leading-tight">
-              Bridging the gap between <span className="text-blue-400">Software Engineering</span> and <span className="text-purple-400">AI Intelligence.</span>
+              Bridging the gap between <span className="text-brand">Software Engineering</span> and <span className="text-purple-400">AI Intelligence.</span>
             </h3>
             <p className="text-gray-400 text-lg leading-relaxed whitespace-pre-line">
               {data?.content || `Results-driven QA Lead with 7+ years of experience in end-to-end testing across web, mobile, desktop, and API systems.
@@ -72,9 +72,9 @@ Specialized in AI-powered testing, prompt engineering, API validation, ETL testi
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="p-6 bg-white/2 border border-white/5 rounded-2xl hover:border-blue-500/20 transition-all group"
+                className="p-6 bg-white/2 border border-white/5 rounded-2xl hover:border-brand/20 transition-all group"
               >
-                <div className="text-3xl font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">
+                <div className="text-3xl font-bold text-white mb-1 group-hover:text-brand transition-colors">
                   {metric.value}
                 </div>
                 <div className="text-sm text-gray-500 uppercase tracking-widest font-mono">
@@ -117,7 +117,7 @@ Specialized in AI-powered testing, prompt engineering, API validation, ETL testi
           <motion.div 
             animate={{ y: [0, -10, 0] }}
             transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-            className="absolute -top-6 -right-6 p-4 bg-blue-600 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/20"
+            className="absolute -top-6 -right-6 p-4 bg-brand rounded-2xl shadow-2xl flex items-center gap-3 border border-white/20"
           >
              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                 <Zap className="w-6 h-6 text-white" />

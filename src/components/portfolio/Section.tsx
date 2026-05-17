@@ -33,7 +33,7 @@ export default function Section({
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5 }}
-                className="text-blue-400 font-mono text-sm tracking-widest uppercase block will-change-[transform,opacity]"
+                className="text-brand font-mono text-sm tracking-widest uppercase block will-change-[transform,opacity]"
               >
                 {subtitle}
               </motion.span>

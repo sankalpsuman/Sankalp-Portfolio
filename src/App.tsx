@@ -4,6 +4,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './services/firebase';
 import { Toaster } from 'react-hot-toast';
 import { HelmetProvider } from 'react-helmet-async';
+import { getDocument } from './services/firestoreService';
 
 // Lazy load Pages
 const PortfolioHome = lazy(() => import('./pages/PortfolioHome'));
@@ -15,7 +16,7 @@ const NowPage = lazy(() => import('./pages/NowPage'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[#050816] flex items-center justify-center">
-    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
   </div>
 );
 
@@ -28,6 +29,16 @@ export default function App() {
       setUser(user);
       setAuthInitialized(true);
     });
+
+    // Fetch and apply theme color
+    async function applyTheme() {
+      const settings = await getDocument<{ themeColor?: string }>('settings/global');
+      if (settings?.themeColor) {
+        document.documentElement.style.setProperty('--brand-primary', settings.themeColor);
+      }
+    }
+    applyTheme();
+
     return unsubscribe;
   }, []);
 

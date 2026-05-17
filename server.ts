@@ -14,7 +14,7 @@ const PORT = 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 // Server-side cache for SEO and settings
-const metadataCache = new NodeCache({ stdTTL: 300 }); // 5 minutes cache
+const metadataCache = new NodeCache({ stdTTL: 60 }); // 1 minute cache
 
 // Initialize Firebase for server-side metadata fetching
 let firebaseConfig: any;

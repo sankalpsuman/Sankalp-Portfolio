@@ -58,7 +58,7 @@ export default function Hero() {
       <section id="hero" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-[#050816]">
         {/* Background Effects */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-blue-600/5 blur-[80px] rounded-full animate-pulse will-change-[opacity]"></div>
+          <div className="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-brand/5 blur-[80px] rounded-full animate-pulse will-change-[opacity]"></div>
           <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-purple-600/5 blur-[80px] rounded-full will-change-transform"></div>
           <div 
             className="absolute inset-0 opacity-[0.02]" 
@@ -75,10 +75,10 @@ export default function Hero() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
               </span>
-              <span className="text-xs font-mono text-blue-400 uppercase tracking-widest">Available for new opportunities</span>
+              <span className="text-xs font-mono text-brand uppercase tracking-widest">Available for new opportunities</span>
             </div>
 
             <h1 className="text-5xl lg:text-8xl font-black tracking-tight text-white leading-tight will-change-transform">
@@ -108,7 +108,7 @@ export default function Hero() {
               <a 
                 href={data?.resumeUrl || "#"} 
                 target="_blank"
-                className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-blue-900/10"
+                className="px-8 py-4 bg-brand hover:brightness-110 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-brand/10"
               >
                 <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
                 Download Resume
@@ -127,7 +127,7 @@ export default function Hero() {
                   href={settings.calendlyUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-blue-500/5"
+                  className="px-8 py-4 bg-gradient-to-r from-brand to-brand/80 hover:brightness-110 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-brand/5"
                 >
                   <Calendar className="w-5 h-5" />
                   Strategy Session
@@ -152,7 +152,7 @@ export default function Hero() {
             transition={{ repeat: Infinity, duration: 1.5 }}
             className="w-5 h-8 border-2 border-white/20 rounded-full flex justify-center pt-2"
           >
-            <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
+            <div className="w-1 h-1 bg-brand rounded-full"></div>
           </motion.div>
         </div>
       </section>

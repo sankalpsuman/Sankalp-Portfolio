@@ -86,7 +86,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group relative">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-[0_0_20px_rgba(37,99,235,0.3)] overflow-hidden">
+          <div className="w-10 h-10 bg-brand rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-[0_0_20px_rgba(var(--brand-primary-rgb),0.3)] overflow-hidden">
             {logoUrl ? (
               <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             ) : (
@@ -95,7 +95,7 @@ export default function Navbar() {
           </div>
           <div className="flex flex-col">
             <span className="text-xl font-black text-white tracking-tighter uppercase leading-none">Sankalp</span>
-            <span className="text-[10px] font-mono text-blue-400 uppercase tracking-[0.2em] leading-none mt-1">QA Architecture</span>
+            <span className="text-[10px] font-mono text-brand uppercase tracking-[0.2em] leading-none mt-1">QA Architecture</span>
           </div>
         </Link>
 
@@ -113,7 +113,7 @@ export default function Navbar() {
                 onClick={(e) => scrollToAnchor(e, link.href)}
                 className={cn(
                   "px-4 py-2 text-[10px] font-bold transition-all uppercase tracking-[0.1em] rounded-xl flex items-center gap-1.5",
-                  isActive ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-gray-400 hover:text-white"
+                  isActive ? "bg-brand text-white shadow-lg shadow-brand/20" : "text-gray-400 hover:text-white"
                 )}
               >
                 {isActive && <div className="w-1 h-1 bg-white rounded-full animate-pulse"></div>}
@@ -125,7 +125,7 @@ export default function Navbar() {
                 to={link.href}
                 className={cn(
                   "px-4 py-2 text-[10px] font-bold transition-all uppercase tracking-[0.1em] rounded-xl flex items-center gap-1.5",
-                  isActive ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-gray-400 hover:text-white hover:bg-white/5"
+                  isActive ? "bg-brand text-white shadow-lg shadow-brand/20" : "text-gray-400 hover:text-white hover:bg-white/5"
                 )}
               >
                 {isActive && <div className="w-1 h-1 bg-white rounded-full animate-pulse"></div>}
@@ -143,7 +143,7 @@ export default function Navbar() {
               className="group flex items-center gap-2 px-6 py-2.5 bg-white text-black text-[10px] font-black rounded-xl transition-all uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95"
            >
               Inquire
-              <Sparkles className="w-3 h-3 text-blue-600" />
+              <Sparkles className="w-3 h-3 text-brand" />
            </a>
         </div>
 
@@ -178,7 +178,7 @@ export default function Navbar() {
                     onClick={(e) => scrollToAnchor(e, link.href)}
                     className={cn(
                       "flex items-center justify-between px-6 py-4 rounded-2xl transition-all font-bold uppercase tracking-widest text-sm",
-                      isActive ? "bg-blue-600/10 text-blue-400 border border-blue-500/20" : "text-gray-400 border border-transparent"
+                      isActive ? "bg-brand/10 text-brand border border-brand/20" : "text-gray-400 border border-transparent"
                     )}
                   >
                     {link.label}
@@ -190,7 +190,7 @@ export default function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
                       "flex items-center justify-between px-6 py-4 rounded-2xl transition-all font-bold uppercase tracking-widest text-sm",
-                      isActive ? "bg-blue-600/10 text-blue-400 border border-blue-500/20" : "text-gray-400 border border-transparent"
+                      isActive ? "bg-brand/10 text-brand border border-brand/20" : "text-gray-400 border border-transparent"
                     )}
                   >
                     {link.label}
@@ -201,7 +201,7 @@ export default function Navbar() {
                  <a 
                    href="/#contact"
                    onClick={(e) => scrollToAnchor(e, '/#contact')}
-                   className="flex items-center justify-center gap-3 w-full py-5 bg-blue-600 text-white text-center font-black rounded-2xl tracking-[0.2em] uppercase text-xs shadow-xl shadow-blue-600/20"
+                   className="flex items-center justify-center gap-3 w-full py-5 bg-brand text-white text-center font-black rounded-2xl tracking-[0.2em] uppercase text-xs shadow-xl shadow-brand/20"
                  >
                    Establish Connection
                    <Sparkles className="w-4 h-4" />
