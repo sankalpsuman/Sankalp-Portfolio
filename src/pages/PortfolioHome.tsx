@@ -1,6 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import Lenis from '@studio-freight/lenis';
 import SEO from '../components/SEO';
+import { LazySection } from '../components/portfolio/LazySection';
 
 // Core Components (Eager)
 import Navbar from '../components/portfolio/Navbar';
@@ -21,12 +22,6 @@ const Testimonials = lazy(() => import('../components/portfolio/Testimonials'));
 const BlogPreview = lazy(() => import('../components/portfolio/BlogPreview'));
 const Contact = lazy(() => import('../components/portfolio/Contact'));
 const Footer = lazy(() => import('../components/portfolio/Footer'));
-
-const SectionLoader = () => (
-  <div className="h-40 flex items-center justify-center opacity-20">
-    <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-  </div>
-);
 
 export default function PortfolioHome() {
   useEffect(() => {
@@ -57,24 +52,21 @@ export default function PortfolioHome() {
       <main>
         <Hero />
         <About />
-        <Suspense fallback={<SectionLoader />}>
-          <Experience />
-          <CareerTimeline />
-          <Skills />
-          <AISection />
-          <AIPlayground />
-          <QADashboard />
-          <Projects />
-          <ImpactStories />
-          <Certifications />
-          <Testimonials />
-          <BlogPreview />
-          <Contact />
-        </Suspense>
+        
+        <LazySection><Experience /></LazySection>
+        <LazySection><CareerTimeline /></LazySection>
+        <LazySection><Skills /></LazySection>
+        <LazySection><AISection /></LazySection>
+        <LazySection><AIPlayground /></LazySection>
+        <LazySection><QADashboard /></LazySection>
+        <LazySection><Projects /></LazySection>
+        <LazySection><ImpactStories /></LazySection>
+        <LazySection><Certifications /></LazySection>
+        <LazySection><Testimonials /></LazySection>
+        <LazySection><BlogPreview /></LazySection>
+        <LazySection><Contact /></LazySection>
       </main>
-      <Suspense fallback={null}>
-        <Footer />
-      </Suspense>
+      <LazySection><Footer /></LazySection>
     </div>
   );
 }

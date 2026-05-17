@@ -57,23 +57,23 @@ export default function Hero() {
     <>
       <section id="hero" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-[#050816]">
         {/* Background Effects */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full animate-pulse"></div>
-          <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-purple-600/10 blur-[100px] rounded-full"></div>
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-blue-600/5 blur-[80px] rounded-full animate-pulse will-change-[opacity]"></div>
+          <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-purple-600/5 blur-[80px] rounded-full will-change-transform"></div>
           <div 
-            className="absolute inset-0 opacity-[0.03]" 
+            className="absolute inset-0 opacity-[0.02]" 
             style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)', backgroundSize: '40px 40px' }}
           ></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 text-center">
           <motion.div
-             initial={{ opacity: 0, y: 30 }}
+             initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
-             transition={{ duration: 0.8, ease: "easeOut" }}
-             className="space-y-8"
+             transition={{ duration: 0.6, ease: "easeOut" }}
+             className="space-y-8 will-change-[transform,opacity]"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
@@ -81,7 +81,7 @@ export default function Hero() {
               <span className="text-xs font-mono text-blue-400 uppercase tracking-widest">Available for new opportunities</span>
             </div>
 
-            <h1 className="text-5xl lg:text-8xl font-black tracking-tight text-white leading-tight">
+            <h1 className="text-5xl lg:text-8xl font-black tracking-tight text-white leading-tight will-change-transform">
               {data?.headline || "Hi, I'm Sankalp Suman"}
             </h1>
 
@@ -89,11 +89,11 @@ export default function Hero() {
               <AnimatePresence mode="wait">
                 <motion.span
                   key={titleIndex}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-2xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent"
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-2xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent will-change-[transform,opacity]"
                 >
                   {titles[titleIndex]}
                 </motion.span>
@@ -108,7 +108,7 @@ export default function Hero() {
               <a 
                 href={data?.resumeUrl || "#"} 
                 target="_blank"
-                className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-blue-900/20"
+                className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-blue-900/10"
               >
                 <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
                 Download Resume
@@ -116,7 +116,7 @@ export default function Hero() {
               
               <a 
                 href="#contact"
-                className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 transition-all flex items-center gap-2 backdrop-blur-md"
+                className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 transition-all flex items-center gap-2"
               >
                 <Send className="w-5 h-5" />
                 Contact Me
@@ -127,7 +127,7 @@ export default function Hero() {
                   href={settings.calendlyUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-blue-500/10"
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-blue-500/5"
                 >
                   <Calendar className="w-5 h-5" />
                   Strategy Session
@@ -136,7 +136,7 @@ export default function Hero() {
               <a 
                 href={data?.linkedinUrl || "https://www.linkedin.com/in/sankalpsuman"} 
                 target="_blank"
-                className="p-4 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 transition-all backdrop-blur-md"
+                className="p-4 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 transition-all"
               >
                 <Linkedin className="w-5 h-5" />
               </a>

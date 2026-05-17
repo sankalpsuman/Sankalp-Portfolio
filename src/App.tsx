@@ -21,25 +21,21 @@ const LoadingFallback = () => (
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authInitialized, setAuthInitialized] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setLoading(false);
+      setAuthInitialized(true);
     });
     return unsubscribe;
   }, []);
-
-  if (loading) {
-    return <LoadingFallback />;
-  }
 
   const isAdmin = user?.email === 'sankalpsmn@gmail.com';
 
   return (
     <HelmetProvider>
-      <Toaster position="bottom-right" reverseOrder={false} />
+      <Toaster position="bottom-right" />
       <Router>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
@@ -50,7 +46,10 @@ export default function App() {
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route 
               path="/admin/*" 
-              element={isAdmin ? <AdminDashboard /> : <Navigate to="/admin/login" />} 
+              element={
+                !authInitialized ? <LoadingFallback /> : 
+                isAdmin ? <AdminDashboard /> : <Navigate to="/admin/login" />
+              } 
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
