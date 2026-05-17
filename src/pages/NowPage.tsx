@@ -9,6 +9,9 @@ import Footer from '../components/portfolio/Footer';
 
 interface NowContent {
   content: string;
+  location: string;
+  status: string;
+  focus: string;
   lastUpdated: string;
 }
 
@@ -66,17 +69,17 @@ export default function NowPage() {
                    <div className="p-8 rounded-[2rem] bg-white/2 border border-white/5 space-y-4 hover:border-blue-500/20 transition-all group">
                       <div className="p-3 rounded-2xl bg-blue-600/10 text-blue-400 w-fit group-hover:scale-110 transition-transform"><MapPin className="w-6 h-6" /></div>
                       <h4 className="font-bold flex items-center gap-2">Location </h4>
-                      <p className="text-gray-400 text-sm">Delhi NCR, India</p>
+                      <p className="text-gray-400 text-sm">{now.location || 'Delhi NCR, India'}</p>
                    </div>
                    <div className="p-8 rounded-[2rem] bg-white/2 border border-white/5 space-y-4 hover:border-emerald-500/20 transition-all group">
                       <div className="p-3 rounded-2xl bg-emerald-600/10 text-emerald-400 w-fit group-hover:scale-110 transition-transform"><Coffee className="w-6 h-6" /></div>
                       <h4 className="font-bold flex items-center gap-2">Status</h4>
-                      <p className="text-gray-400 text-sm">Open to collaboration</p>
+                      <p className="text-gray-400 text-sm">{now.status || 'Open to collaboration'}</p>
                    </div>
                    <div className="p-8 rounded-[2rem] bg-white/2 border border-white/5 space-y-4 hover:border-purple-500/20 transition-all group">
                       <div className="p-3 rounded-2xl bg-purple-600/10 text-purple-400 w-fit group-hover:scale-110 transition-transform"><Rocket className="w-6 h-6" /></div>
                       <h4 className="font-bold flex items-center gap-2">Current Focus</h4>
-                      <p className="text-gray-400 text-sm">Scaling AI-Driven QA Platforms</p>
+                      <p className="text-gray-400 text-sm">{now.focus || 'Scaling AI-Driven QA Platforms'}</p>
                    </div>
                 </div>
 
@@ -84,13 +87,13 @@ export default function NowPage() {
                    <Sparkles className="absolute top-12 right-12 w-32 h-32 text-blue-500/[0.03] pointer-events-none" />
                    <Code2 className="absolute bottom-12 left-12 w-32 h-32 text-purple-500/[0.03] pointer-events-none" />
                    
-                   <div className="markdown-body prose prose-invert prose-lg max-w-none prose-p:text-gray-300 prose-p:leading-loose prose-headings:text-white prose-a:text-blue-500 prose-li:text-gray-400">
+                   <div className="prose prose-invert prose-lg md:prose-xl max-w-none prose-headings:text-white prose-headings:tracking-tight prose-p:text-gray-400 prose-p:leading-relaxed prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-strong:text-white prose-code:text-blue-400 prose-code:bg-blue-400/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-black/50 prose-pre:border prose-pre:border-white/10">
                       <ReactMarkdown>{now.content}</ReactMarkdown>
                    </div>
                    
-                   <div className="mt-16 pt-8 border-t border-white/5 flex justify-between items-center text-xs text-gray-500 font-mono italic">
-                      <div>Page created on: 2024-05-15</div>
-                      <div>Last sync: {new Date(now.lastUpdated).toLocaleDateString()}</div>
+                   <div className="mt-16 pt-8 border-t border-white/5 flex justify-between items-center text-[10px] text-gray-600 font-mono uppercase tracking-widest">
+                      <div>Delhi, India</div>
+                      <div>Last updated: {new Date(now.lastUpdated).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
                    </div>
                 </div>
                 

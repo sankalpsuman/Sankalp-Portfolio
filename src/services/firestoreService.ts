@@ -7,6 +7,8 @@ export const ABOUT_DOC = 'about/content';
 export const CONTACT_DOC = 'contact/info';
 export const SEO_DOC = 'seo/config';
 export const AI_DOC = 'ai/content';
+export const SETTINGS_DOC = 'settings/global';
+export const NOW_DOC = 'now/content';
 
 async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
   try {
@@ -21,7 +23,15 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
 }
 
 const cache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
+const CACHE_TTL = 1000 * 60 * 10; // 10 minutes for admin (data doesn't change from outside)
+
+export function getCachedData<T>(key: string): T | null {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data as T;
+  }
+  return null;
+}
 
 export function subscribeDocument<T>(path: string, onUpdate: (data: T | null) => void) {
   const docRef = doc(db, path);

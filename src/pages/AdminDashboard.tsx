@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { getDocument, getCollection, HERO_DOC, ABOUT_DOC, SETTINGS_DOC, CONTACT_DOC, SEO_DOC, AI_DOC, NOW_DOC } from '../services/firestoreService';
 
 // Critical core modules (Loaded immediately for instant switching)
 import DashboardOverview from './admin/DashboardOverview';
@@ -39,6 +40,7 @@ import AboutEditor from './admin/AboutEditor';
 import ExperienceEditor from './admin/ExperienceEditor';
 import SkillsEditor from './admin/SkillsEditor';
 import ProjectsEditor from './admin/ProjectsEditor';
+import SettingsEditor from './admin/SettingsEditor';
 
 // Secondary/Data-heavy modules (Remain lazy)
 const CertificationsEditor = lazy(() => import('./admin/CertificationsEditor'));
@@ -52,7 +54,6 @@ const TimelineEditor = lazy(() => import('./admin/TimelineEditor'));
 const ImpactStoriesEditor = lazy(() => import('./admin/ImpactStoriesEditor'));
 const QAMetricsEditor = lazy(() => import('./admin/QAMetricsEditor'));
 const AIToolsEditor = lazy(() => import('./admin/AIToolsEditor'));
-const SettingsEditor = lazy(() => import('./admin/SettingsEditor'));
 const NowEditor = lazy(() => import('./admin/NowEditor'));
 
 const NAV_ITEMS = [
@@ -81,6 +82,37 @@ export default function AdminDashboard() {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Background Cache Pre-warming
+  useEffect(() => {
+    const prewarm = async () => {
+      try {
+        // Run in parallel, don't wait for completion to avoid blocking UI
+        const tasks = [
+          getDocument(HERO_DOC),
+          getDocument(ABOUT_DOC),
+          getDocument(SETTINGS_DOC),
+          getDocument(CONTACT_DOC),
+          getDocument(SEO_DOC),
+          getDocument(AI_DOC),
+          getDocument(NOW_DOC),
+          getCollection('messages'),
+          getCollection('projects'),
+          getCollection('experience'),
+          getCollection('skills'),
+          getCollection('impactStories'),
+          getCollection('testimonials')
+        ];
+        
+        // Use Promise.allSettled to ensure all tasks fire even if some fail
+        Promise.allSettled(tasks);
+      } catch (e) {
+        // Silent fail for pre-warming
+      }
+    };
+    
+    prewarm();
+  }, []);
 
   useEffect(() => {
     // If we are at exactly /admin or /admin/, always redirect to overview internally (URL stays same/similar)

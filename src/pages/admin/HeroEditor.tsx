@@ -2,7 +2,7 @@ import { useState, useEffect, ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { HERO_DOC, getDocument, saveDocument } from '../../services/firestoreService';
+import { HERO_DOC, getDocument, saveDocument, getCachedData } from '../../services/firestoreService';
 import { Save, Loader2, Plus, X, FileUp, Link as LinkIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { uploadToCloudinary } from '../../lib/cloudinary';
@@ -19,15 +19,15 @@ const heroSchema = z.object({
 type HeroData = z.infer<typeof heroSchema>;
 
 export default function HeroEditor() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!getCachedData(HERO_DOC));
   const [saving, setSaving] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [uploading, setUploading] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; title: string | null }>({ isOpen: false, title: null });
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<HeroData>({
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<HeroData>({
     resolver: zodResolver(heroSchema),
-    defaultValues: {
+    defaultValues: getCachedData<HeroData>(HERO_DOC) || {
       titles: [],
     }
   });
@@ -39,14 +39,12 @@ export default function HeroEditor() {
     async function loadData() {
       const data = await getDocument<HeroData>(HERO_DOC);
       if (data) {
-        Object.entries(data).forEach(([key, value]) => {
-          setValue(key as any, value);
-        });
+        reset(data);
       }
       setLoading(false);
     }
     loadData();
-  }, [setValue]);
+  }, [reset]);
 
   const handleResumeUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

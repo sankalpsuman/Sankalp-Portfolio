@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { getCollection } from '../../services/firestoreService';
+import { getCollection, getCachedData } from '../../services/firestoreService';
 import { 
   Eye, 
   MousePointer2, 
@@ -17,12 +17,15 @@ import {
 import { cn } from '../../lib/utils';
 
 export default function DashboardOverview() {
-  const [stats, setStats] = useState([
-    { label: 'Total Views', value: '1,284', icon: Eye, change: '+12%', color: 'blue' },
-    { label: 'Project Clicks', value: '452', icon: MousePointer2, change: '+8%', color: 'purple' },
-    { label: 'Inquiries', value: '0', icon: MessageSquare, change: 'Stable', color: 'cyan' },
-    { label: 'Uptime', value: '99.9%', icon: Activity, change: 'Stable', color: 'emerald' },
-  ]);
+  const [stats, setStats] = useState(() => {
+    const cachedMessages = getCachedData<any[]>('messages_none_all');
+    return [
+      { label: 'Total Views', value: '1,284', icon: Eye, change: '+12%', color: 'blue' },
+      { label: 'Project Clicks', value: '452', icon: MousePointer2, change: '+8%', color: 'purple' },
+      { label: 'Inquiries', value: cachedMessages ? cachedMessages.length.toString() : '0', icon: MessageSquare, change: cachedMessages && cachedMessages.length > 0 ? `+${cachedMessages.length}` : 'Stable', color: 'cyan' },
+      { label: 'Uptime', value: '99.9%', icon: Activity, change: 'Stable', color: 'emerald' },
+    ];
+  });
 
   useEffect(() => {
     async function loadStats() {

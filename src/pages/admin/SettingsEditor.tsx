@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import { getDocument, saveDocument } from '../../services/firestoreService';
+import { getDocument, saveDocument, getCachedData, SETTINGS_DOC } from '../../services/firestoreService';
 import { Settings2, Save, Loader2, Palette, Globe, Shield, ToggleLeft, ToggleRight, FileUp, Link as LinkIcon, X, Check, ExternalLink, Moon, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
@@ -20,13 +20,11 @@ interface GlobalSettings {
   logoUrl: string;
 }
 
-const SETTINGS_DOC = 'settings/global';
-
 type TabType = 'general' | 'features' | 'integrations';
 
 export default function SettingsEditor() {
-  const [settings, setSettings] = useState<GlobalSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<GlobalSettings | null>(() => getCachedData<GlobalSettings>(SETTINGS_DOC));
+  const [loading, setLoading] = useState(!getCachedData(SETTINGS_DOC));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
