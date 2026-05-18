@@ -54,7 +54,7 @@ async function startServer() {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-1.5-flash",
         contents: `${prompt}\n\nUser Input: ${userInput}`,
         config: {
           systemInstruction: `You are Sankalp's Advanced Quality Engineering AI Agent. Use EXTREME PRECISION and MINIMALISM.
@@ -69,9 +69,9 @@ STRICT OPERATIONAL RULES:
         }
       });
       res.json({ text: response.text });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Gemini API Error:', error);
-      res.status(500).json({ error: 'Failed to generate AI response' });
+      res.status(500).json({ error: error?.message || 'Failed to generate AI response' });
     }
   });
 
@@ -84,7 +84,7 @@ STRICT OPERATIONAL RULES:
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-1.5-flash",
         contents: `Provide exactly 3 keywords separated by commas that describe a professional, high-quality technical or business-related image for this blog post.
         Title: ${title}
         Excerpt: ${excerpt}
@@ -95,9 +95,9 @@ STRICT OPERATIONAL RULES:
       });
       const keywords = response.text?.trim().replace(/\.$/, '') || "technology,software,business";
       res.json({ keywords });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Gemini API Error:', error);
-      res.status(500).json({ error: 'Failed to suggest image keywords' });
+      res.status(500).json({ error: error?.message || 'Failed to suggest image keywords' });
     }
   });
 
