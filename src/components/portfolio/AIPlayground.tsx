@@ -4,6 +4,7 @@ import { Bot, Send, Sparkles, Copy, Check, Loader2, RefreshCw, Terminal, Command
 import { generateAIResponse } from '../../services/geminiService';
 import { getCollection } from '../../services/firestoreService';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { cn } from '../../lib/utils';
 
 interface AITool {
@@ -293,8 +294,15 @@ export default function AIPlayground() {
                                           animate={{ opacity: 1, y: 0 }}
                                           className="flex-1 flex flex-col h-full overflow-hidden"
                                         >
-                                           <div className="p-6 overflow-y-auto custom-scrollbar flex-1 prose prose-invert prose-sm max-w-none prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 font-mono text-[13px] leading-relaxed">
-                                              <ReactMarkdown>{output}</ReactMarkdown>
+                                           <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1 prose prose-invert prose-sm md:prose-base max-w-none 
+                                              prose-pre:bg-[#0d1117] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-xl
+                                              prose-table:border prose-table:border-white/10 prose-table:rounded-xl prose-table:overflow-hidden 
+                                              prose-th:bg-white/5 prose-th:px-4 prose-th:py-3 prose-th:text-blue-400 prose-th:font-bold prose-th:text-xs prose-th:uppercase prose-th:tracking-wider
+                                              prose-td:px-4 prose-td:py-3 prose-td:border-t prose-td:border-white/5 prose-td:text-[11px] sm:prose-td:text-xs
+                                              prose-headings:tracking-tight prose-headings:text-blue-400 
+                                              prose-p:leading-relaxed prose-p:text-gray-400
+                                              font-sans leading-relaxed">
+                                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{output}</ReactMarkdown>
                                            </div>
                                         </motion.div>
                                       ) : (

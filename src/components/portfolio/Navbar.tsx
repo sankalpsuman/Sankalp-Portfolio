@@ -7,19 +7,20 @@ import { getDocument } from '../../services/firestoreService';
 import { throttle } from '../../lib/performance';
 
 const NAV_LINKS = [
-  { label: 'About', href: '/#about', type: 'anchor' },
-  { label: 'Journey', href: '/#career-journey', type: 'anchor' },
-  { label: 'Toolkit', href: '/#skills', type: 'anchor' },
+  { label: 'ABOUT', href: '/#about', type: 'anchor' },
+  { label: 'JOURNEY', href: '/#career-journey', type: 'anchor' },
+  { label: 'TOOLKIT', href: '/#skills', type: 'anchor' },
   { label: 'AI QA', href: '/#ai-playground', type: 'anchor' },
-  { label: 'Projects', href: '/#projects', type: 'anchor' },
-  { label: 'Blog', href: '/blog', type: 'link' },
-  { label: 'Now', href: '/now', type: 'link' },
+  { label: 'PROJECTS', href: '/#projects', type: 'anchor' },
+  { label: 'BLOG', href: '/blog', type: 'link' },
+  { label: 'NOW', href: '/now', type: 'link' },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const [isNavigating, setIsNavigating] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const location = useLocation();
 
@@ -38,12 +39,14 @@ export default function Navbar() {
 
     const observerOptions = {
       root: null,
-      rootMargin: '-20% 0px -60% 0px',
+      rootMargin: '-50% 0px -40% 0px', // More centered detection for active section
       threshold: 0,
     };
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      if (isNavigating) return;
       entries.forEach((entry) => {
+        // We only update if the user isn't actively clicking a nav link
         if (entry.isIntersecting) {
           setActiveSection(entry.target.id);
         }
@@ -54,8 +57,12 @@ export default function Navbar() {
     
     // Only observe if we are on the home page
     if (location.pathname === '/') {
-      const sections = document.querySelectorAll('section[id]');
-      sections.forEach((section) => observer.observe(section));
+      // Observe all logical sections
+      const sections = ['hero', 'about', 'career-journey', 'skills', 'ai-playground', 'projects', 'contact'];
+      sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el);
+      });
     }
 
     window.addEventListener('scroll', handleScroll);
@@ -68,9 +75,18 @@ export default function Navbar() {
   const scrollToAnchor = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (location.pathname === '/' && href.startsWith('/#')) {
       e.preventDefault();
-      const element = document.getElementById(href.substring(2));
+      const targetId = href.substring(2);
+      const element = document.getElementById(targetId);
       if (element) {
+        // Immediate feedback
+        setIsNavigating(true);
+        setActiveSection(targetId);
+        
         element.scrollIntoView({ behavior: 'smooth' });
+        
+        // Reset navigation guard after scroll completes (roughly)
+        setTimeout(() => setIsNavigating(false), 1000);
+        
         setMobileMenuOpen(false);
       }
     }

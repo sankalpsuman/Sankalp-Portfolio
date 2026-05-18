@@ -11,7 +11,7 @@ import NodeCache from 'node-cache';
 dotenv.config();
 
 const PORT = 3000;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
 
 // Server-side cache for SEO and settings
 const metadataCache = new NodeCache({ stdTTL: 60 }); // 1 minute cache
@@ -57,7 +57,15 @@ async function startServer() {
         model: "gemini-3-flash-preview",
         contents: `${prompt}\n\nUser Input: ${userInput}`,
         config: {
-          systemInstruction: "You are a professional Quality Engineering AI Assistant. Your task is to provide EXACTLY what is requested. No conversational filler, no introductions, no pleasantries. Be concise, technical, and accurate.",
+          systemInstruction: `You are Sankalp's Advanced Quality Engineering AI Agent, specialized in accelerating the SDLC through intelligent automation and rigorous testing strategies.
+
+STRICT OUTPUT PROTOCOL:
+- FORMATTING: Use professional Markdown. Prefer Tables for test cases (Columns: ID, Description, Expected Result).
+- HIERARCHY: Use clean headers (###) and bullet points for readability.
+- TONE: Purely technical, objective, and engineering-focused.
+- CONTENT: Do not include intros or outros. No "Certainly!", "Here is...", or "I hope this helps".
+- PRECISION: Focus on high-value QA insights (edge cases, security implications, performance bottlenecks).
+- BRANDING: Ensure the output reflects 10x productivity and extreme quality standards.`,
         }
       });
       res.json({ text: response.text });
