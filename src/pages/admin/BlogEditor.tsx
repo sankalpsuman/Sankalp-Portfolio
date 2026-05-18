@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
+import { suggestImageKeywords } from '../../services/geminiService';
 import { FileText, Plus, Trash2, Loader2, Save, X, Search, Clock, Hash, Tag, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
@@ -119,14 +120,9 @@ export default function BlogEditor() {
     if (!localItem) return;
     setSaving(true);
     try {
-      const response = await fetch('/api/ai/suggest-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: localItem.title, excerpt: localItem.excerpt }),
-      });
-      const data = await response.json();
-      if (data.keywords) {
-        const url = `https://images.unsplash.com/featured/1200x800?${encodeURIComponent(data.keywords)}`;
+      const keywords = await suggestImageKeywords(localItem.title, localItem.excerpt);
+      if (keywords) {
+        const url = `https://images.unsplash.com/featured/1200x800?${encodeURIComponent(keywords)}`;
         setLocalItem({ ...localItem, imageUrl: url });
       }
     } catch (error) {
@@ -145,14 +141,9 @@ export default function BlogEditor() {
       // Auto-generate image if missing
       if (!finalItem.imageUrl) {
         try {
-          const response = await fetch('/api/ai/suggest-image', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: finalItem.title, excerpt: finalItem.excerpt }),
-          });
-          const data = await response.json();
-          if (data.keywords) {
-            finalItem.imageUrl = `https://images.unsplash.com/featured/1200x800?${encodeURIComponent(data.keywords)}`;
+          const keywords = await suggestImageKeywords(finalItem.title, finalItem.excerpt);
+          if (keywords) {
+            finalItem.imageUrl = `https://images.unsplash.com/featured/1200x800?${encodeURIComponent(keywords)}`;
           }
         } catch (e) {
           console.warn('Silent failure on auto-image generation:', e);

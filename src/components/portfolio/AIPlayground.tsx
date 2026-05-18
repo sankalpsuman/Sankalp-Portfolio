@@ -63,8 +63,9 @@ export default function AIPlayground() {
     try {
       const response = await generateAIResponse(contextPrompt, input);
       setOutput(response);
-    } catch (error) {
-      setOutput('Error generating response. Please check your connection or API configuration.');
+    } catch (error: any) {
+      setOutput(`Error: ${error?.message || 'Failed to generate response. Please check your API configuration.'}`);
+      console.error('AI Generation Error:', error);
     } finally {
       setLoading(false);
     }
