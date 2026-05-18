@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Bot, Send, Sparkles, Copy, Check, Loader2, RefreshCw, Terminal, Command, Info, Activity, Cpu, CheckCircle2 } from 'lucide-react';
 import { generateAIResponse } from '../../services/geminiService';
-import { getCollection } from '../../services/firestoreService';
+import { getCollection, getDocument, SETTINGS_DOC } from '../../services/firestoreService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '../../lib/utils';
@@ -24,15 +24,20 @@ export default function AIPlayground() {
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<any>(null);
 
   useEffect(() => {
-    async function loadTools() {
-      const data = await getCollection<AITool>('aiTools');
-      const enabledTools = data.filter(t => t.enabled);
+    async function loadData() {
+      const [toolsData, settingsData] = await Promise.all([
+        getCollection<AITool>('aiTools'),
+        getDocument(SETTINGS_DOC)
+      ]);
+      const enabledTools = toolsData.filter(t => t.enabled);
       setTools(enabledTools);
+      setSiteSettings(settingsData);
       if (enabledTools.length > 0) setSelectedTool(enabledTools[0]);
     }
-    loadTools();
+    loadData();
   }, []);
 
   const handleGenerate = async () => {
@@ -40,8 +45,23 @@ export default function AIPlayground() {
     setLoading(true);
     setOutput('');
     
+    // Construct rich context prompt
+    const contextPrompt = `
+      ${selectedTool.prompt}
+      
+      SITE CONTEXT (Use these facts ONLY if exactly relevant to the user's specific question):
+      - App Name: ${siteSettings?.brandName || 'Sankalp Suman Portfolio'}
+      - App URL: ${window.location.origin}
+      - LinkedIn: ${siteSettings?.linkedinUrl}
+      - GitHub: ${siteSettings?.githubUrl}
+      - Resume: ${siteSettings?.resumeUrl}
+      - Location: India (Delhi NCR)
+      
+      STRICT: If the user asks for a URL or Link, provide ONLY the link. No extra text.
+    `;
+    
     try {
-      const response = await generateAIResponse(selectedTool.prompt, input);
+      const response = await generateAIResponse(contextPrompt, input);
       setOutput(response);
     } catch (error) {
       setOutput('Error generating response. Please check your connection or API configuration.');
