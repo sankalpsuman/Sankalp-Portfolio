@@ -40,8 +40,8 @@ export async function generateAIResponse(prompt: string, userInput: string) {
         }
       });
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+      const response = await (ai as any).models.generateContent({
+        model: "gemini-1.5-flash",
         contents: `${prompt}\n\nUser Input: ${userInput}`,
         config: {
           systemInstruction: `You are Sankalp's Advanced Quality Engineering AI Agent. Use EXTREME PRECISION and MINIMALISM.
@@ -95,8 +95,8 @@ export async function suggestImageKeywords(title: string, excerpt: string) {
           }
         }
       });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+      const response = await (ai as any).models.generateContent({
+        model: "gemini-1.5-flash",
         contents: `Provide exactly 3 keywords separated by commas that describe a professional, high-quality technical or business-related image for this blog post.
         Title: ${title}
         Excerpt: ${excerpt}
