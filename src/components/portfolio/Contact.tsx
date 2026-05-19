@@ -1,8 +1,10 @@
 import Section from './Section';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Phone, MapPin, Linkedin, Send, Github, Loader2, CheckCircle2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Send, Github, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { addCollectionDocument, getDocument, CONTACT_DOC } from '../../services/firestoreService';
 
 interface ContactInfo {
@@ -11,6 +13,12 @@ interface ContactInfo {
   location: string;
   linkedin: string;
 }
+
+const inquirySchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  email: z.string().min(1, { message: 'Email address is required.' }).email({ message: 'Please enter a valid email address.' }),
+  message: z.string().min(10, { message: 'Message must be at least 10 characters.' }),
+});
 
 interface InquiryForm {
   name: string;
@@ -22,7 +30,9 @@ export default function Contact() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [info, setInfo] = useState<ContactInfo | null>(null);
-  const { register, handleSubmit, reset } = useForm<InquiryForm>();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<InquiryForm>({
+    resolver: zodResolver(inquirySchema)
+  });
 
   useEffect(() => {
     async function load() {
@@ -114,16 +124,58 @@ export default function Contact() {
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                        <label className="text-xs font-mono text-gray-500 uppercase tracking-widest ml-1">Your Name</label>
-                       <input required {...register('name')} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-blue-500 transition-all outline-none text-white" placeholder="John Doe" />
+                       <input {...register('name')} className={`w-full bg-white/5 border rounded-2xl px-6 py-4 focus:border-blue-500 transition-all outline-none text-white ${errors.name ? 'border-red-500/55 shadow-[0_0_12px_rgba(239,68,68,0.1)]' : 'border-white/10'}`} placeholder="John Doe" />
+                        <AnimatePresence>
+                           {errors.name && (
+                              <motion.p
+                                 id="contact-name-error"
+                                 initial={{ opacity: 0, y: -5 }}
+                                 animate={{ opacity: 1, y: 0 }}
+                                 exit={{ opacity: 0, y: -5 }}
+                                 className="text-red-400 text-xs font-mono tracking-wide mt-1 pl-1 flex items-center gap-1.5"
+                              >
+                                 <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                 {errors.name.message}
+                              </motion.p>
+                           )}
+                        </AnimatePresence>
                     </div>
                     <div className="space-y-2">
                        <label className="text-xs font-mono text-gray-500 uppercase tracking-widest ml-1">Email Address</label>
-                       <input required type="email" {...register('email')} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-blue-500 transition-all outline-none text-white" placeholder="john@company.com" />
+                       <input {...register('email')} className={`w-full bg-white/5 border rounded-2xl px-6 py-4 focus:border-blue-500 transition-all outline-none text-white ${errors.email ? 'border-red-500/55 shadow-[0_0_12px_rgba(239,68,68,0.1)]' : 'border-white/10'}`} placeholder="john@company.com" />
+                        <AnimatePresence>
+                           {errors.email && (
+                              <motion.p
+                                 id="contact-email-error"
+                                 initial={{ opacity: 0, y: -5 }}
+                                 animate={{ opacity: 1, y: 0 }}
+                                 exit={{ opacity: 0, y: -5 }}
+                                 className="text-red-400 text-xs font-mono tracking-wide mt-1 pl-1 flex items-center gap-1.5"
+                              >
+                                 <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                 {errors.email.message}
+                              </motion.p>
+                           )}
+                        </AnimatePresence>
                     </div>
                  </div>
                  <div className="space-y-2">
                     <label className="text-xs font-mono text-gray-500 uppercase tracking-widest ml-1">Message</label>
-                    <textarea required rows={5} {...register('message')} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:border-blue-500 transition-all outline-none text-white resize-none" placeholder="Tell me about your project..." />
+                    <textarea rows={5} {...register('message')} className={`w-full bg-white/5 border rounded-2xl px-6 py-4 focus:border-blue-500 transition-all outline-none text-white resize-none ${errors.message ? 'border-red-500/55 shadow-[0_0_12px_rgba(239,68,68,0.1)]' : 'border-white/10'}`} placeholder="Tell me about your project..." />
+                     <AnimatePresence>
+                        {errors.message && (
+                           <motion.p
+                              id="contact-message-error"
+                              initial={{ opacity: 0, y: -5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -5 }}
+                              className="text-red-400 text-xs font-mono tracking-wide mt-1 pl-1 flex items-center gap-1.5"
+                           >
+                              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                              {errors.message.message}
+                           </motion.p>
+                        )}
+                     </AnimatePresence>
                  </div>
               </div>
 
