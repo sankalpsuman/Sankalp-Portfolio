@@ -170,6 +170,7 @@ export const AIChatbot: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   // Lead tracking
   const [isRecruiter, setIsRecruiter] = useState(false);
@@ -399,10 +400,12 @@ How can I help you today?`,
     const nextMessages = [...messages, newUserMessage];
     setMessages(nextMessages);
     setIsLoading(true);
+    setIsGenerating(true);
 
     // Sync immediately
     await syncChatState(nextMessages);
 
+    let receivedSuccessfully = false;
     try {
       let data;
       try {
@@ -424,15 +427,11 @@ How can I help you today?`,
         }
       }
 
-      const aiReplyMessage: ChatMessage = {
-        role: 'model',
-        content: data.reply || 'Apologies, I encountered an issue retrieving my context. Please retry shortly.',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
+      setIsGenerating(false);
+      receivedSuccessfully = true;
 
-      const finalMessages = [...nextMessages, aiReplyMessage];
-      setMessages(finalMessages);
-
+      const fullReply = data.reply || 'Apologies, I encountered an issue retrieving my context. Please retry shortly.';
+      
       // Handle detected recruiter lead data
       let currentLead = { ...leadData };
       if (data.isRecruiterLead) {
@@ -450,21 +449,58 @@ How can I help you today?`,
         }
       }
 
-      await syncChatState(finalMessages, currentLead);
+      const aiReplyMessage: ChatMessage = {
+        role: 'model',
+        content: '',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
 
-      // Dispatch real-time hot-lead notification email
-      if (data.isRecruiterLead || isRecruiter) {
-        await fetch('/api/chat/email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId,
-            leadData: currentLead,
-            messages: finalMessages,
-            force: true // Always trigger immediately for active recruiter leads!
-          })
-        });
-      }
+      const words = fullReply.split(/(\s+)/);
+      let currentText = "";
+      let wordIndex = 0;
+
+      const tempMessages = [...nextMessages, { ...aiReplyMessage }];
+      setMessages(tempMessages);
+
+      const streamTimer = setInterval(async () => {
+        if (wordIndex < words.length) {
+          currentText += words[wordIndex];
+          wordIndex++;
+
+          setMessages(prev => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last && last.role === 'model') {
+              last.content = currentText;
+            }
+            return updated;
+          });
+        } else {
+          clearInterval(streamTimer);
+
+          const completedMessage = { ...aiReplyMessage, content: fullReply };
+          const finalMessages = [...nextMessages, completedMessage];
+          setMessages(finalMessages);
+          setIsLoading(false);
+
+          await syncChatState(finalMessages, currentLead);
+
+          // Dispatch real-time hot-lead notification email
+          if (data.isRecruiterLead || isRecruiter) {
+            await fetch('/api/chat/email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sessionId,
+                leadData: currentLead,
+                messages: finalMessages,
+                force: true // Always trigger immediately for active recruiter leads!
+              })
+            }).catch(e => console.warn("Failed sending lead email:", e));
+          }
+        }
+      }, 15);
+
     } catch (err) {
       console.error(err);
       const errorMessage: ChatMessage = {
@@ -475,8 +511,12 @@ Please make sure you are online or try writing again. If you'd like to reach San
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages([...nextMessages, errorMessage]);
-    } finally {
       setIsLoading(false);
+    } finally {
+      setIsGenerating(false);
+      if (!receivedSuccessfully) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -942,12 +982,12 @@ Please make sure you are online or try writing again. If you'd like to reach San
                           className={`flex items-start gap-2 max-w-[85%] ${isAI ? 'self-start' : 'self-end ml-auto flex-row-reverse'}`}
                         >
                           {/* Mini Bubble Abbreviation avatar */}
-                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm ${
+                          <div className={`h-7 min-w-[28px] px-2.5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm ${
                             isAI 
                               ? 'bg-brand text-white' 
                               : isDarkMode ? 'bg-neutral-800 text-neutral-300 border border-neutral-700' : 'bg-neutral-200 text-neutral-700'
                           }`}>
-                            {isAI ? 'SS' : 'V'}
+                            {isAI ? 'Sankalp' : 'You'}
                           </div>
                           
                           <div className="flex flex-col max-w-full">
@@ -986,18 +1026,30 @@ Please make sure you are online or try writing again. If you'd like to reach San
                       );
                     })}
 
-                    {isLoading && (
-                      <div className="flex items-start gap-2 max-w-[80%] self-start" id="chatbot-typing-indicator">
-                        <div className="w-7 h-7 rounded-full bg-brand text-white flex items-center justify-center text-[10px] font-bold shrink-0">
-                          SS
+                    {isGenerating && (
+                      <div className="flex items-start gap-2 max-w-[80%] self-start animate-fade-in" id="chatbot-typing-indicator">
+                        <div className="h-7 min-w-[28px] px-2.5 rounded-full bg-brand text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm">
+                          Sankalp
                         </div>
-                        <div className={`p-3 rounded-2xl rounded-tl-none text-xs leading-none shadow-sm ${
-                          isDarkMode ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-700'
+                        <div className={`p-3 rounded-2xl rounded-tl-none text-xs shadow-sm ${
+                          isDarkMode ? 'bg-neutral-800 text-neutral-300 border border-neutral-750/30' : 'bg-neutral-100 text-neutral-700'
                         }`}>
-                          <div className="flex gap-1 py-1 px-1.5" id="typing-dots">
-                            <span className="w-1.5 h-1.5 bg-brand-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                            <span className="w-1.5 h-1.5 bg-brand-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                            <span className="w-1.5 h-1.5 bg-brand-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                          <div className="flex items-center gap-1.5 py-0.5 px-0.5" id="typing-dots">
+                            <motion.span
+                              animate={{ y: [0, -5, 0] }}
+                              transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0 }}
+                              className="w-1.5 h-1.5 bg-brand-primary rounded-full inline-block"
+                            />
+                            <motion.span
+                              animate={{ y: [0, -5, 0] }}
+                              transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
+                              className="w-1.5 h-1.5 bg-brand-primary rounded-full inline-block"
+                            />
+                            <motion.span
+                              animate={{ y: [0, -5, 0] }}
+                              transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+                              className="w-1.5 h-1.5 bg-brand-primary rounded-full inline-block"
+                            />
                           </div>
                         </div>
                       </div>
