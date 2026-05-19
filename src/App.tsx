@@ -5,6 +5,7 @@ import { auth } from './services/firebase';
 import { Toaster } from 'react-hot-toast';
 import { HelmetProvider } from 'react-helmet-async';
 import { subscribeDocument } from './services/firestoreService';
+import { AIChatbot } from './components/portfolio/AIChatbot';
 
 // Lazy load Pages
 const PortfolioHome = lazy(() => import('./pages/PortfolioHome'));
@@ -102,6 +103,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
+        <AIChatbot />
       </Router>
     </HelmetProvider>
   );

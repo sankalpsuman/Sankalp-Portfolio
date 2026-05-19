@@ -264,9 +264,47 @@
         "content": { "type": "string" },
         "lastUpdated": { "type": "string" }
       }
+    },
+    "chat_session": {
+      "title": "Chat Session",
+      "description": "Interactive AI Assistant chat conversations with visitors.",
+      "type": "object",
+      "properties": {
+        "sessionId": { "type": "string" },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": { "type": "string", "enum": ["user", "model", "system"] },
+              "content": { "type": "string" },
+              "timestamp": { "type": "string" }
+            }
+          }
+        },
+        "isRecruiterLead": { "type": "boolean" },
+        "leadData": {
+          "type": "object",
+          "properties": {
+            "recruiterName": { "type": "string" },
+            "companyName": { "type": "string" },
+            "email": { "type": "string" },
+            "roleDetails": { "type": "string" },
+            "location": { "type": "string" }
+          }
+        },
+        "notified": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["sessionId", "messages", "createdAt"]
     }
   },
   "firestore": {
+    "chat_sessions": {
+      "schema": "chat_session",
+      "description": "Collection of chatbot session transcripts."
+    },
     "hero/content": {
       "schema": "hero",
       "description": "Singleton for hero content."

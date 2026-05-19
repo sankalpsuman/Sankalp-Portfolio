@@ -68,14 +68,44 @@ export async function getDocument<T>(path: string, bypassCache = false): Promise
   }
 }
 
+async function triggerRAGSync() {
+  try {
+    fetch('/api/chat/sync', { method: 'POST' }).catch(e => console.warn('RAG Sync background trigger failed:', e));
+  } catch (err) {
+    console.warn('Failed triggering dynamic cache update:', err);
+  }
+}
+
+function sanitizeData<T>(obj: T): T {
+  if (obj === undefined) return null as any;
+  if (obj === null) return null as any;
+  if (Array.isArray(obj)) {
+    return obj.map(sanitizeData) as any;
+  }
+  if (typeof obj === 'object') {
+    const cleaned: any = {};
+    for (const key of Object.keys(obj as any)) {
+      const val = (obj as any)[key];
+      if (val !== undefined) {
+        cleaned[key] = sanitizeData(val);
+      }
+    }
+    return cleaned;
+  }
+  return obj;
+}
+
 export async function saveDocument<T extends object>(path: string, data: T): Promise<void> {
   if (!path) return;
   try {
+    const sanitized = sanitizeData(data);
     await withRetry(async () => {
       const docRef = doc(db, path);
-      await setDoc(docRef, data, { merge: true });
+      await setDoc(docRef, sanitized, { merge: true });
       // Invalidate cache on write
       cache.delete(path);
+      // Auto Sync with Chatbot RAG Vector Search
+      triggerRAGSync();
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
@@ -113,14 +143,18 @@ export async function getCollection<T>(path: string, sortField?: string, limitCo
 export async function addCollectionDocument<T extends object>(path: string, data: T): Promise<string> {
   if (!path) throw new Error('Path is required');
   try {
+    const sanitized = sanitizeData(data);
     return await withRetry(async () => {
       const colRef = collection(db, path);
-      const docRef = await addDoc(colRef, data);
+      const docRef = await addDoc(colRef, sanitized);
       
       // Invalidate collection caches
       for (const key of cache.keys()) {
         if (key.startsWith(path)) cache.delete(key);
       }
+      
+      // Auto Sync with Chatbot RAG Vector Search
+      triggerRAGSync();
       
       return docRef.id;
     });
@@ -132,14 +166,18 @@ export async function addCollectionDocument<T extends object>(path: string, data
 export async function updateCollectionDocument<T extends object>(path: string, id: string, data: T): Promise<void> {
   if (!path || !id) return;
   try {
+    const sanitized = sanitizeData(data);
     await withRetry(async () => {
       const docRef = doc(db, path, id);
-      await updateDoc(docRef, data as any);
+      await updateDoc(docRef, sanitized as any);
       
       // Invalidate collection caches
       for (const key of cache.keys()) {
         if (key.startsWith(path)) cache.delete(key);
       }
+      
+      // Auto Sync with Chatbot RAG Vector Search
+      triggerRAGSync();
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `${path}/${id}`);
@@ -157,6 +195,9 @@ export async function deleteCollectionDocument(path: string, id: string): Promis
       for (const key of cache.keys()) {
         if (key.startsWith(path)) cache.delete(key);
       }
+      
+      // Auto Sync with Chatbot RAG Vector Search
+      triggerRAGSync();
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, `${path}/${id}`);

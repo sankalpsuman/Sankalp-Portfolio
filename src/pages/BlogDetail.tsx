@@ -41,7 +41,7 @@ export default function BlogDetail() {
       .safeParse(subEmail);
 
     if (!result.success) {
-      setSubError(result.error.errors[0].message);
+      setSubError(result.error.issues[0]?.message || 'Please enter a valid email address.');
       return;
     }
 
