@@ -189,6 +189,17 @@ How can I assist you today?`,
     }
   }, []);
 
+  // Open chatbot via custom event listener
+  useEffect(() => {
+    const handleOpenRequest = () => {
+      handleOpenChat();
+    };
+    window.addEventListener('open-ai-chatbot', handleOpenRequest);
+    return () => {
+      window.removeEventListener('open-ai-chatbot', handleOpenRequest);
+    };
+  }, [messages, sessionId]);
+
   // Save changes to history and Firestore
   const syncChatState = async (updatedMessages: ChatMessage[], updatedLead?: LeadData) => {
     localStorage.setItem('portfolio_chatbot_history', JSON.stringify(updatedMessages));

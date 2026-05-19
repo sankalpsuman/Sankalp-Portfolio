@@ -216,7 +216,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
 }`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-flash-latest",
+        model: "gemini-3.5-flash",
         contents: `${systemPrompt}\n\nClient Conversation History:\n${conversationHistory}\n\nAssess this conversation, and respond in the required JSON format. Provide the next reply.`,
         config: {
           responseMimeType: "application/json",
@@ -299,7 +299,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
 
     try {
       const response = await (ai as any).models.generateContent({
-        model: "gemini-flash-latest",
+        model: "gemini-3.5-flash",
         contents: `${prompt}\n\nUser Input: ${userInput}`,
         config: {
           systemInstruction: `You are Sankalp's Advanced Quality Engineering AI Agent. Use EXTREME PRECISION and MINIMALISM.
@@ -329,7 +329,7 @@ STRICT OPERATIONAL RULES:
 
     try {
       const response = await (ai as any).models.generateContent({
-        model: "gemini-flash-latest",
+        model: "gemini-3.5-flash",
         contents: `Provide exactly 3 keywords separated by commas that describe a professional, high-quality technical or business-related image for this blog post.
         Title: ${title}
         Excerpt: ${excerpt}
