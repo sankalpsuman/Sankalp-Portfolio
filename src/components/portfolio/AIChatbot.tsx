@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   MessageSquare, X, Send, Minus, Maximize2, 
   Linkedin, FileText, Calendar, Moon, Sun, 
-  AlertCircle, ChevronRight, CheckCircle2, RefreshCw 
+  AlertCircle, ChevronRight, CheckCircle2, RefreshCw,
+  User, Mail, Building
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { saveDocument } from '../../services/firestoreService';
@@ -45,6 +46,115 @@ export const AIChatbot: React.FC = () => {
 
   const [sessionId, setSessionId] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // States for Exit Lead generation
+  const [showExitForm, setShowExitForm] = useState(false);
+  const [exitName, setExitName] = useState('');
+  const [exitEmail, setExitEmail] = useState('');
+  const [exitCompany, setExitCompany] = useState('');
+  const [isSubmittingExit, setIsSubmittingExit] = useState(false);
+  const [submitExitSuccess, setSubmitExitSuccess] = useState(false);
+
+  const handleOpenChat = () => {
+    // If the session was cleared or messages are empty, initialize a brand new session/session id
+    if (!messages || messages.length === 0) {
+      const savedSessionId = `session_${Math.random().toString(36).substring(2, 11)}_${Date.now().toString(36)}`;
+      localStorage.setItem('portfolio_chatbot_session_id', savedSessionId);
+      setSessionId(savedSessionId);
+      
+      const fresh: ChatMessage[] = [
+        {
+          role: 'model',
+          content: `Hi there! 👋 I am Sankalp's premium AI Assistant.
+ 
+I can help answer questions about Sankalp's **7+ years in Software Testing/QA**, his **Scrum Master** credentials at Amdocs, his automated & manual QA leadership, or his exciting global career interests supporting roles in **India 🇮🇳, USA 🇺🇸, Germany 🇩🇪**, or anywhere else globally!
+ 
+How can I assist you today?`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ];
+      setMessages(fresh);
+      localStorage.setItem('portfolio_chatbot_history', JSON.stringify(fresh));
+    }
+    setIsOpen(true);
+    setIsMinimized(false);
+  };
+
+  const handleDirectClose = () => {
+    // Clear storage to force fresh session on next open
+    localStorage.removeItem('portfolio_chatbot_history');
+    localStorage.removeItem('portfolio_chatbot_lead');
+    localStorage.removeItem('portfolio_chatbot_session_id');
+
+    // Reset states
+    setMessages([]);
+    setSessionId('');
+    setLeadData({});
+    setIsRecruiter(false);
+    setShowScheduler(false);
+    setExitName('');
+    setExitEmail('');
+    setExitCompany('');
+    setShowExitForm(false);
+    setIsOpen(false);
+  };
+
+  const handleExitFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!exitName || !exitEmail || !exitCompany) return;
+
+    setIsSubmittingExit(true);
+
+    const mergedLead: LeadData = {
+      ...leadData,
+      recruiterName: exitName,
+      email: exitEmail,
+      companyName: exitCompany,
+      roleDetails: "Exit Form Submission on Close"
+    };
+    setLeadData(mergedLead);
+
+    // Save to sync
+    localStorage.setItem('portfolio_chatbot_lead', JSON.stringify(mergedLead));
+
+    try {
+      await fetch('/api/chat/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          leadData: mergedLead,
+          messages,
+          force: true
+        })
+      });
+    } catch (error) {
+      console.warn("Failed sending exit lead email:", error);
+    }
+
+    setSubmitExitSuccess(true);
+    setIsSubmittingExit(false);
+
+    setTimeout(() => {
+      // Clear storage
+      localStorage.removeItem('portfolio_chatbot_history');
+      localStorage.removeItem('portfolio_chatbot_lead');
+      localStorage.removeItem('portfolio_chatbot_session_id');
+
+      // Reset
+      setMessages([]);
+      setSessionId('');
+      setLeadData({});
+      setIsRecruiter(false);
+      setShowScheduler(false);
+      setExitName('');
+      setExitEmail('');
+      setExitCompany('');
+      setSubmitExitSuccess(false);
+      setShowExitForm(false);
+      setIsOpen(false);
+    }, 2500);
+  };
 
   // Initialize session and history
   useEffect(() => {
@@ -380,11 +490,19 @@ Please make sure you are online or try writing again. If you'd like to reach San
 
                 {/* Close */}
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    // Only prompt for exit info if the user has written something (messages.length > 1)
+                    if (messages && messages.length > 1) {
+                      setShowExitForm(true);
+                    } else {
+                      handleDirectClose();
+                    }
+                  }}
                   className={`p-1.5 rounded-lg opacity-70 hover:opacity-100 transition-colors ${
                     isDarkMode ? 'hover:bg-neutral-800' : 'hover:bg-neutral-150'
                   }`}
                   id="btn-chatbot-close"
+                  title="Close and Save Session"
                 >
                   <X size={15} />
                 </button>
@@ -392,38 +510,157 @@ Please make sure you are online or try writing again. If you'd like to reach San
             </div>
 
             {/* Quick Actions Panel */}
-            <div className={`px-4 py-2 flex gap-2 overflow-x-auto justify-start border-b scrollbar-none text-[11px] ${
-              isDarkMode ? 'bg-neutral-950/20 border-neutral-850' : 'bg-neutral-50/20 border-neutral-150'
-            }`} id="chatbot-quick-cta-bar">
-              <a 
-                href="/resume.pdf" 
-                download="Sankalp_Suman_Resume.pdf"
-                className="flex items-center gap-1.5 px-3 py-1 bg-brand/20 text-brand-primary border border-brand/30 rounded-full hover:bg-brand/30 transition-all font-medium whitespace-nowrap"
-              >
-                <FileText size={11} />
-                Resume Download
-              </a>
-              <a 
-                href="https://linkedin.com/in/sankalp-suman" 
-                target="_blank" 
-                rel="noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1 bg-neutral-800/80 text-blue-400 border border-neutral-700 rounded-full hover:bg-neutral-750 transition-all font-medium whitespace-nowrap"
-              >
-                <Linkedin size={11} />
-                LinkedIn profile
-              </a>
-              <button 
-                onClick={() => setShowScheduler(!showScheduler)}
-                className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full hover:bg-green-500/20 transition-all font-medium whitespace-nowrap"
-              >
-                <Calendar size={11} />
-                Book Interview
-              </button>
-            </div>
+            {!showExitForm && (
+              <div className={`px-4 py-2 flex gap-2 overflow-x-auto justify-start border-b scrollbar-none text-[11px] ${
+                isDarkMode ? 'bg-neutral-950/20 border-neutral-850' : 'bg-neutral-50/20 border-neutral-150'
+              }`} id="chatbot-quick-cta-bar">
+                <a 
+                  href="/resume.pdf" 
+                  download="Sankalp_Suman_Resume.pdf"
+                  className="flex items-center gap-1.5 px-3 py-1 bg-brand/20 text-brand-primary border border-brand/30 rounded-full hover:bg-brand/30 transition-all font-medium whitespace-nowrap"
+                >
+                  <FileText size={11} />
+                  Resume Download
+                </a>
+                <a 
+                  href="https://linkedin.com/in/sankalp-suman" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1 bg-neutral-800/80 text-blue-400 border border-neutral-700 rounded-full hover:bg-neutral-750 transition-all font-medium whitespace-nowrap"
+                >
+                  <Linkedin size={11} />
+                  LinkedIn profile
+                </a>
+                <button 
+                  onClick={() => setShowScheduler(!showScheduler)}
+                  className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full hover:bg-green-500/20 transition-all font-medium whitespace-nowrap"
+                >
+                  <Calendar size={11} />
+                  Book Interview
+                </button>
+              </div>
+            )}
 
             {/* Messages Area / Scheduler view */}
             <div className="flex-1 flex flex-col min-h-0 relative">
-              {showScheduler ? (
+              {showExitForm ? (
+                <div className={`p-6 flex-1 overflow-y-auto flex flex-col justify-center ${
+                  isDarkMode ? 'bg-neutral-900 text-white' : 'bg-neutral-50 text-neutral-800'
+                }`} id="chatbot-exit-form-container">
+                  {submitExitSuccess ? (
+                    <motion.div
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="text-center p-4 flex flex-col items-center justify-center h-full"
+                    >
+                      <CheckCircle2 className="text-emerald-500 w-12 h-12 mb-3 animate-bounce" />
+                      <h4 className="font-bold text-base text-emerald-500 dark:text-emerald-400 font-display">
+                        Info Received!
+                      </h4>
+                      <p className="text-xs opacity-80 mt-2 max-w-sm leading-relaxed">
+                        Thank you for sharing your contact card. Sankalp has been notified instantly. Closing the session...
+                      </p>
+                    </motion.div>
+                  ) : (
+                    <div className="w-full max-w-sm mx-auto space-y-4">
+                      <div className="text-center">
+                        <div className="inline-flex w-10 h-10 bg-brand/10 text-brand-primary rounded-full items-center justify-center mb-1.5">
+                          <MessageSquare size={18} className="text-brand-primary" />
+                        </div>
+                        <h4 className="font-bold text-sm font-display">Let's Stay Connected!</h4>
+                        <p className="text-[10.5px] opacity-70 mt-0.5">
+                          Before you close, please share your details so Sankalp can get back to you.
+                        </p>
+                      </div>
+
+                      <form onSubmit={handleExitFormSubmit} className="space-y-3 text-[11px]">
+                        <div>
+                          <label className="block font-medium mb-1 opacity-80 flex items-center gap-1.5">
+                            <User size={12} className="text-brand-primary" />
+                            Your Name
+                          </label>
+                          <input 
+                            type="text" 
+                            required
+                            value={exitName}
+                            onChange={e => setExitName(e.target.value)}
+                            placeholder="John Doe"
+                            className={`w-full p-2 rounded-lg border outline-none transition-all ${
+                              isDarkMode 
+                                ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30' 
+                                : 'bg-white border-neutral-200 text-neutral-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
+                            }`}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-medium mb-1 opacity-80 flex items-center gap-1.5">
+                            <Mail size={12} className="text-brand-primary" />
+                            Email Address
+                          </label>
+                          <input 
+                            type="email" 
+                            required
+                            value={exitEmail}
+                            onChange={e => setExitEmail(e.target.value)}
+                            placeholder="john@example.com"
+                            className={`w-full p-2 rounded-lg border outline-none transition-all ${
+                              isDarkMode 
+                                ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/35' 
+                                : 'bg-white border-neutral-200 text-neutral-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/35'
+                            }`}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-medium mb-1 opacity-80 flex items-center gap-1.5">
+                            <Building size={12} className="text-brand-primary" />
+                            Company / Organization
+                          </label>
+                          <input 
+                            type="text" 
+                            required
+                            value={exitCompany}
+                            onChange={e => setExitCompany(e.target.value)}
+                            placeholder="Acme Corp"
+                            className={`w-full p-2 rounded-lg border outline-none transition-all ${
+                              isDarkMode 
+                                ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30' 
+                                : 'bg-white border-neutral-200 text-neutral-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
+                            }`}
+                          />
+                        </div>
+
+                        <div className="pt-1 flex flex-col gap-1.5">
+                          <button
+                            type="submit"
+                            disabled={isSubmittingExit}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-brand text-white font-semibold rounded-lg hover:opacity-95 active:scale-[0.98] transition-all whitespace-nowrap outline-none disabled:opacity-50"
+                          >
+                            {isSubmittingExit ? "Sending info..." : "Submit Card & Close"}
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => setShowExitForm(false)}
+                            className="w-full py-1.5 text-center text-[10px] underline opacity-60 hover:opacity-100 transition-all cursor-pointer"
+                          >
+                            Back to conversation
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={handleDirectClose}
+                            className="w-full text-center text-[9px] opacity-45 hover:opacity-75 transition-all cursor-pointer mt-0.5"
+                          >
+                            Close directly without details
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
+                </div>
+              ) : showScheduler ? (
                 <div className={`p-5 flex-1 overflow-y-auto ${isDarkMode ? 'bg-neutral-900' : 'bg-neutral-25'}`}>
                   <div className="flex justify-between items-center mb-4">
                     <h5 className="font-semibold text-sm flex items-center gap-1.5">
@@ -631,9 +868,10 @@ Please make sure you are online or try writing again. If you'd like to reach San
             </div>
 
             {/* Input Bar */}
-            <div className={`p-3 border-t ${
-              isDarkMode ? 'border-neutral-800 bg-neutral-950/40' : 'border-neutral-200 bg-neutral-50/40'
-            }`} id="chatbot-input-bar">
+            {!showExitForm && (
+              <div className={`p-3 border-t ${
+                isDarkMode ? 'border-neutral-800 bg-neutral-950/40' : 'border-neutral-200 bg-neutral-50/40'
+              }`} id="chatbot-input-bar">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -662,6 +900,7 @@ Please make sure you are online or try writing again. If you'd like to reach San
                 Representative AI Core • Keeps chats saved locally
               </p>
             </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -693,7 +932,7 @@ Please make sure you are online or try writing again. If you'd like to reach San
             exit={{ scale: 0.8, opacity: 0 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsOpen(true)}
+            onClick={handleOpenChat}
             id="btn-chatbot-float"
             className="w-14 h-14 bg-brand rounded-full flex items-center justify-center text-white cursor-pointer shadow-lg hover:shadow-xl hover:shadow-brand/20 active:scale-95 relative"
             title="Ask Sankalp's AI Assistant"
