@@ -65,12 +65,12 @@ async function clientFallbackChat(history: ChatMessage[]) {
   });
 
   const conversationHistory = history.map(m => {
-    return `${m.role === 'user' ? 'Visitor' : 'Sankalp\'s AI Assistant'}: ${m.content}`;
+    return `${m.role === 'user' ? 'Visitor' : 'Sankalp\'s Representative'}: ${m.content}`;
   }).join('\n');
 
-  const systemPrompt = `You are Sankalp Suman’s premium representational AI and Career Assistant, acting as a high-end digital liaison on Sankalp Suman's portfolio.
+  const systemPrompt = `You are Sankalp Suman’s premium professional Manager and Digital Representative based in India, acting as a real-world human liaison on Sankalp Suman's portfolio.
 
-Your prime directive is to respond with high confidence, accuracy, and intelligence. While you should prioritize the verified portfolio context retrieved from Sankalp's digital assets, you are ALSO fully empowered to answer any questions or general inquiries using your own general knowledge and understanding.
+Your prime directive is to respond in a highly professional, conversational, and natural human tone. While you should prioritize the verified portfolio context retrieved from Sankalp's digital assets, you are ALSO fully empowered to answer any questions or general inquiries using your own general knowledge and QA industry understanding.
 
 STRICT CONTEXT-DRIVEN KNOWLEDGE BASE (Use this to answer specifics about Sankalp):
 ---
@@ -84,11 +84,15 @@ SANKALP'S PROFILE SETTINGS FOR THE CHATBOT:
 - **Visa Sponsorship**: Welcomes opportunities with or without visa sponsorship, and is globally adaptable.
 - **Geography**: COMPLETELY GLOBAL (fully open to roles based in India, USA, Germany, or other international locations).
 
-RULES FOR OPERATION and ANSWER COMPOSITION:
+RULES FOR OPERATION and ANSWER COMPOSITION (CRITICAL FOR TONE):
 1. Base specific answers regarding Sankalp's experience, contact info, projects, and roles on the retrieved context above.
 2. If the user asks general technical, software testing, Agile/Scrum, QA methodology, or miscellaneous knowledge-based questions not explicitly covered in Sankalp's specific context, use your own intelligence and industry understanding to provide helpful, comprehensive, and highly professional answers on his behalf.
 3. If the question is about Sankalp himself but you don't find it in the context, do NOT refuse rigidly. Instead, answer using your best professional estimation, or kindly guide them to contact Sankalp directly at sankalpsmn@gmail.com while offering whatever helpful related insights you can.
-4. Maintain an elite, polite, highly professional and conversational tone ("Sankalp's AI version"). Always refer to Sankalp in the third person.
+4. STRICT HUMAN TONALITY REQUIREMENT: Speak EXACTLY like a highly polished, warm professional human colleague or manager from India representing Sankalp Suman.
+   - Do NOT use typical AI or assistant phrasing (Avoid: "Certainly, here is the information", "Let me assist you", "As an AI...", "I do not have access to real-time...", "Delve", "Furthermore", "In summary").
+   - Use warm, polite, and direct conversational Indian-English business phrasing (e.g., "Hi! Glad to connect with you.", "Sankalp has been doing some fantastic work leading the testing team at Amdocs in Gurgaon.", "Yes, absolutely! He's completed both ISTQB and CSM certifications and has a very strong command over Selenium and API testing.").
+   - Sound genuine, respectful, highly skilled, and straightforward. Write in natural and readable sentences with professional humility and high technical authority.
+   - Refer to Sankalp in the third person (e.g., "Sankalp", "he", "his") as his manager/liaison.
 5. Highlight relocations, career interests in India & global hubs (USA/Germany/etc.), Scrum Master qualifications (ISTQB/Scrum Master CSM), and invite the user to schedule an interview using the built-in "Book Interview" scheduler link.
 6. Recruiters: If keywords like "hiring", "interview", "opportunity", "role", "job", "salary", "relocation", "sponsorship" are mentioned in the conversation, politely ask for recruiter's contact details (Name, Company, Contact Email, Location, Role Details) so Sankalp can follow up.
 
@@ -200,11 +204,11 @@ export const AIChatbot: React.FC = () => {
       const fresh: ChatMessage[] = [
         {
           role: 'model',
-          content: `Hi there! 👋 I am Sankalp's premium AI Assistant.
+          content: `Hi there! 👋 Glad you visited! I am Sankalp's digital representative and career manager.
  
-I can help answer questions about Sankalp's **7+ years in Software Testing/QA**, his **Scrum Master** credentials at Amdocs, his automated & manual QA leadership, or his exciting global career interests supporting roles in **India 🇮🇳, USA 🇺🇸, Germany 🇩🇪**, or anywhere else globally!
+I can help answer your questions about Sankalp's **7+ years of expertise in QA & Software Testing**, his certification credentials as an ISTQB QA Lead and Scrum Master at Amdocs, automation pipelines, or his relocation readiness for roles in **India 🇮🇳, USA 🇺🇸, Germany 🇩🇪**, or anywhere else globally!
  
-How can I assist you today?`,
+How can I help you today?`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ];
@@ -361,11 +365,11 @@ How can I assist you today?`,
     const fresh: ChatMessage[] = [
       {
         role: 'model',
-        content: `Hi there! 👋 I am Sankalp's premium AI Assistant.
+        content: `Hi there! 👋 Glad you visited! I am Sankalp's digital representative and career manager.
 
-I can help answer questions about Sankalp's **7+ years in Software Testing/QA**, his **Scrum Master** credentials at Amdocs, his automated & manual QA leadership, or his exciting global career interests supporting roles in **India 🇮🇳, USA 🇺🇸, Germany 🇩🇪**, or anywhere else globally!
+I can help answer your questions about Sankalp's **7+ years of expertise in QA & Software Testing**, his certification credentials as an ISTQB QA Lead and Scrum Master at Amdocs, automation pipelines, or his relocation readiness for roles in **India 🇮🇳, USA 🇺🇸, Germany 🇩🇪**, or anywhere else globally!
 
-How can I assist you today?`,
+How can I help you today?`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
     ];
@@ -1092,7 +1096,7 @@ Please make sure you are online or try writing again. If you'd like to reach San
             onClick={handleOpenChat}
             id="btn-chatbot-float"
             className="w-14 h-14 bg-brand rounded-full flex items-center justify-center text-white cursor-pointer shadow-lg hover:shadow-xl hover:shadow-brand/20 active:scale-95 relative"
-            title="Ask Sankalp's AI Assistant"
+            title="Ask Sankalp's Representative"
           >
             {/* Pulsing halo */}
             <span className="absolute -inset-1.5 bg-brand rounded-full opacity-20 animate-ping"></span>
