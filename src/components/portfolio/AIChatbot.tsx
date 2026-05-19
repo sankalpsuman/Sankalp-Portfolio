@@ -7,6 +7,7 @@ import {
   User, Mail, Building
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { GoogleGenAI, Type } from "@google/genai";
 import { saveDocument } from '../../services/firestoreService';
 
 interface ChatMessage {
@@ -21,6 +22,140 @@ interface LeadData {
   email?: string;
   roleDetails?: string;
   location?: string;
+}
+
+const CLIENT_SANKALP_CONTEXT = `
+Sankalp Suman is a results-driven QA Lead & Software Test Specialist with 7+ years of professional software testing experience. He currently works as a Software Test Specialist and Scrum Master at Amdocs (Dec 2021 – Present) in Gurgaon, India, leading QA delivery for enterprise-scale telecom platforms, implementing AI-assisted testing workflows, and managing Agile sprints as Scrum Master. Succeeded in increasing delivery speed and test case efficiency.
+His unique background includes being a UPSC Civil Services Aspirant with Sociology as an optional subject, demonstrating wide intellectual depth, extreme discipline, high leadership caliber, and sociological understanding of organizations/processes. He specializes in AI-powered testing, manual and automated regression suites, API validation, Agile Scrum, and bridging the gap between QA automation and agentic generative intelligence.
+
+Career Goals & Relocation readiness:
+Sankalp Suman is open to software QA, testing, and quality engineering leadership opportunities globally, including India, the USA, Germany, and other global tech hubs. He has ready availability for remote/hybrid positions or relocation, and is highly interested in roles involving advanced test automation, AI-Assisted QA, and Scrum Master agile ceremonies. He is comfortable with a 1 month / negotiable notice period. His salary expectations are competitive and open to discussion based on location and cost of living.
+
+Previous Professional Experiences:
+- Hexaview (Adobe Client, June 2019 – Dec 2021) as Senior Quality Engineer. Focused on complex software validation for Adobe products. Built automated testing frameworks, reduced regression cycle execution duration, and optimized test suites.
+- Opkey (Aug 2018 – May 2019) as Quality Engineer. Manual and automated testing for cloud platforms. Contributed to early-stage test case generation logic, API reliability, and black-box validations.
+
+Expertise & Skills:
+- QA & Test Automation: Manual & functional testing, API physical validation (Postman, REST Assured) (92% expertise), automated GUI automation using Selenium Webdriver with Java/Python, Playwright, ETL testing, SQL database testing, JIRA, and Test Planning. He possesses AI-driven testing (95% expertise) and prompt engineering (90%) for automated test generation.
+- Scrum Master Leadership: Agile sprints, standups, retrospectives, backlog grooming, resolving cross-team dependencies, and managing test plan risks (90% expertise).
+
+Professional Certifications & Accolades:
+- ISTQB Certified Tester issued by the International Software Testing Qualifications Board (ISTQB) in 2019.
+- Certified Scrum Master (CSM) issued by Scrum Alliance in 2021.
+
+Sankalp's Contact details:
+- Email: sankalpsmn@gmail.com
+- Location: Gurgaon / Delhi NCR, India
+- LinkedIn profile: linkedin.com/in/sankalp-suman
+`;
+
+async function clientFallbackChat(history: ChatMessage[]) {
+  const clientKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!clientKey) {
+    throw new Error('No client-side Gemini key detected.');
+  }
+
+  const ai = new GoogleGenAI({
+    apiKey: clientKey,
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build-client',
+      }
+    }
+  });
+
+  const conversationHistory = history.map(m => {
+    return `${m.role === 'user' ? 'Visitor' : 'Sankalp\'s AI Assistant'}: ${m.content}`;
+  }).join('\n');
+
+  const systemPrompt = `You are Sankalp Suman’s premium representational AI and Career Assistant, acting as a high-end digital liaison on Sankalp Suman's portfolio.
+
+Your prime directive is to respond with high confidence, accuracy, and intelligence. While you should prioritize the verified portfolio context retrieved from Sankalp's digital assets, you are ALSO fully empowered to answer any questions or general inquiries using your own general knowledge and understanding.
+
+STRICT CONTEXT-DRIVEN KNOWLEDGE BASE (Use this to answer specifics about Sankalp):
+---
+${CLIENT_SANKALP_CONTEXT}
+---
+
+SANKALP'S PROFILE SETTINGS FOR THE CHATBOT:
+- **Notice Period**: 1 month / negotiable (comfortable with transitional timelines).
+- **Relocation**: Globally open! Highly enthusiastic to work or relocate to India, Germany 🇩🇪, USA 🇺🇸, or any other global destination.
+- **Salary/Package Expectations**: Highly competitive, open to discussion depending on location, cost of living index, and comprehensive relocation/visa support package.
+- **Visa Sponsorship**: Welcomes opportunities with or without visa sponsorship, and is globally adaptable.
+- **Geography**: COMPLETELY GLOBAL (fully open to roles based in India, USA, Germany, or other international locations).
+
+RULES FOR OPERATION and ANSWER COMPOSITION:
+1. Base specific answers regarding Sankalp's experience, contact info, projects, and roles on the retrieved context above.
+2. If the user asks general technical, software testing, Agile/Scrum, QA methodology, or miscellaneous knowledge-based questions not explicitly covered in Sankalp's specific context, use your own intelligence and industry understanding to provide helpful, comprehensive, and highly professional answers on his behalf.
+3. If the question is about Sankalp himself but you don't find it in the context, do NOT refuse rigidly. Instead, answer using your best professional estimation, or kindly guide them to contact Sankalp directly at sankalpsmn@gmail.com while offering whatever helpful related insights you can.
+4. Maintain an elite, polite, highly professional and conversational tone ("Sankalp's AI version"). Always refer to Sankalp in the third person.
+5. Highlight relocations, career interests in India & global hubs (USA/Germany/etc.), Scrum Master qualifications (ISTQB/Scrum Master CSM), and invite the user to schedule an interview using the built-in "Book Interview" scheduler link.
+6. Recruiters: If keywords like "hiring", "interview", "opportunity", "role", "job", "salary", "relocation", "sponsorship" are mentioned in the conversation, politely ask for recruiter's contact details (Name, Company, Contact Email, Location, Role Details) so Sankalp can follow up.
+
+RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
+{
+  "reply": "Your markdown-formatted text response goes here",
+  "isRecruiterLead": true if visitor is offering a job, representing a recruiter, or inquiring about hiring details, else false,
+  "leadData": {
+    "recruiterName": "extracted recruiter name, can be null or empty",
+    "companyName": "extracted company name, can be null or empty",
+    "email": "extracted contact email, can be null or empty",
+    "roleDetails": "extracted role title/details, can be null or empty",
+    "location": "extracted location/opportunities info, can be null or empty"
+  }
+}`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3.5-flash",
+    contents: `${systemPrompt}\n\nClient Conversation History:\n${conversationHistory}\n\nAssess this conversation, and respond in the required JSON format. Provide the next reply.`,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          reply: {
+            type: Type.STRING,
+            description: "The chatbot's text or markdown response to the user. Keep it natural, conversational, polite and highly structured on retrieved info."
+          },
+          isRecruiterLead: {
+            type: Type.BOOLEAN,
+            description: "Set to true if user messages indicate they are a recruiter, hiring manager, or looking to hire."
+          },
+          leadData: {
+            type: Type.OBJECT,
+            properties: {
+              recruiterName: { type: Type.STRING },
+              companyName: { type: Type.STRING },
+              email: { type: Type.STRING },
+              roleDetails: { type: Type.STRING },
+              location: { type: Type.STRING }
+            }
+          }
+        },
+        required: ["reply"]
+      }
+    }
+  });
+
+  const text = response.text;
+  if (!text) {
+    throw new Error('Empty response from model');
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.warn("Failed to parse Gemini response as JSON, trying regex clean:", text);
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) {
+      return JSON.parse(match[0]);
+    }
+    return {
+      reply: text,
+      isRecruiterLead: false,
+      leadData: {}
+    };
+  }
 }
 
 export const AIChatbot: React.FC = () => {
@@ -265,14 +400,25 @@ How can I assist you today?`,
     await syncChatState(nextMessages);
 
     try {
-      const response = await fetch('/api/chat/message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: nextMessages })
-      });
+      let data;
+      try {
+        const response = await fetch('/api/chat/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: nextMessages })
+        });
 
-      if (!response.ok) throw new Error('Network error');
-      const data = await response.json();
+        if (!response.ok) throw new Error('Network error');
+        data = await response.json();
+      } catch (fetchErr) {
+        console.warn("Backend proxy failed, attempting client-side Gemini fallback...", fetchErr);
+        const clientKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (clientKey) {
+          data = await clientFallbackChat(nextMessages);
+        } else {
+          throw fetchErr;
+        }
+      }
 
       const aiReplyMessage: ChatMessage = {
         role: 'model',
