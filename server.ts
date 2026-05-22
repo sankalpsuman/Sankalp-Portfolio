@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from 'dotenv';
 import { initializeApp } from 'firebase/app';
@@ -199,7 +198,15 @@ const ai = new GoogleGenAI({
 });
 
 export const app = express();
-app.use(express.json());
+
+// Custom parser middleware to prevent hanging or failing in serverless environments like Vercel
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 export let initPromise: Promise<void> | null = null;
 
@@ -350,7 +357,8 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
       res.json({ success: true, mailed });
     } catch (error: any) {
       console.error('Failed to send transcript email:', error);
-      res.status(500).json({ error: error?.message || 'Failed to send transcript email.' });
+      // Soft fail with 200 OK but success false to prevent severe client-side or gateway block errors
+      res.json({ success: false, error: error?.message || 'Failed to send transcript email.' });
     }
   });
 
@@ -363,10 +371,11 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
 
     try {
       const mailed = await sendInquiryEmail(name, email, message);
-      res.json({ success: true, mailed });
+      res.json({ success: mailed, mailed });
     } catch (error: any) {
       console.error('Failed to send inquiry email:', error);
-      res.status(500).json({ error: error?.message || 'Failed to send inquiry email.' });
+      // Soft fail with 200 OK but success false to prevent severe client-side or gateway block errors
+      res.json({ success: false, error: error?.message || 'Failed to send inquiry email.' });
     }
   });
 
@@ -501,6 +510,7 @@ STRICT OPERATIONAL RULES:
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
