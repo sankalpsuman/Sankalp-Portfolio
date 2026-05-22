@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { GoogleGenAI, Type } from "@google/genai";
-import { saveDocument } from '../../services/firestoreService';
+import { saveDocument, getDocument, HERO_DOC } from '../../services/firestoreService';
 
 interface ChatMessage {
   role: 'user' | 'model' | 'system';
@@ -171,6 +171,7 @@ export const AIChatbot: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState<string>('/resume.pdf');
   
   // Lead tracking
   const [isRecruiter, setIsRecruiter] = useState(false);
@@ -329,6 +330,21 @@ How can I help you today?`,
     }
   }, []);
 
+  // Fetch real portfolio resume link from store settings dynamically
+  useEffect(() => {
+    async function loadResume() {
+      try {
+        const heroData = await getDocument<any>(HERO_DOC);
+        if (heroData?.resumeUrl) {
+          setResumeUrl(heroData.resumeUrl);
+        }
+      } catch (err) {
+        console.warn("Failed to load dynamic resume for chatbot:", err);
+      }
+    }
+    loadResume();
+  }, []);
+
   // Open chatbot via custom event listener
   useEffect(() => {
     const handleOpenRequest = () => {
@@ -378,9 +394,11 @@ How can I help you today?`,
     localStorage.setItem('portfolio_chatbot_history', JSON.stringify(fresh));
   };
 
-  // Scroll to bottom
+  // Scroll to bottom (optimized speed and visual flow during live printing)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const lastMsg = messages[messages.length - 1];
+    const isModelStreaming = lastMsg?.role === 'model' && isLoading;
+    messagesEndRef.current?.scrollIntoView({ behavior: isModelStreaming ? 'auto' : 'smooth' });
   }, [messages, isLoading, isMinimized, isOpen]);
 
   const handleSendMessage = async (textToSend?: string) => {
@@ -462,10 +480,13 @@ How can I help you today?`,
       const tempMessages = [...nextMessages, { ...aiReplyMessage }];
       setMessages(tempMessages);
 
+      const batchSize = 3; // Write multiple elements at once to feel incredibly responsive and smooth
       const streamTimer = setInterval(async () => {
         if (wordIndex < words.length) {
-          currentText += words[wordIndex];
-          wordIndex++;
+          for (let i = 0; i < batchSize && wordIndex < words.length; i++) {
+            currentText += words[wordIndex];
+            wordIndex++;
+          }
 
           setMessages(prev => {
             const updated = [...prev];
@@ -499,7 +520,7 @@ How can I help you today?`,
             }).catch(e => console.warn("Failed sending lead email:", e));
           }
         }
-      }, 15);
+      }, 12);
 
     } catch (err) {
       console.error(err);
@@ -716,7 +737,9 @@ Please make sure you are online or try writing again. If you'd like to reach San
                 isDarkMode ? 'bg-neutral-950/20 border-neutral-850' : 'bg-neutral-50/20 border-neutral-150'
               }`} id="chatbot-quick-cta-bar">
                 <a 
-                  href="/resume.pdf" 
+                  href={resumeUrl} 
+                  target="_blank"
+                  rel="noreferrer"
                   download="Sankalp_Suman_Resume.pdf"
                   className="flex items-center gap-1.5 px-3 py-1 bg-brand/20 text-brand-primary border border-brand/30 rounded-full hover:bg-brand/30 transition-all font-medium whitespace-nowrap"
                 >
@@ -887,63 +910,63 @@ Please make sure you are online or try writing again. If you'd like to reach San
                       <p className="text-[10px] opacity-40 mt-4">Closing scheduler panel...</p>
                     </motion.div>
                   ) : (
-                    <form onSubmit={handleScheduleInterview} className="space-y-4 text-xs">
+                    <form onSubmit={handleScheduleInterview} className="space-y-3.5 text-xs">
                       <div>
-                        <label className="block font-medium mb-1 opacity-80">Full Name / Company 대표</label>
+                        <label className="block font-semibold mb-1 opacity-90 pl-0.5 text-[11px]">Full Name / Company Name</label>
                         <input 
                           type="text" 
                           required
                           value={scheduleName}
                           onChange={e => setScheduleName(e.target.value)}
                           placeholder="Visitor Name or Recruiting Firm"
-                          className={`w-full p-2.5 rounded-lg border ${
+                          className={`w-full p-2 rounded-xl border outline-none transition-all ${
                             isDarkMode 
-                              ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand' 
-                              : 'bg-neutral-50 border-neutral-200 text-neutral-800'
+                              ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand focus:ring-1 focus:ring-brand/30' 
+                              : 'bg-white border-neutral-250 text-neutral-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
                           }`}
                         />
                       </div>
                       <div>
-                        <label className="block font-medium mb-1 opacity-80">Contact Email</label>
+                        <label className="block font-semibold mb-1 opacity-90 pl-0.5 text-[11px]">Contact Email</label>
                         <input 
                           type="email" 
                           required
                           value={scheduleEmail}
                           onChange={e => setScheduleEmail(e.target.value)}
                           placeholder="recruiter@company.com"
-                          className={`w-full p-2.5 rounded-lg border ${
+                          className={`w-full p-2 rounded-xl border outline-none transition-all ${
                             isDarkMode 
-                              ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand' 
-                              : 'bg-neutral-50 border-neutral-200 text-neutral-800'
+                              ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand focus:ring-1 focus:ring-brand/30' 
+                              : 'bg-white border-neutral-250 text-neutral-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
                           }`}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block font-medium mb-1 opacity-80">Requested Date</label>
+                          <label className="block font-semibold mb-1 opacity-90 pl-0.5 text-[11px]">Requested Date</label>
                           <input 
                             type="date" 
                             required
                             value={scheduledDate}
                             onChange={e => setScheduledDate(e.target.value)}
-                            className={`w-full p-2.5 rounded-lg border ${
+                            className={`w-full p-2 rounded-xl border outline-none transition-all ${
                               isDarkMode 
-                                ? 'bg-neutral-950 border-neutral-800 text-white' 
-                                : 'bg-neutral-50 border-neutral-200 text-neutral-850'
+                                ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand focus:ring-1 focus:ring-brand/30' 
+                                : 'bg-white border-neutral-250 text-neutral-850 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
                             }`}
                           />
                         </div>
                         <div>
-                          <label className="block font-medium mb-1 opacity-80">Preferred Time</label>
+                          <label className="block font-semibold mb-1 opacity-90 pl-0.5 text-[11px]">Preferred Time</label>
                           <input 
                             type="time" 
                             required
                             value={scheduledTime}
                             onChange={e => setScheduledTime(e.target.value)}
-                            className={`w-full p-2.5 rounded-lg border ${
+                            className={`w-full p-2 rounded-xl border outline-none transition-all ${
                               isDarkMode 
-                                ? 'bg-neutral-950 border-neutral-800 text-white' 
-                                : 'bg-neutral-50 border-neutral-200 text-neutral-850'
+                                ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand focus:ring-1 focus:ring-brand/30' 
+                                : 'bg-white border-neutral-250 text-neutral-850 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
                             }`}
                           />
                         </div>
@@ -951,9 +974,9 @@ Please make sure you are online or try writing again. If you'd like to reach San
 
                       <button
                         type="submit"
-                        className="w-full flex items-center justify-center gap-2 py-3 bg-brand-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap mt-4 hover:shadow-lg hover:shadow-brand/20 active:scale-[0.98]"
+                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-brand text-white font-bold rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap mt-3.5 hover:shadow-lg hover:shadow-brand/20 active:scale-[0.98]"
                       >
-                        <Calendar size={14} />
+                        <Calendar size={13} />
                         Confirm Booking Schedule
                       </button>
                     </form>

@@ -112,6 +112,53 @@ async function sendTranscriptEmail(sessionId: string, titleLine: string, leadDat
   return true;
 }
 
+// Helper to format and send contact form inquiry email
+async function sendInquiryEmail(name: string, email: string, message: string) {
+  const emailUser = process.env.SMTP_USER;
+  const emailPass = process.env.SMTP_PASS;
+
+  const mailOptions = {
+    from: `"Sankalp's Portfolio" <${emailUser || 'noreply@portfolio.com'}>`,
+    to: 'sankalpsmn@gmail.com',
+    subject: `🚨 [Portfolio Inquiry] New message from ${name}`,
+    html: `
+      <div style="max-width: 600px; margin: 0 auto; font-family: sans-serif; line-height: 1.5; color: #1f2937;">
+        <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 8px;">New Message Submission</h2>
+        <p style="font-size: 14px; color: #4b5563;">
+          A visitor has left a message on your portfolio contact form at <strong>${new Date().toLocaleString()}</strong>.
+        </p>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+          <tr>
+            <td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: bold; width: 30%; font-family: sans-serif;">Name</td>
+            <td style="padding: 10px; border: 1px solid #e5e7eb; font-family: sans-serif;">${name}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: bold; font-family: sans-serif;">Email</td>
+            <td style="padding: 10px; border: 1px solid #e5e7eb; font-family: sans-serif;"><a href="mailto:${email}">${email}</a></td>
+          </tr>
+        </table>
+        <h3 style="color: #2563eb; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; font-family: sans-serif;">MESSAGE CONTENT</h3>
+        <div style="background-color: #f3f4f6; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; font-family: sans-serif; font-size: 14px; white-space: pre-wrap; color: #1f2937; margin-top: 12px;">${message}</div>
+        <footer style="margin-top: 32px; font-size: 11px; color: #9ca3af; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 16px; font-family: sans-serif;">
+          Designed for Sankalp Suman.
+        </footer>
+      </div>
+    `,
+  };
+
+  if (!emailUser || !emailPass) {
+    console.warn('--- NODEMAILER LOG ---');
+    console.warn('SMTP_USER and SMTP_PASS are not configured in your env file.');
+    console.warn(`To: ${mailOptions.to}`);
+    console.warn(`Subject: ${mailOptions.subject}`);
+    console.warn('--- NODEMAILER END ---');
+    return false;
+  }
+
+  await transporter.sendMail(mailOptions);
+  return true;
+}
+
 // Server-side cache for SEO and settings
 const metadataCache = new NodeCache({ stdTTL: 60 }); // 1 minute cache
 
@@ -135,10 +182,12 @@ const ai = new GoogleGenAI({
   }
 });
 
-async function startServer() {
-  const app = express();
-  app.use(express.json());
+export const app = express();
+app.use(express.json());
 
+export let initPromise: Promise<void> | null = null;
+
+async function startServer() {
   const dispatchedSessions = new Set<string>();
 
   // RAG content synchronization endpoint
@@ -286,6 +335,22 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
     } catch (error: any) {
       console.error('Failed to send transcript email:', error);
       res.status(500).json({ error: error?.message || 'Failed to send transcript email.' });
+    }
+  });
+
+  app.post('/api/contact/email', async (req, res) => {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'Name, email, and message are required.' });
+    }
+
+    try {
+      const mailed = await sendInquiryEmail(name, email, message);
+      res.json({ success: true, mailed });
+    } catch (error: any) {
+      console.error('Failed to send inquiry email:', error);
+      res.status(500).json({ error: error?.message || 'Failed to send inquiry email.' });
     }
   });
 
@@ -484,9 +549,11 @@ STRICT OPERATIONAL RULES:
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  }
 }
 
-startServer();
+initPromise = startServer();
