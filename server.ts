@@ -17,19 +17,19 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API
 
 // Nodemailer SMTP Transporter Setup
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_PORT === '465',
+  host: process.env.SMTP_HOST || process.env.VITE_SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || process.env.VITE_SMTP_PORT || '587'),
+  secure: (process.env.SMTP_PORT || process.env.VITE_SMTP_PORT) === '465',
   auth: {
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
+    user: process.env.SMTP_USER || process.env.VITE_SMTP_USER || '',
+    pass: process.env.SMTP_PASS || process.env.VITE_SMTP_PASS || '',
   },
 });
 
 // Helper to format and send the complete chat transcript
 async function sendTranscriptEmail(sessionId: string, titleLine: string, leadData: any, messages: any[]) {
-  const emailUser = process.env.SMTP_USER;
-  const emailPass = process.env.SMTP_PASS;
+  const emailUser = process.env.SMTP_USER || process.env.VITE_SMTP_USER;
+  const emailPass = process.env.SMTP_PASS || process.env.VITE_SMTP_PASS;
 
   const conversationHtml = messages.map(m => {
     const sender = m.role === 'user' ? 'Visitor' : 'Sankalp\'s Representative';
@@ -114,8 +114,8 @@ async function sendTranscriptEmail(sessionId: string, titleLine: string, leadDat
 
 // Helper to format and send contact form inquiry email
 async function sendInquiryEmail(name: string, email: string, message: string) {
-  const emailUser = process.env.SMTP_USER;
-  const emailPass = process.env.SMTP_PASS;
+  const emailUser = process.env.SMTP_USER || process.env.VITE_SMTP_USER;
+  const emailPass = process.env.SMTP_PASS || process.env.VITE_SMTP_PASS;
 
   const mailOptions = {
     from: `"Sankalp's Portfolio" <${emailUser || 'noreply@portfolio.com'}>`,
