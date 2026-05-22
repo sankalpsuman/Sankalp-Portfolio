@@ -54,7 +54,7 @@ export default function Footer() {
             <ul className="space-y-4">
               {['About', 'Experience', 'Projects', 'Skills', 'Contact'].map((item) => (
                 <li key={item}>
-                  <a href={`#${item.toLowerCase()}`} className="text-gray-500 hover:text-blue-400 transition-colors text-sm">{item}</a>
+                  <a href={`/#${item.toLowerCase()}`} className="text-gray-500 hover:text-blue-400 transition-colors text-sm">{item}</a>
                 </li>
               ))}
               {settings?.calendlyUrl && (

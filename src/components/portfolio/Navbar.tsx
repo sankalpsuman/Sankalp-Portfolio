@@ -73,19 +73,29 @@ export default function Navbar() {
   }, [location.pathname]);
 
   const scrollToAnchor = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (location.pathname === '/' && href.startsWith('/#')) {
-      e.preventDefault();
+    if (href.startsWith('/#')) {
       const targetId = href.substring(2);
-      const element = document.getElementById(targetId);
-      if (element) {
-        // Immediate feedback
-        setIsNavigating(true);
-        setActiveSection(targetId);
+      
+      // Dispatch custom event to mount the lazy-loaded section immediately
+      window.dispatchEvent(new CustomEvent('force-section-visible', { detail: targetId }));
+
+      if (location.pathname === '/') {
+        e.preventDefault();
         
-        element.scrollIntoView({ behavior: 'smooth' });
-        
-        // Reset navigation guard after scroll completes (roughly)
-        setTimeout(() => setIsNavigating(false), 1000);
+        // Slight delay to allow the LazySection to mount the child in DOM
+        setTimeout(() => {
+          const element = document.getElementById(targetId);
+          if (element) {
+            setIsNavigating(true);
+            setActiveSection(targetId);
+            element.scrollIntoView({ behavior: 'smooth' });
+            
+            // Sync address bar hash without full page reload
+            window.history.pushState(null, '', `/#${targetId}`);
+
+            setTimeout(() => setIsNavigating(false), 1000);
+          }
+        }, 60);
         
         setMobileMenuOpen(false);
       }
