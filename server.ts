@@ -199,12 +199,35 @@ const ai = new GoogleGenAI({
 
 export const app = express();
 
+// A simple, safe logging middleware to help debug API requests on Vercel or locally
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/')) {
+    console.log(`[API Request] ${req.method} ${req.url}`);
+  }
+  next();
+});
+
 // Custom parser middleware to prevent hanging or failing in serverless environments like Vercel
 app.use((req, res, next) => {
-  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+  if (process.env.VERCEL) {
+    // Under Vercel Serverless, the body reader is already managed and pre-parsed.
+    // If req.body is a string containing JSON, we can parse it safely.
+    if (typeof req.body === 'string' && req.body.trim().startsWith('{')) {
+      try {
+        req.body = JSON.parse(req.body);
+      } catch (e) {
+        // Safe fail
+      }
+    }
     next();
   } else {
-    express.json()(req, res, next);
+    // If not on Vercel (e.g. locally or in our development preview environment),
+    // run the regular express.json() middleware if the body is not already an object.
+    if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+      next();
+    } else {
+      express.json()(req, res, next);
+    }
   }
 });
 
@@ -226,17 +249,17 @@ async function startServer() {
   });
 
   app.post('/api/chat/message', async (req, res) => {
-    const { messages } = req.body;
-
-    if (!GEMINI_API_KEY) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
-    }
-
-    if (!Array.isArray(messages)) {
-      return res.status(400).json({ error: 'messages must be an array of conversation items.' });
-    }
-
     try {
+      const { messages } = req.body || {};
+
+      if (!GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
+      }
+
+      if (!Array.isArray(messages)) {
+        return res.status(400).json({ error: 'messages must be an array of conversation items.' });
+      }
+
       // Map roles correctly for context and feed full conversational text formatting
       const conversationHistory = messages.map(m => {
         return `${m.role === 'user' ? 'Visitor' : 'Sankalp\'s Representative'}: ${m.content}`;
@@ -334,18 +357,18 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
   });
 
   app.post('/api/chat/email', async (req, res) => {
-    const { sessionId, leadData, messages, force } = req.body;
-
-    if (!sessionId || !Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({ error: 'Session ID and a valid conversation are required.' });
-    }
-
-    // Check if we've already dispatched this session unless force is true
-    if (dispatchedSessions.has(sessionId) && !force) {
-      return res.json({ success: true, message: 'Email already dispatched for this session.' });
-    }
-
     try {
+      const { sessionId, leadData, messages, force } = req.body || {};
+
+      if (!sessionId || !Array.isArray(messages) || messages.length === 0) {
+        return res.status(400).json({ error: 'Session ID and a valid conversation are required.' });
+      }
+
+      // Check if we've already dispatched this session unless force is true
+      if (dispatchedSessions.has(sessionId) && !force) {
+        return res.json({ success: true, message: 'Email already dispatched for this session.' });
+      }
+
       const isLead = leadData && (leadData.recruiterName || leadData.companyName || leadData.email);
       const titleLine = isLead 
         ? `🚨 Recruiter Lead from ${leadData.recruiterName || 'AnonymousRecruiter'} at ${leadData.companyName || 'Unknown Corp'}`
@@ -363,13 +386,13 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
   });
 
   app.post('/api/contact/email', async (req, res) => {
-    const { name, email, message } = req.body;
-
-    if (!name || !email || !message) {
-      return res.status(400).json({ error: 'Name, email, and message are required.' });
-    }
-
     try {
+      const { name, email, message } = req.body || {};
+
+      if (!name || !email || !message) {
+        return res.status(400).json({ error: 'Name, email, and message are required.' });
+      }
+
       const mailed = await sendInquiryEmail(name, email, message);
       res.json({ success: mailed, mailed });
     } catch (error: any) {
@@ -385,13 +408,13 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
   });
 
   app.post('/api/ai/generate', async (req, res) => {
-    const { prompt, userInput } = req.body;
-
-    if (!GEMINI_API_KEY) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
-    }
-
     try {
+      const { prompt, userInput } = req.body || {};
+
+      if (!GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
+      }
+
       const response = await (ai as any).models.generateContent({
         model: "gemini-3.5-flash",
         contents: `${prompt}\n\nUser Input: ${userInput}`,
@@ -415,13 +438,13 @@ STRICT OPERATIONAL RULES:
   });
 
   app.post('/api/ai/suggest-image', async (req, res) => {
-    const { title, excerpt } = req.body;
-
-    if (!GEMINI_API_KEY) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
-    }
-
     try {
+      const { title, excerpt } = req.body || {};
+
+      if (!GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
+      }
+
       const response = await (ai as any).models.generateContent({
         model: "gemini-3.5-flash",
         contents: `Provide exactly 3 keywords separated by commas that describe a professional, high-quality technical or business-related image for this blog post.
@@ -550,9 +573,9 @@ STRICT OPERATIONAL RULES:
         return res.status(404).json({ error: 'API route not found' });
       }
 
-      // If it looks like an asset (has an extension) and we're here, it means express.static missed it
-      const knownAssets = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.json'];
-      if (path.extname(urlPath) && knownAssets.includes(path.extname(urlPath).toLowerCase())) {
+      // If it looks like an asset (has any file extension except .html) and we're here, it means express.static missed it
+      const ext = path.extname(urlPath).toLowerCase();
+      if (ext && ext !== '.html') {
         return res.status(404).send('Asset not found');
       }
 
