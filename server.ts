@@ -16,20 +16,37 @@ const PORT = 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
 
 // Nodemailer SMTP Transporter Setup
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || process.env.VITE_SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || process.env.VITE_SMTP_PORT || '587'),
-  secure: (process.env.SMTP_PORT || process.env.VITE_SMTP_PORT) === '465',
-  auth: {
-    user: process.env.SMTP_USER || process.env.VITE_SMTP_USER || '',
-    pass: process.env.SMTP_PASS || process.env.VITE_SMTP_PASS || '',
-  },
-});
+function getSMTPConfig() {
+  const host = (process.env.SMTP_HOST || process.env.VITE_SMTP_HOST || 'smtp.gmail.com').trim();
+  const portStr = process.env.SMTP_PORT || process.env.VITE_SMTP_PORT || '587';
+  const port = parseInt(portStr.trim() || '587');
+  const secure = port === 465;
+  const user = (process.env.SMTP_USER || process.env.VITE_SMTP_USER || '').trim();
+  const rawPass = process.env.SMTP_PASS || process.env.VITE_SMTP_PASS || '';
+  
+  // Gmail app passwords usually display 16 letters grouped in 4-character blocks with spaces (e.g. 'xxxx xxxx xxxx xxxx').
+  // We strip all whitespace to make it work seamlessly, even if pasted with spaces!
+  const pass = rawPass.replace(/\s+/g, '');
+
+  return { host, port, secure, user, pass };
+}
+
+function getTransporter() {
+  const { host, port, secure, user, pass } = getSMTPConfig();
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: {
+      user,
+      pass,
+    },
+  });
+}
 
 // Helper to format and send the complete chat transcript
 async function sendTranscriptEmail(sessionId: string, titleLine: string, leadData: any, messages: any[]) {
-  const emailUser = process.env.SMTP_USER || process.env.VITE_SMTP_USER;
-  const emailPass = process.env.SMTP_PASS || process.env.VITE_SMTP_PASS;
+  const { user: emailUser, pass: emailPass } = getSMTPConfig();
 
   const conversationHtml = messages.map(m => {
     const sender = m.role === 'user' ? 'Visitor' : 'Sankalp\'s Representative';
@@ -108,14 +125,13 @@ async function sendTranscriptEmail(sessionId: string, titleLine: string, leadDat
     return false;
   }
 
-  await transporter.sendMail(mailOptions);
+  await getTransporter().sendMail(mailOptions);
   return true;
 }
 
 // Helper to format and send contact form inquiry email
 async function sendInquiryEmail(name: string, email: string, message: string) {
-  const emailUser = process.env.SMTP_USER || process.env.VITE_SMTP_USER;
-  const emailPass = process.env.SMTP_PASS || process.env.VITE_SMTP_PASS;
+  const { user: emailUser, pass: emailPass } = getSMTPConfig();
 
   const mailOptions = {
     from: `"Sankalp's Portfolio" <${emailUser || 'noreply@portfolio.com'}>`,
@@ -155,7 +171,7 @@ async function sendInquiryEmail(name: string, email: string, message: string) {
     return false;
   }
 
-  await transporter.sendMail(mailOptions);
+  await getTransporter().sendMail(mailOptions);
   return true;
 }
 
