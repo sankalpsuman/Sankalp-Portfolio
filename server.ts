@@ -44,7 +44,9 @@ function getTransporter() {
       // Do not fail on self-signed/unauthorized certificates
       rejectUnauthorized: false
     },
-    connectionTimeout: 10000, // 10 seconds connection timeout
+    connectionTimeout: 2500,  // 2.5s connection timeout to fail-fast on serverless platforms
+    greetingTimeout: 2500,    // 2.5s greeting timeout
+    socketTimeout: 5000,      // 5s socket inactivity timeout
     logger: true,            // Log connection data to Vercel Logs/server console
     debug: true             // Detailed debug output for precise troubleshooting
   });
@@ -182,8 +184,17 @@ try {
   console.warn('Firebase config not found for server-side SEO');
 }
 
-const firebaseApp = firebaseConfig ? initializeApp(firebaseConfig) : null;
-const db = firebaseApp ? getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId) : null;
+let firebaseApp: any = null;
+let db: any = null;
+
+if (firebaseConfig) {
+  try {
+    firebaseApp = initializeApp(firebaseConfig);
+    db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
+  } catch (error) {
+    console.error('Failed to initialize Firebase SDK server-side:', error);
+  }
+}
 
 const ai = new GoogleGenAI({
   apiKey: GEMINI_API_KEY || '',
@@ -208,10 +219,19 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   if (process.env.VERCEL) {
     // Under Vercel Serverless, the body reader is already managed and pre-parsed.
-    // If req.body is a string containing JSON, we can parse it safely.
+    // We safely parse JSON if it is a string or a buffer.
     if (typeof req.body === 'string' && req.body.trim().startsWith('{')) {
       try {
         req.body = JSON.parse(req.body);
+      } catch (e) {
+        // Safe fail
+      }
+    } else if (Buffer.isBuffer(req.body)) {
+      try {
+        const bodyStr = req.body.toString('utf-8');
+        if (bodyStr.trim().startsWith('{')) {
+          req.body = JSON.parse(bodyStr);
+        }
       } catch (e) {
         // Safe fail
       }

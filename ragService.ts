@@ -302,37 +302,35 @@ export async function buildKnowledgeBase(db: Firestore | null, ai: GoogleGenAI):
 
   console.log(`[RAG] Total of ${chunks.length} chunks defined for the portfolio indexing.`);
 
-  // Generate embeddings for new or modified content
-  for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i];
-    const cachedEmbedding = oldVectorMap.get(chunk.id);
+  // Generate embeddings for new or modified content in parallel batches to prevent Vercel timeouts
+  const batchSize = 5;
+  for (let i = 0; i < chunks.length; i += batchSize) {
+    const batch = chunks.slice(i, i + batchSize);
+    await Promise.all(batch.map(async (chunk) => {
+      const cachedEmbedding = oldVectorMap.get(chunk.id);
+      if (cachedEmbedding && cachedEmbedding.length > 0) {
+        chunk.embedding = cachedEmbedding;
+      } else {
+        try {
+          const textToEmbed = `Title: ${chunk.title || ''}\nContent: ${chunk.content}`;
+          // Generate embedding with gemini-embedding-2-preview model using GoogleGenAI unified SDK
+          const response = await ai.models.embedContent({
+            model: 'gemini-embedding-2-preview',
+            contents: textToEmbed,
+          }) as any;
 
-    if (cachedEmbedding && cachedEmbedding.length > 0) {
-      chunk.embedding = cachedEmbedding;
-    } else {
-      try {
-        const textToEmbed = `Title: ${chunk.title || ''}\nContent: ${chunk.content}`;
-        // Generate embedding with gemini-embedding-2-preview model using GoogleGenAI unified SDK
-        const response = await ai.models.embedContent({
-          model: 'gemini-embedding-2-preview',
-          contents: textToEmbed,
-        }) as any;
-
-        // Ensure safe extraction of embedding values
-        const vals = response.embedding?.values || response.embeddings?.[0]?.values || response.values;
-        if (Array.isArray(vals)) {
-          chunk.embedding = vals as number[];
-        } else {
-          console.warn(`[RAG] Embedding response format unknown for chunk ${chunk.id}:`, response);
+          // Ensure safe extraction of embedding values
+          const vals = response.embedding?.values || response.embeddings?.[0]?.values || response.values;
+          if (Array.isArray(vals)) {
+            chunk.embedding = vals as number[];
+          } else {
+            console.warn(`[RAG] Embedding response format unknown for chunk ${chunk.id}:`, response);
+          }
+        } catch (err) {
+          console.error(`[RAG] Failed to generate vector embedding for chunk ${chunk.id}:`, err);
         }
-      } catch (err) {
-        console.error(`[RAG] Failed to generate vector embedding for chunk ${chunk.id}:`, err);
       }
-      // Add a slight sleep/throttle to avoid burst API rate limits on cold indexing
-      if (i % 5 === 0) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-    }
+    }));
   }
 
   // Update Global Index
