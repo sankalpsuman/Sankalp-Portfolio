@@ -402,6 +402,67 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
     }
   });
 
+  // Diagnostic path to verify SMTP mail credentials and configurations on Vercel instantly
+  app.get('/api/contact/test-email', async (req, res) => {
+    try {
+      const config = getSMTPConfig();
+      const info = {
+        host: config.host,
+        port: config.port,
+        secure: config.secure,
+        hasUser: !!config.user,
+        hasPass: !!config.pass,
+        userLength: config.user.length,
+        passLength: config.pass.length,
+      };
+
+      if (!config.user || !config.pass) {
+        return res.status(400).json({
+          success: false,
+          error: 'SMTP credentials (SMTP_USER/SMTP_PASS) are not configured in your environment variables.',
+          config: info
+        });
+      }
+
+      console.log('[SMTP Diagnostic Route] Checking SMTP connection...');
+      const transporter = getTransporter();
+      
+      const verified = await transporter.verify();
+      
+      const result = await transporter.sendMail({
+        from: `"Sankalp SMTP Test" <${config.user}>`,
+        to: 'sankalpsmn@gmail.com',
+        subject: '🧪 [Portfolio SMTP Diagnostic] Test Email',
+        text: 'Your portfolio email integration is 100% working and configured correctly!',
+        html: '<p>Your portfolio email integration is <strong>100% working</strong> and configured correctly!</p>',
+      });
+
+      res.json({
+        success: true,
+        message: 'SMTP handshake and test email dispatch completed successfully!',
+        verified,
+        config: info,
+        result
+      });
+    } catch (error: any) {
+      console.error('[SMTP Diagnostic Failure]:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message || String(error),
+        code: error.code,
+        command: error.command,
+        response: error.response,
+        responseCode: error.responseCode,
+        stack: error.stack,
+        config: {
+          host: process.env.SMTP_HOST || 'smtp.gmail.com',
+          port: process.env.SMTP_PORT || '587',
+          user: process.env.SMTP_USER ? 'CONFIGURED' : 'EMPTY'
+        }
+      });
+    }
+  });
+
   // API Routes
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
