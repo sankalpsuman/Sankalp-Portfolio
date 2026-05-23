@@ -1,8 +1,7 @@
+import { app, initPromise } from '../dist/server.cjs';
+
 export default async function handler(req: any, res: any) {
   try {
-    // Dynamically import to intercept any top-level module resolution/import-time crashes
-    const { app, initPromise } = await import('../server');
-    
     // Await any asynchronous server setups (e.g. Firebase, SMTP transporter config)
     if (initPromise) {
       await initPromise;
@@ -22,4 +21,5 @@ export default async function handler(req: any, res: any) {
     });
   }
 }
+
 
