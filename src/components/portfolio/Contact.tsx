@@ -51,11 +51,21 @@ export default function Contact() {
       });
 
       // Dispatch real-time portal query notification email (via SMTP)
-      await fetch('/api/contact/email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      }).catch(e => console.warn('SMTP inquiry dispatch failed:', e));
+      try {
+        const response = await fetch('/api/contact/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          console.error('[SMTP EMAIL DISPATCH FAILURE DETAILS]:', result.error || 'Server error, check Vercel Function logs.');
+        } else {
+          console.log('[SMTP EMAIL DISPATCH SUCCESS]: Email successfully dispatched!');
+        }
+      } catch (e) {
+        console.error('[SMTP EMAIL NETWORK ERROR]:', e);
+      }
 
       setSent(true);
       reset();

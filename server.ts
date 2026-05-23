@@ -40,6 +40,13 @@ function getTransporter() {
       user,
       pass,
     },
+    tls: {
+      // Do not fail on self-signed/unauthorized certificates
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 10000, // 10 seconds connection timeout
+    logger: true,            // Log connection data to Vercel Logs/server console
+    debug: true             // Detailed debug output for precise troubleshooting
   });
 }
 
@@ -116,12 +123,7 @@ async function sendTranscriptEmail(sessionId: string, titleLine: string, leadDat
   };
 
   if (!emailUser || !emailPass) {
-    console.warn('--- NODEMAILER LOG ---');
-    console.warn('SMTP_USER and SMTP_PASS are not configured in your env file.');
-    console.warn(`To: ${mailOptions.to}`);
-    console.warn(`Subject: ${mailOptions.subject}`);
-    console.warn('--- EMAIL CONVERSATION END ---');
-    return false;
+    throw new Error('SMTP credentials (SMTP_USER/SMTP_PASS) are not configured in your environment variables.');
   }
 
   await getTransporter().sendMail(mailOptions);
@@ -162,12 +164,7 @@ async function sendInquiryEmail(name: string, email: string, message: string) {
   };
 
   if (!emailUser || !emailPass) {
-    console.warn('--- NODEMAILER LOG ---');
-    console.warn('SMTP_USER and SMTP_PASS are not configured in your env file.');
-    console.warn(`To: ${mailOptions.to}`);
-    console.warn(`Subject: ${mailOptions.subject}`);
-    console.warn('--- NODEMAILER END ---');
-    return false;
+    throw new Error('SMTP credentials (SMTP_USER/SMTP_PASS) are not configured in your environment variables.');
   }
 
   await getTransporter().sendMail(mailOptions);
