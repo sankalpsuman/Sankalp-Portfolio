@@ -57,7 +57,17 @@ export default function Contact() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         });
-        const result = await response.json();
+        
+        let result: any = null;
+        const textStr = await response.text();
+        const isJson = textStr.trim().startsWith('{') || textStr.trim().startsWith('[');
+        
+        if (isJson) {
+          result = JSON.parse(textStr);
+        } else {
+          result = { success: false, error: `Invalid server response format. Status ${response.status}: ${textStr.slice(0, 150)}...` };
+        }
+
         if (!response.ok || !result.success) {
           console.error('[SMTP EMAIL DISPATCH FAILURE DETAILS]:', result.error || 'Server error, check Vercel Function logs.');
         } else {

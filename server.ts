@@ -32,24 +32,34 @@ function getSMTPConfig() {
 
 function getTransporter() {
   const { host, port, secure, user, pass } = getSMTPConfig();
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure,
+  
+  const transportConfig: any = {
     auth: {
       user,
       pass,
     },
     tls: {
       // Do not fail on self-signed/unauthorized certificates
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
+      minVersion: 'TLSv1.2'
     },
-    connectionTimeout: 2500,  // 2.5s connection timeout to fail-fast on serverless platforms
-    greetingTimeout: 2500,    // 2.5s greeting timeout
-    socketTimeout: 5000,      // 5s socket inactivity timeout
-    logger: true,            // Log connection data to Vercel Logs/server console
-    debug: true             // Detailed debug output for precise troubleshooting
-  });
+    connectionTimeout: 10000,  // 10s connection timeout for reliable cold-start delivery on serverless platforms
+    greetingTimeout: 10000,    // 10s greeting timeout
+    socketTimeout: 15000,      // 15s socket inactivity timeout
+    logger: true,              // Log connection data to server console
+    debug: true                // Detailed debug info for troubleshooting
+  };
+
+  // If using Gmail, use the official built-in service definition for absolute reliability
+  if (host.toLowerCase().includes('gmail') || host.toLowerCase().includes('googlemail')) {
+    transportConfig.service = 'gmail';
+  } else {
+    transportConfig.host = host;
+    transportConfig.port = port;
+    transportConfig.secure = secure;
+  }
+
+  return nodemailer.createTransport(transportConfig);
 }
 
 // Helper to format and send the complete chat transcript
