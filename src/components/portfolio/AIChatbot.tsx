@@ -433,9 +433,12 @@ How can I help you today?`,
           body: JSON.stringify({ messages: nextMessages })
         });
 
-        if (!response.ok) throw new Error('Network error');
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `Server returned status ${response.status}`);
+        }
         data = await response.json();
-      } catch (fetchErr) {
+      } catch (fetchErr: any) {
         console.warn("Backend proxy failed, attempting client-side Gemini fallback...", fetchErr);
         const clientKey = import.meta.env.VITE_GEMINI_API_KEY;
         if (clientKey) {
@@ -522,13 +525,13 @@ How can I help you today?`,
         }
       }, 12);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       const errorMessage: ChatMessage = {
         role: 'model',
-        content: `⚠️ Sorry! I seemed to have hit an connectivity issue.
+        content: `⚠️ Sorry! I encountered an error: ${err.message || err}
 
-Please make sure you are online or try writing again. If you'd like to reach Sankalp directly, feel free to use his main **Contact form** on this website or email him directly at **sankalpsmn@gmail.com**.`,
+Please make sure your server environment variables are configured (such as **GEMINI_API_KEY** in your Vercel settings) and that you have triggered a **re-deployment** in Vercel to apply the settings. Alternatively, you can reach Sankalp directly at the main contact form or **sankalpsmn@gmail.com**.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages([...nextMessages, errorMessage]);

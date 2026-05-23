@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from 'dotenv';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import NodeCache from 'node-cache';
 import nodemailer from 'nodemailer';
@@ -189,7 +189,7 @@ let db: any = null;
 
 if (firebaseConfig) {
   try {
-    firebaseApp = initializeApp(firebaseConfig);
+    firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
   } catch (error) {
     console.error('Failed to initialize Firebase SDK server-side:', error);
@@ -549,7 +549,7 @@ STRICT OPERATIONAL RULES:
   };
 
   // Vite middleware for development
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
