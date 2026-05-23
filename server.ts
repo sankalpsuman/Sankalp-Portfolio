@@ -27,6 +27,8 @@ function getSMTPConfig() {
   // We strip all whitespace to make it work seamlessly, even if pasted with spaces!
   const pass = rawPass.replace(/\s+/g, '');
 
+  console.log(`[SMTP Config Diagnostics] Host: "${host}", Port: ${port}, Secure: ${secure}, SMTP_USER len: ${user.length}, SMTP_PASS len: ${pass.length}`);
+
   return { host, port, secure, user, pass };
 }
 
@@ -225,38 +227,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Custom parser middleware to prevent hanging or failing in serverless environments like Vercel
-app.use((req, res, next) => {
-  if (process.env.VERCEL) {
-    // Under Vercel Serverless, the body reader is already managed and pre-parsed.
-    // We safely parse JSON if it is a string or a buffer.
-    if (typeof req.body === 'string' && req.body.trim().startsWith('{')) {
-      try {
-        req.body = JSON.parse(req.body);
-      } catch (e) {
-        // Safe fail
-      }
-    } else if (Buffer.isBuffer(req.body)) {
-      try {
-        const bodyStr = req.body.toString('utf-8');
-        if (bodyStr.trim().startsWith('{')) {
-          req.body = JSON.parse(bodyStr);
-        }
-      } catch (e) {
-        // Safe fail
-      }
-    }
-    next();
-  } else {
-    // If not on Vercel (e.g. locally or in our development preview environment),
-    // run the regular express.json() middleware if the body is not already an object.
-    if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
-      next();
-    } else {
-      express.json()(req, res, next);
-    }
-  }
-});
+// Standard, fully-compatible Express body parsing middleware for all environments
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 export let initPromise: Promise<void> | null = null;
 
