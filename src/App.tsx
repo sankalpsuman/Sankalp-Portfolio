@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { HelmetProvider } from 'react-helmet-async';
 import { subscribeDocument } from './services/firestoreService';
 import { AIChatbot } from './components/portfolio/AIChatbot';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy load Pages
 const PortfolioHome = lazy(() => import('./pages/PortfolioHome'));
@@ -75,9 +76,26 @@ export default function App() {
       }
     });
 
+    // Intercept dynamic chunk loading/module script errors globally
+    const handleGlobalError = (event: ErrorEvent) => {
+      const msg = event?.message || '';
+      const isChunkError = 
+        msg.includes('dynamically imported module') ||
+        msg.includes('Importing a module script failed') ||
+        msg.includes('Failed to fetch') ||
+        msg.toLowerCase().includes('chunk');
+      if (isChunkError) {
+        console.warn('Global chunk load error caught. Auto-refreshing page for updated content...', msg);
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener('error', handleGlobalError);
+
     return () => {
       unsubscribeAuth();
       unsubscribeTheme();
+      window.removeEventListener('error', handleGlobalError);
     };
   }, []);
 
@@ -85,24 +103,26 @@ export default function App() {
     <HelmetProvider>
       <Toaster position="bottom-right" />
       <Router>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            <Route path="/" element={<PortfolioHome />} />
-            <Route path="/blog" element={<BlogList />} />
-            <Route path="/blog/:slug" element={<BlogDetail />} />
-            <Route path="/now" element={<NowPage />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route 
-              path="/admin/*" 
-              element={
-                <AdminGuard user={user} authInitialized={authInitialized}>
-                  <AdminDashboard />
-                </AdminGuard>
-              } 
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              <Route path="/" element={<PortfolioHome />} />
+              <Route path="/blog" element={<BlogList />} />
+              <Route path="/blog/:slug" element={<BlogDetail />} />
+              <Route path="/now" element={<NowPage />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route 
+                path="/admin/*" 
+                element={
+                  <AdminGuard user={user} authInitialized={authInitialized}>
+                    <AdminDashboard />
+                  </AdminGuard>
+                } 
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
         <AIChatbot />
       </Router>
     </HelmetProvider>

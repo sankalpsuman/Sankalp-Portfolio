@@ -22,7 +22,18 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
+    console.error('Uncaught error in boundary:', error, errorInfo);
+    const isChunkError = 
+      error.message && (
+        error.message.includes('dynamically imported module') ||
+        error.message.includes('Importing a module script failed') ||
+        error.message.includes('Failed to fetch') ||
+        error.message.toLowerCase().includes('chunk')
+      );
+    if (isChunkError) {
+      console.warn('Dynamic import or chunk load error detected. Auto-reloading client application to fetch latest build...');
+      window.location.reload();
+    }
   }
 
   private handleReset = () => {
