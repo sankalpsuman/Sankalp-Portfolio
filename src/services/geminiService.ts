@@ -1,5 +1,54 @@
 import { GoogleGenAI } from "@google/genai";
 
+async function generateContentWithFallback(aiInstance: any, params: any) {
+  const requestedModel = params.model || "gemini-3.5-flash";
+  const modelsToTry = [requestedModel];
+  if (requestedModel !== "gemini-flash-latest") {
+    modelsToTry.push("gemini-flash-latest");
+  }
+  
+  let lastError: any = null;
+
+  for (const model of modelsToTry) {
+    const maxRetries = 2;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[Gemini Client Helper] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
+        const response = await aiInstance.models.generateContent({
+          ...params,
+          model,
+        });
+        return response;
+      } catch (err: any) {
+        lastError = err;
+        const errMsg = err?.message || String(err);
+        const errStatus = err?.status;
+        console.warn(`[Gemini Client Helper] Error with model ${model} on attempt ${attempt}:`, errMsg);
+
+        const isTransient = 
+          errStatus === 503 || 
+          errStatus === 429 || 
+          errMsg.includes("503") || 
+          errMsg.includes("429") || 
+          errMsg.toLowerCase().includes("unavailable") || 
+          errMsg.toLowerCase().includes("high demand") ||
+          errMsg.toLowerCase().includes("overloaded");
+
+        if (!isTransient) {
+          break;
+        }
+
+        if (attempt < maxRetries) {
+          const delay = attempt * 1200;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    }
+  }
+
+  throw lastError || new Error("Failed to generate content after attempting fallbacks");
+}
+
 export async function generateAIResponse(prompt: string, userInput: string) {
   // 1. Try the server-side proxy first (Preferred for security)
   try {
@@ -40,7 +89,7 @@ export async function generateAIResponse(prompt: string, userInput: string) {
         }
       });
 
-      const response = await (ai as any).models.generateContent({
+      const response = await generateContentWithFallback(ai, {
         model: "gemini-3.5-flash",
         contents: `${prompt}\n\nUser Input: ${userInput}`,
         config: {
@@ -95,7 +144,7 @@ export async function suggestImageKeywords(title: string, excerpt: string) {
           }
         }
       });
-      const response = await (ai as any).models.generateContent({
+      const response = await generateContentWithFallback(ai, {
         model: "gemini-3.5-flash",
         contents: `Provide exactly 3 keywords separated by commas that describe a professional, high-quality technical or business-related image for this blog post.
         Title: ${title}

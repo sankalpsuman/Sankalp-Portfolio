@@ -49,6 +49,55 @@ Sankalp's Contact details:
 - LinkedIn profile: linkedin.com/in/sankalp-suman
 `;
 
+async function generateContentWithFallback(aiInstance: any, params: any) {
+  const requestedModel = params.model || "gemini-3.5-flash";
+  const modelsToTry = [requestedModel];
+  if (requestedModel !== "gemini-flash-latest") {
+    modelsToTry.push("gemini-flash-latest");
+  }
+  
+  let lastError: any = null;
+
+  for (const model of modelsToTry) {
+    const maxRetries = 2;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[Gemini Chat Client] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
+        const response = await aiInstance.models.generateContent({
+          ...params,
+          model,
+        });
+        return response;
+      } catch (err: any) {
+        lastError = err;
+        const errMsg = err?.message || String(err);
+        const errStatus = err?.status;
+        console.warn(`[Gemini Chat Client] Error with model ${model} on attempt ${attempt}:`, errMsg);
+
+        const isTransient = 
+          errStatus === 503 || 
+          errStatus === 429 || 
+          errMsg.includes("503") || 
+          errMsg.includes("429") || 
+          errMsg.toLowerCase().includes("unavailable") || 
+          errMsg.toLowerCase().includes("high demand") ||
+          errMsg.toLowerCase().includes("overloaded");
+
+        if (!isTransient) {
+          break;
+        }
+
+        if (attempt < maxRetries) {
+          const delay = attempt * 1200;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    }
+  }
+
+  throw lastError || new Error("Failed to generate content after attempting fallbacks");
+}
+
 async function clientFallbackChat(history: ChatMessage[]) {
   const clientKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!clientKey) {
@@ -109,7 +158,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
   }
 }`;
 
-  const response = await ai.models.generateContent({
+  const response = await generateContentWithFallback(ai, {
     model: "gemini-3.5-flash",
     contents: `${systemPrompt}\n\nClient Conversation History:\n${conversationHistory}\n\nAssess this conversation, and respond in the required JSON format. Provide the next reply.`,
     config: {

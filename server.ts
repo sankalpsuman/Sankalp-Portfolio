@@ -217,6 +217,55 @@ const ai = new GoogleGenAI({
   }
 });
 
+async function generateContentWithFallback(aiInstance: any, params: any) {
+  const requestedModel = params.model || "gemini-3.5-flash";
+  const modelsToTry = [requestedModel];
+  if (requestedModel !== "gemini-flash-latest") {
+    modelsToTry.push("gemini-flash-latest");
+  }
+  
+  let lastError: any = null;
+
+  for (const model of modelsToTry) {
+    const maxRetries = 2;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[Gemini Backend] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
+        const response = await aiInstance.models.generateContent({
+          ...params,
+          model,
+        });
+        return response;
+      } catch (err: any) {
+        lastError = err;
+        const errMsg = err?.message || String(err);
+        const errStatus = err?.status;
+        console.warn(`[Gemini Backend] Error with model ${model} on attempt ${attempt}:`, errMsg);
+
+        const isTransient = 
+          errStatus === 503 || 
+          errStatus === 429 || 
+          errMsg.includes("503") || 
+          errMsg.includes("429") || 
+          errMsg.toLowerCase().includes("unavailable") || 
+          errMsg.toLowerCase().includes("high demand") ||
+          errMsg.toLowerCase().includes("overloaded");
+
+        if (!isTransient) {
+          break;
+        }
+
+        if (attempt < maxRetries) {
+          const delay = attempt * 1200;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
+    }
+  }
+
+  throw lastError || new Error("Failed to generate content after attempting fallbacks");
+}
+
 export const app = express();
 
 // A simple, safe logging middleware to help debug API requests on Vercel or locally
@@ -314,7 +363,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
   }
 }`;
 
-      const response = await ai.models.generateContent({
+      const response = await generateContentWithFallback(ai, {
         model: "gemini-3.5-flash",
         contents: `${systemPrompt}\n\nClient Conversation History:\n${conversationHistory}\n\nAssess this conversation, and respond in the required JSON format. Provide the next reply.`,
         config: {
@@ -476,7 +525,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
         return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
       }
 
-      const response = await (ai as any).models.generateContent({
+      const response = await generateContentWithFallback(ai, {
         model: "gemini-3.5-flash",
         contents: `${prompt}\n\nUser Input: ${userInput}`,
         config: {
@@ -506,7 +555,7 @@ STRICT OPERATIONAL RULES:
         return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
       }
 
-      const response = await (ai as any).models.generateContent({
+      const response = await generateContentWithFallback(ai, {
         model: "gemini-3.5-flash",
         contents: `Provide exactly 3 keywords separated by commas that describe a professional, high-quality technical or business-related image for this blog post.
         Title: ${title}
