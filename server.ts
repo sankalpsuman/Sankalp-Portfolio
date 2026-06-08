@@ -223,6 +223,12 @@ async function generateContentWithFallback(aiInstance: any, params: any) {
   if (requestedModel !== "gemini-flash-latest") {
     modelsToTry.push("gemini-flash-latest");
   }
+  if (!modelsToTry.includes("gemini-2.5-flash")) {
+    modelsToTry.push("gemini-2.5-flash");
+  }
+  if (!modelsToTry.includes("gemini-2.0-flash")) {
+    modelsToTry.push("gemini-2.0-flash");
+  }
   
   let lastError: any = null;
 
@@ -240,7 +246,7 @@ async function generateContentWithFallback(aiInstance: any, params: any) {
         lastError = err;
         const errMsg = err?.message || String(err);
         const errStatus = err?.status;
-        console.warn(`[Gemini Backend] Error with model ${model} on attempt ${attempt}:`, errMsg);
+        console.log(`[Gemini Backend Info] Model ${model} busy on attempt ${attempt}. Checking fallbacks...`);
 
         const isTransient = 
           errStatus === 503 || 
