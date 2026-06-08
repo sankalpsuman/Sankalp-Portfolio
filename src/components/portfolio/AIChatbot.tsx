@@ -618,7 +618,7 @@ Please make sure your server environment variables are configured (such as **GEM
   ];
 
   return (
-    <div className={`fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 font-sans transition-all duration-300 ${isExpanded ? 'sm:right-8 sm:bottom-8' : ''}`} id="ai-chabot-wrapper">
+    <div className={`fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 font-sans flex flex-col items-end transition-all duration-300 ${isExpanded ? 'sm:right-8 sm:bottom-8' : ''}`} id="ai-chabot-wrapper">
       <AnimatePresence>
         {isOpen && !isMinimized && (
           <motion.div

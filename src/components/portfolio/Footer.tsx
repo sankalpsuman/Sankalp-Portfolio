@@ -88,10 +88,10 @@ export default function Footer() {
         </div>
 
         <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-gray-600 text-xs font-mono uppercase tracking-widest">
+          <p className="text-gray-600 text-xs font-mono uppercase tracking-widest text-center md:text-left">
             © {currentYear} Sankalp Suman. Built with React & Intelligence.
           </p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 z-10">
              <Link to="/admin/login" className="text-gray-600 hover:text-blue-400 transition-colors text-[10px] uppercase tracking-widest font-bold">Sankalp Login</Link>
              <a href="#" className="text-gray-600 hover:text-white transition-colors text-[10px] uppercase tracking-widest font-bold">Privacy Protocol</a>
              <a href="#" className="text-gray-600 hover:text-white transition-colors text-[10px] uppercase tracking-widest font-bold">Security Standards</a>
