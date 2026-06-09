@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Target, ArrowRight, Box, Globe } from 'lucide-react';
 import { getCollection, getDocument } from '../../services/firestoreService';
 import { cn } from '../../lib/utils';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface ImpactStory {
   id: string;
@@ -23,6 +24,7 @@ export default function ImpactStories() {
   const [stories, setStories] = useState<ImpactStory[]>([]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
+  const { t, resolveTranslation } = useLanguage();
 
   useEffect(() => {
     async function load() {
@@ -48,17 +50,17 @@ export default function ImpactStories() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
              <div className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold tracking-widest uppercase">
-                   <Target className="w-3 h-3" /> Case Studies
+                   <Target className="w-3 h-3" /> {t('impact_stories.badge')}
                 </div>
-                <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Solving <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">Complex Puzzles</span></h2>
-                <p className="text-gray-500 max-w-xl text-lg">Detailed narratives of how I bridged business goals with technical excellence through strategic QA intervention.</p>
+                <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{t('impact_stories.title_prefix')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">{t('impact_stories.title_highlight')}</span></h2>
+                <p className="text-gray-500 max-w-xl text-lg">{t('impact_stories.subtitle')}</p>
              </div>
              <div>
                 <motion.button 
                   whileHover={{ x: 5 }}
                   className="group flex items-center gap-3 text-white font-bold py-4 px-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
                 >
-                   Explore Full Archive 
+                   {t('impact_stories.explore_full_archive')} 
                    <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center -mr-2 group-hover:scale-110 transition-transform">
                       <ArrowRight className="w-4 h-4" />
                    </div>
@@ -90,9 +92,9 @@ export default function ImpactStories() {
                       </div>
 
                       <div className="space-y-4 flex-1">
-                         <h4 className="text-2xl font-bold leading-tight group-hover:text-emerald-400 transition-colors">{story.title}</h4>
+                         <h4 className="text-2xl font-bold leading-tight group-hover:text-emerald-400 transition-colors">{resolveTranslation(story, 'title')}</h4>
                          <div className="flex flex-wrap gap-2">
-                            {story.metrics?.slice(0, 2).map((m, i) => (
+                            {(resolveTranslation(story, 'metrics') || story.metrics || []).slice(0, 2).map((m: string, i: number) => (
                               <span key={i} className="text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/10">
                                 {m}
                               </span>
@@ -102,14 +104,14 @@ export default function ImpactStories() {
 
                       <div className="space-y-6 pt-4 border-t border-white/5">
                          <div className="space-y-2">
-                            <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest pl-1">The Pivot</div>
+                            <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest pl-1">{t('impact_stories.the_pivot')}</div>
                             <p className="text-sm text-gray-400 line-clamp-3 leading-relaxed">
-                               {story.impact}
+                               {resolveTranslation(story, 'impact')}
                             </p>
                          </div>
                          
                          <button className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-widest group/btn">
-                            Read Deep Dive 
+                            {t('impact_stories.read_deep_dive')} 
                             <ArrowRight className="w-3 h-3 group-hover/btn:translate-x-1 transition-transform" />
                          </button>
                       </div>
@@ -121,8 +123,8 @@ export default function ImpactStories() {
           <div className="mt-20 p-12 rounded-[3.5rem] bg-gradient-to-br from-blue-600/5 to-purple-600/5 border border-white/5 flex flex-col items-center text-center gap-8 relative overflow-hidden">
              <Globe className="absolute -top-12 -right-12 w-64 h-64 text-blue-500/5" />
              <div className="max-w-2xl space-y-4">
-                <h3 className="text-3xl font-bold">Have a <span className="text-blue-500">Quality Challenge</span>?</h3>
-                <p className="text-gray-400">Let's discuss how data-driven QA can transform your deployment cycles and software reliability.</p>
+                <h3 className="text-3xl font-bold">{t('impact_stories.challenge_title')} <span className="text-blue-500">{t('impact_stories.challenge_highlight')}</span></h3>
+                <p className="text-gray-400">{t('impact_stories.challenge_subtitle')}</p>
              </div>
              <a 
                href={settings?.calendlyUrl || "#contact"}
@@ -130,7 +132,7 @@ export default function ImpactStories() {
                rel="noreferrer"
                className="bg-white text-black font-bold px-10 py-4 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/10"
              >
-                Book a Strategy Session
+                {t('impact_stories.book_session')}
              </a>
           </div>
        </div>

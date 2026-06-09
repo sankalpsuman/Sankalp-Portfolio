@@ -1,0 +1,206 @@
+{
+  "nav": {
+    "about": "À Propos",
+    "journey": "Parcours",
+    "toolkit": "Outils",
+    "ai_qa": "QA IA",
+    "projects": "Projets",
+    "blog": "Blog",
+    "now": "Actu",
+    "inquire": "Inquire",
+    "establish_connection": "Établir la Connexion"
+  },
+  "hero": {
+    "badge": "Disponible pour de nouvelles opportunités",
+    "headline": "Bonjour, je suis Sankalp Suman",
+    "fallback_title": "Responsable QA Orienté IA",
+    "titles": [
+      "Responsable QA Orienté IA",
+      "Spécialiste des Tests Logiciels",
+      "Scrum Master",
+      "Ingénieur de Tests IA",
+      "Professionnel en Prompt Engineering"
+    ],
+    "description": "Transformer la qualité logicielle moderne grâce aux tests assistés par IA, à l'automatisation intelligente, à la validation d'API et au leadership Agile.",
+    "btn_resume": "Télécharger CV",
+    "btn_contact": "Me Contacter",
+    "btn_strategy": "Session Stratégique",
+    "scroll": "Faire défiler pour explorer"
+  },
+  "about": {
+    "title": "Excellence en Ingénierie",
+    "subtitle": "À Propos de Moi",
+    "heading_bold": "Combler le fossé entre",
+    "heading_mid": "l'Ingénierie Logicielle",
+    "heading_and": "et",
+    "heading_end": "l'Intelligence Artificielle.",
+    "content": "Responsable QA axé sur les résultats avec plus de 7 ans d'expérience dans les tests de bout en bout sur les systèmes web, mobiles, de bureau et d'API.\n\nActuellement spécialiste des tests logiciels et Scrum Master chez Amdocs, dirigeant la livraison QA pour des plateformes de télécommunications à grande échelle.\n\nSpécialisé dans les tests alimentés par l'IA, l'ingénierie des invites (prompt engineering), la validation d'API, les tests ETL, l'accélération de l'automatisation et les méthodologies de livraison Agile.",
+    "metric_years": "Années d'Expérience",
+    "metric_projects": "Projets Livrés",
+    "metric_teams": "Équipes Dirigées",
+    "metric_acceleration": "Accélération QA",
+    "role_label": "Rôle",
+    "role": "Directeur QA",
+    "efficiency_label": "Efficacité",
+    "reliability": "Fiable à 99.9%"
+  },
+  "skills": {
+    "title": "Arsenal Technique",
+    "subtitle": "Compétences",
+    "categories": {
+      "testing": "Tests",
+      "api_data": "API & Données",
+      "ai_qa": "IA en QA",
+      "automation_devops": "Automatisation & DevOps",
+      "leadership": "Leadership"
+    },
+    "list": {
+      "ai_testing": "Tests orientés IA",
+      "prompt_heavy": "Prompt Engineering",
+      "api_validation": "Validation d'API (REST/SOAP)",
+      "selenium_playwright": "Selenium / Playwright",
+      "sql_db": "Tests SQL et Base de données",
+      "scrum_lead": "Leadership Scrum",
+      "cicd_pipeline": "Pipelines CI/CD (Jenkins/GitHub Actions)",
+      "etl_testing": "Tests ETL"
+    }
+  },
+  "projects": {
+    "title": "Travaux Phares",
+    "subtitle": "Histoires de Réussite",
+    "view_case": "Voir l'Étude de Cas",
+    "flagship": "Application Phare",
+    "enterprise": "Solution QA d'Entreprise",
+    "archive_btn": "Archive d'Exploration",
+    "p1_title": "Générateur d'Essais IA",
+    "p1_desc": "Agent QA autonome qui extrait des scénarios de test à partir de documents en langage naturel avec une précision de 95%.",
+    "p2_title": "Resume Morph AI",
+    "p2_desc": "Application de portfolio dynamique qui adapte son contenu en fonction de la description du poste cible grâce à l'ingénierie des invites.",
+    "p3_title": "QA Copilot Dashboard",
+    "p3_desc": "Tableau de bord de suivi en temps réel pour l'exécution automatique des tests avec analyse des défauts et détection des causes profondes par IA."
+  },
+  "experience": {
+    "title": "Parcours Professionnel",
+    "subtitle": "Expérience",
+    "present": "Présent",
+    "exp1_company": "AMDOCS",
+    "exp1_role": "Spécialiste de Tests Logiciels & Scrum Master",
+    "exp1_period": "Déc 2021 – Présent",
+    "exp1_desc": "Direction de la livraison de l'assurance qualité pour les plateformes télécoms d'entreprise. Mise en œuvre de flux de tests assistés par IA et gestion des sprints Agile en tant que Scrum Master."
+  },
+  "contact": {
+    "title": "Démarrer une Conversation",
+    "subtitle": "Contact",
+    "heading": "Bâtissons quelque chose d'extraordinaire.",
+    "description": "Que vous cherchiez à transformer vos processus QA grâce à l'IA ou que vous ayez besoin d'un responsable expérimenté pour votre prochain projet d'envergure, je ne suis qu'à un message.",
+    "label_name": "Votre Nom",
+    "label_email": "Adresse E-mail",
+    "label_message": "Message",
+    "label_email_info": "E-mail",
+    "label_phone_info": "Téléphone",
+    "label_location_info": "Emplacement",
+    "loc_val": "Delhi NCR, Inde",
+    "placeholder_name": "Jean Dupont",
+    "placeholder_email": "jean@entreprise.com",
+    "placeholder_message": "Parlez-moi de votre projet...",
+    "btn_send": "Transmettre le Message",
+    "validation_name_min": "Le nom doit contenir au moins 2 caractères.",
+    "validation_email_req": "L'adresse e-mail est requise.",
+    "validation_email_invalid": "Veuillez entrer une adresse e-mail valide.",
+    "validation_msg_min": "Le message doit contenir au moins 10 caractères.",
+    "success_title": "Transmission réussie!",
+    "success_desc": "Merci d'avoir pris contact! Votre message a bien été transmis. Sankalp vous répondra sous 24 heures.",
+    "btn_another_msg": "Envoyer un Autre Message",
+    "msg_send_failed": "Échec de l'envoi du message. Veuillez réessayer."
+  },
+  "footer": {
+    "pioneering": "Ouvrir la voie de l'ingénierie qualité de demain grâce à l'automatisation guidée par l'intelligence artificielle.",
+    "nav_title": "Navigation",
+    "contact_title": "Contact",
+    "working_globally": "Basé à Delhi NCR, travaillant à l'international.",
+    "copyright": "© {year} Sankalp Suman. Conçu avec React & Intelligence.",
+    "login": "Connexion Sankalp",
+    "privacy": "Protocole de Confidentialité",
+    "security": "Normes de Sécurité",
+    "book_session": "Réserver une session"
+  },
+  "now": {
+    "live_status": "État en Direct",
+    "title_prefix": "Ce que je fais en ce ",
+    "title_highlight": "moment",
+    "nownownow_prefix": "Ceci est une ",
+    "nownownow_suffix": ", et si vous avez votre propre site, vous devriez en avoir un aussi.",
+    "location": "Emplacement",
+    "status": "Statut",
+    "current_focus": "Objectif Actuel",
+    "last_updated": "Dernière mise à jour",
+    "back_to_experience": "Retour à l'expérience complète"
+  },
+  "blog": {
+    "badge": "Intelligence QA",
+    "title_prefix": "Le ",
+    "title_highlight": "Moteur de Réflexion",
+    "subtitle": "Analyses approfondies de l'ingénierie qualité, de l'architecture d'automatisation et de l'intégration de l'IA.",
+    "browse_library": "Parcourir la Bibliothèque",
+    "read_analysis": "Lire l'Analyse"
+  },
+  "blog_list": {
+    "badge": "Base de Connaissances",
+    "title_prefix": "Le ",
+    "title_highlight": "Moteur QA",
+    "subtitle": "Explorer l'intersection de l'ingénierie qualité, de l'automatisation par l'IA et de l'excellence Agile.",
+    "search_placeholder": "Rechercher des articles, des catégories...",
+    "read_article": "Lire l'Article",
+    "no_articles": "Aucun article ne correspond à votre recherche"
+  },
+  "blog_detail": {
+    "back_to_archive": "Retour aux Archives",
+    "read_time": "Lecture 8 min",
+    "newsletter_title": "Vous avez apprécié cette analyse?",
+    "newsletter_subtitle": "Rejoignez ma newsletter pour recevoir des analyses mensuelles sur l'ingénierie QA, les tests de performance et les flux de travail.",
+    "sub_success_title": "Inscription Réussie!",
+    "sub_success_desc": "Bienvenue à bord. Vous êtes maintenant inscrit aux digests d'assurance qualité premium.",
+    "sub_failed": "Échec de l'inscription. Veuillez réessayer ultérieurement.",
+    "subscribe_btn": "S'abonner",
+    "subscribing_btn": "S'abonner...",
+    "share_article": "Partager l'Article",
+    "copy_link": "Copier le Lien",
+    "twitter": "Twitter"
+  },
+  "impact_stories": {
+    "badge": "Études de Cas",
+    "title_prefix": "Résoudre des ",
+    "title_highlight": "Énigmes Complexes",
+    "subtitle": "Récits détaillés sur la façon de relier les objectifs commerciaux avec l'excellence technique par des interventions de test stratégiques.",
+    "explore_full_archive": "Explorer les Archives Complètes",
+    "the_pivot": "Le Pivot",
+    "read_deep_dive": "Lire l'Étude de Cas",
+    "challenge_title": "Vous avez un ",
+    "challenge_highlight": "Défi de Qualité?",
+    "challenge_subtitle": "Discutons de la manière dont une assurance qualité guidée par les données peut transformer vos cycles de déploiement.",
+    "book_session": "Réserver une Session Stratégique"
+  },
+  "certifications": {
+    "title": "Distinctions",
+    "subtitle": "Certifications",
+    "verify": "Vérifier"
+  },
+  "testimonials": {
+    "badge": "Retour de l'Industrie",
+    "title_prefix": "Les Voix de la ",
+    "title_highlight": "Validation"
+  },
+  "career_timeline": {
+    "badge": "L'évolution de l'excellence",
+    "title_prefix": "Parcours ",
+    "title_highlight": "Interactif",
+    "location": "Delhi NCR, Inde",
+    "recognition": "Reconnaissance Professionnelle",
+    "bullets": [
+      "Direction de la stratégie d'assurance qualité de bout en bout",
+      "Mise en œuvre d'un framework d'automatisation robuste",
+      "Optimisation des cycles de release CI/CD",
+      "Gestion des parties prenantes et rapport de test"
+    ]
+  }
+}

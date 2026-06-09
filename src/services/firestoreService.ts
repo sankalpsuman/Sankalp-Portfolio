@@ -1,6 +1,7 @@
 import { doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, deleteDoc, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
 import { handleFirestoreError, OperationType } from './firestoreErrors';
+import { autoTranslateDocument } from '../lib/translationUtils';
 
 export const HERO_DOC = 'hero/content';
 export const ABOUT_DOC = 'about/content';
@@ -9,6 +10,20 @@ export const SEO_DOC = 'seo/config';
 export const AI_DOC = 'ai/content';
 export const SETTINGS_DOC = 'settings/global';
 export const NOW_DOC = 'now/content';
+
+const isTranslationEligiblePath = (path: string): boolean => {
+  const lower = path.toLowerCase();
+  return (
+    !lower.startsWith('messages') &&
+    !lower.startsWith('inquiry') &&
+    !lower.startsWith('inquiries') &&
+    !lower.startsWith('leads') &&
+    !lower.startsWith('logs') &&
+    !lower.startsWith('analytics') &&
+    !lower.includes('settings') &&
+    !lower.includes('seo')
+  );
+};
 
 async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
   try {
@@ -98,7 +113,11 @@ function sanitizeData<T>(obj: T): T {
 export async function saveDocument<T extends object>(path: string, data: T): Promise<void> {
   if (!path) return;
   try {
-    const sanitized = sanitizeData(data);
+    let finalData = data;
+    if (isTranslationEligiblePath(path)) {
+      finalData = await autoTranslateDocument(data);
+    }
+    const sanitized = sanitizeData(finalData);
     await withRetry(async () => {
       const docRef = doc(db, path);
       await setDoc(docRef, sanitized, { merge: true });
@@ -143,7 +162,11 @@ export async function getCollection<T>(path: string, sortField?: string, limitCo
 export async function addCollectionDocument<T extends object>(path: string, data: T): Promise<string> {
   if (!path) throw new Error('Path is required');
   try {
-    const sanitized = sanitizeData(data);
+    let finalData = data;
+    if (isTranslationEligiblePath(path)) {
+      finalData = await autoTranslateDocument(data);
+    }
+    const sanitized = sanitizeData(finalData);
     return await withRetry(async () => {
       const colRef = collection(db, path);
       const docRef = await addDoc(colRef, sanitized);
@@ -166,7 +189,11 @@ export async function addCollectionDocument<T extends object>(path: string, data
 export async function updateCollectionDocument<T extends object>(path: string, id: string, data: T): Promise<void> {
   if (!path || !id) return;
   try {
-    const sanitized = sanitizeData(data);
+    let finalData = data;
+    if (isTranslationEligiblePath(path)) {
+      finalData = await autoTranslateDocument(data);
+    }
+    const sanitized = sanitizeData(finalData);
     await withRetry(async () => {
       const docRef = doc(db, path, id);
       await updateDoc(docRef, sanitized as any);

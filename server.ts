@@ -553,6 +553,82 @@ STRICT OPERATIONAL RULES:
     }
   });
 
+  app.post('/api/ai/translate', async (req, res) => {
+    try {
+      const { content } = req.body || {};
+      if (!content || typeof content !== 'object') {
+        return res.status(400).json({ error: 'Content object is required' });
+      }
+
+      if (!GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
+      }
+
+      const systemPrompt = `You are a professional, high-end translation agent for a software QA & AI Engineering portfolio.
+Translate the provided key-value pairs (which represent text content, descriptions, bullets, or metrics from the portfolio) into three languages:
+1. Hindi (hi)
+2. French (fr)
+3. German (de)
+
+STRICT OPERATIONAL RULES:
+1. Return ONLY a valid JSON object matches the requested output structure. No conversational text.
+2. Keep all technical terms, brands, names (e.g. "Sankalp Suman", "Amdocs", "Selenium", "API", "QA", "ISTQB", "CSM", "Python", "React", "Next.js", "Docker", "Sankalp") in their original english-friendly spelling or standard recognized local script form.
+3. Do NOT translate URLs, emails, dates or numbers/metrics unless the metrics are written as words.
+4. Translate full sentences/paragraphs smoothly, preserving technical flow, elegance, and professionalism.
+
+The input flat key-value pair representation:
+${JSON.stringify(content, null, 2)}
+
+Expected output format:
+{
+  "hi": {
+    "key1": "translated key 1",
+    "key2": "translated key 2"
+  },
+  "fr": {
+    "key1": "translated key 1",
+    "key2": "translated key 2"
+  },
+  "de": {
+    "key1": "translated key 1",
+    "key2": "translated key 2"
+  }
+}`;
+
+      const response = await generateContentWithFallback(ai, {
+        model: "gemini-3.5-flash",
+        contents: `${systemPrompt}\n\nPerform translations and return the JSON.`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              hi: {
+                type: Type.OBJECT,
+                description: "Map of translated key-value pairs in Hindi"
+              },
+              fr: {
+                type: Type.OBJECT,
+                description: "Map of translated key-value pairs in French"
+              },
+              de: {
+                type: Type.OBJECT,
+                description: "Map of translated key-value pairs in German"
+              }
+            },
+            required: ["hi", "fr", "de"]
+          }
+        }
+      });
+
+      const translated = JSON.parse(response.text || '{}');
+      res.json(translated);
+    } catch (error: any) {
+      console.error('Translate API Error:', error);
+      res.status(500).json({ error: error?.message || 'Failed to translate' });
+    }
+  });
+
   app.post('/api/ai/suggest-image', async (req, res) => {
     try {
       const { title, excerpt } = req.body || {};
@@ -658,6 +734,19 @@ STRICT OPERATIONAL RULES:
 
     // Development metadata injection (optional, works if you refresh)
     app.get('*', async (req, res, next) => {
+      const urlPath = req.path;
+
+      // Skip API routes
+      if (urlPath.startsWith('/api/')) {
+        return next();
+      }
+
+      // If it looks like an asset (has any file extension except .html) and we're here, it means Vite missed it (e.g. 404 in dev)
+      const ext = path.extname(urlPath).toLowerCase();
+      if (ext && ext !== '.html') {
+        return res.status(404).send('Asset not found');
+      }
+
       try {
         const url = req.originalUrl;
         const protocol = req.protocol === 'http' && req.headers['x-forwarded-proto'] ? req.headers['x-forwarded-proto'] as string : req.protocol;

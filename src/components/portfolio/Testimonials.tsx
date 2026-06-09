@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getCollection } from '../../services/firestoreService';
 import { cn } from '../../lib/utils';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface Testimonial {
   id: string;
@@ -16,6 +17,7 @@ interface Testimonial {
 export default function Testimonials() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { t, resolveTranslation } = useLanguage();
 
   useEffect(() => {
     async function load() {
@@ -36,9 +38,9 @@ export default function Testimonials() {
           <div className="text-center mb-16">
              <div className="inline-flex p-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 mb-4 items-center gap-2 px-4 shadow-[0_0_20px_rgba(234,179,8,0.1)]">
                 <Star className="w-4 h-4 fill-current" />
-                <span className="text-xs font-bold uppercase tracking-widest">Industry Feedback</span>
+                <span className="text-xs font-bold uppercase tracking-widest">{t('testimonials.badge')}</span>
              </div>
-             <h2 className="text-4xl font-bold tracking-tight">Voices of <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Validation</span></h2>
+             <h2 className="text-4xl font-bold tracking-tight">{t('testimonials.title_prefix')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">{t('testimonials.title_highlight')}</span></h2>
           </div>
 
           <div className="relative max-w-5xl mx-auto overflow-hidden px-4 md:px-12">
@@ -56,12 +58,12 @@ export default function Testimonials() {
                            </div>
                            
                            <p className="text-xl md:text-3xl font-medium leading-relaxed italic text-white/90 font-serif">
-                              "{item.content}"
+                              "{resolveTranslation(item, 'content')}"
                            </p>
 
                            <div className="space-y-2">
-                              <div className="text-lg font-bold text-white tracking-tight">{item.name}</div>
-                              <div className="text-sm font-medium text-gray-500">{item.role} @ <span className="text-blue-400 font-bold">{item.company}</span></div>
+                              <div className="text-lg font-bold text-white tracking-tight">{resolveTranslation(item, 'name')}</div>
+                              <div className="text-sm font-medium text-gray-500">{resolveTranslation(item, 'role')} @ <span className="text-blue-400 font-bold">{resolveTranslation(item, 'company')}</span></div>
                            </div>
                         </div>
                      </div>

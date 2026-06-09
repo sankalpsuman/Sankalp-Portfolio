@@ -1,7 +1,8 @@
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { getCollection, getCachedData } from '../../services/firestoreService';
+import { getCollection, getCachedData, updateCollectionDocument } from '../../services/firestoreService';
+import { autoTranslateDocument } from '../../lib/translationUtils';
 import { 
   Eye, 
   MousePointer2, 
@@ -12,11 +13,52 @@ import {
   ShieldCheck,
   Zap,
   Briefcase,
-  Mail
+  Mail,
+  Globe,
+  Loader2
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export default function DashboardOverview() {
+  const [migrating, setMigrating] = useState(false);
+  const [migrationResults, setMigrationResults] = useState<string | null>(null);
+
+  const runMigration = async () => {
+    setMigrating(true);
+    setMigrationResults('Connecting to Firestore database...');
+    try {
+      const collections = [
+        { path: 'projects', label: 'Projects' },
+        { path: 'blogs', label: 'Blog Posts' },
+        { path: 'experience', label: 'Experiences' },
+        { path: 'certifications', label: 'Certifications' },
+        { path: 'skills', label: 'Skills' },
+        { path: 'testimonials', label: 'Testimonials' },
+        { path: 'impactStories', label: 'Impact Stories' }
+      ];
+
+      let updatedCount = 0;
+      for (const col of collections) {
+        setMigrationResults(`Scanning ${col.label}...`);
+        const items = await getCollection<any>(col.path);
+        for (const item of items) {
+          if (!item.translations || Object.keys(item.translations).length === 0) {
+            setMigrationResults(`Auto-mapping and translating ${col.label}: "${item.title || item.name || item.company || 'Record'}"...`);
+            const translatedItem = await autoTranslateDocument(item);
+            await updateCollectionDocument(col.path, item.id, translatedItem);
+            updatedCount++;
+          }
+        }
+      }
+      setMigrationResults(`Successfully updated localization! Translated and migrated ${updatedCount} items.`);
+    } catch (err: any) {
+      console.error(err);
+      setMigrationResults(`Translation migration failed: ${err.message || err}`);
+    } finally {
+      setMigrating(false);
+    }
+  };
+
   const [stats, setStats] = useState(() => {
     const cachedMessages = getCachedData<any[]>('messages_none_all');
     return [
@@ -125,6 +167,44 @@ export default function DashboardOverview() {
                   <h4 className="font-medium group-hover:text-purple-400 transition-colors">Security Rules Enforced</h4>
                   <p className="text-xs text-gray-500">RBAC validation active on all mutations</p>
                 </div>
+              </div>
+            </div>
+
+            {/* Database Multilingual Auto-Localization Tool (I18N Migration) */}
+            <div className="p-6 bg-[#050816] border border-white/5 rounded-xl space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                  <Globe className="w-6 h-6 text-indigo-400" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-white">Database Auto-Localization Migration</h4>
+                  <p className="text-xs text-gray-400">Scan and fill translation gaps in older portfolio records</p>
+                </div>
+              </div>
+              <div className="pt-2">
+                <button
+                  onClick={runMigration}
+                  disabled={migrating}
+                  type="button"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/15 cursor-pointer active:scale-95"
+                >
+                  {migrating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Translating database collection data...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="w-4 h-4" />
+                      <span>Start Localization Auto-Translation Run</span>
+                    </>
+                  )}
+                </button>
+                {migrationResults && (
+                  <div className="mt-3 p-3 bg-white/2 border border-white/5 rounded-lg text-[10px] font-mono text-gray-400 leading-relaxed max-h-24 overflow-y-auto">
+                    {migrationResults}
+                  </div>
+                )}
               </div>
             </div>
           </div>

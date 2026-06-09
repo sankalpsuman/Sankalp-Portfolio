@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getDocument, saveDocument, getCachedData, NOW_DOC } from '../../services/firestoreService';
-import { Clock, Save, Loader2, MapPin, Coffee, Rocket, Eye, Edit3 } from 'lucide-react';
+import { Clock, Save, Loader2, MapPin, Coffee, Rocket, Eye, Edit3, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '../../lib/utils';
+import { autoTranslateDocument } from '../../lib/translationUtils';
 
 interface NowContent {
   content: string;
@@ -11,6 +12,7 @@ interface NowContent {
   status: string;
   focus: string;
   lastUpdated: string;
+  translations?: Record<string, any>;
 }
 
 export default function NowEditor() {
@@ -18,6 +20,61 @@ export default function NowEditor() {
   const [loading, setLoading] = useState(!getCachedData(NOW_DOC));
   const [saving, setSaving] = useState(false);
   const [view, setView] = useState<'edit' | 'preview'>('edit');
+  const [activeEditorLang, setActiveEditorLang] = useState<'en' | 'hi' | 'fr' | 'de'>('en');
+  const [translating, setTranslating] = useState(false);
+
+  const getFieldVal = (field: 'location' | 'status' | 'focus' | 'content') => {
+    if (!now) return '';
+    if (activeEditorLang === 'en') {
+      return now[field] || '';
+    }
+    return now.translations?.[activeEditorLang]?.[field] || '';
+  };
+
+  const setFieldVal = (field: 'location' | 'status' | 'focus' | 'content', val: string) => {
+    if (!now) return;
+    if (activeEditorLang === 'en') {
+      setNow({ ...now, [field]: val });
+    } else {
+      const translations = now.translations || {};
+      const langData = translations[activeEditorLang] || {};
+      setNow({
+        ...now,
+        translations: {
+          ...translations,
+          [activeEditorLang]: {
+            ...langData,
+            [field]: val
+          }
+        }
+      });
+    }
+  };
+
+  const handleNowAutoTranslate = async () => {
+    if (!now) return;
+    setTranslating(true);
+    try {
+      const docWithTranslations = await autoTranslateDocument({
+        location: now.location,
+        status: now.status,
+        focus: now.focus,
+        content: now.content
+      });
+      if (docWithTranslations.translations) {
+        setNow({
+          ...now,
+          translations: docWithTranslations.translations
+        });
+        alert('Now page translations generated successfully! Review tabs and Publish.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Translation failed.');
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   useEffect(() => {
     async function load() {
@@ -87,53 +144,96 @@ export default function NowEditor() {
             onSubmit={handleSave} 
             className="space-y-6"
           >
+            {/* Translation & Selection Panel */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-blue-400" />
+                <span className="text-xs font-bold text-gray-300">Multi-Language Content Sync</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 p-0.5 bg-white/5 border border-white/10 rounded-xl">
+                  {(['en', 'hi', 'fr', 'de'] as const).map((lang) => (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => setActiveEditorLang(lang)}
+                      className={cn(
+                        "px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all duration-150 cursor-pointer",
+                        activeEditorLang === lang 
+                          ? "bg-blue-600 text-white shadow" 
+                          : "text-gray-400 hover:text-white hover:bg-white/5"
+                      )}
+                    >
+                      {lang === 'en' ? 'EN' : lang === 'hi' ? 'HI' : lang === 'fr' ? 'FR' : 'DE'}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleNowAutoTranslate}
+                  disabled={translating || !now?.content}
+                  className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600/10 hover:bg-blue-600/20 disabled:opacity-50 text-blue-400 rounded-xl text-xs font-bold transition-all border border-blue-500/20 cursor-pointer"
+                >
+                  {translating ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Globe className="w-3.5 h-3.5" />
+                  )}
+                  <span>Auto-Translate</span>
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <MapPin className="w-3 h-3" /> Location
+                  <MapPin className="w-3 h-3" /> Location {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
                 </label>
                 <input 
                   type="text"
-                  value={now?.location}
-                  onChange={e => setNow({...now!, location: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-all"
+                  value={getFieldVal('location')}
+                  onChange={e => setFieldVal('location', e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-all text-white font-medium"
                   placeholder="e.g. San Francisco, CA"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <Coffee className="w-3 h-3" /> Status
+                  <Coffee className="w-3 h-3" /> Status {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
                 </label>
                 <input 
                   type="text"
-                  value={now?.status}
-                  onChange={e => setNow({...now!, status: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-all"
+                  value={getFieldVal('status')}
+                  onChange={e => setFieldVal('status', e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-all text-white font-medium"
                   placeholder="e.g. Building something new"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <Rocket className="w-3 h-3" /> Current Focus
+                  <Rocket className="w-3 h-3" /> Current Focus {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
                 </label>
                 <input 
                   type="text"
-                  value={now?.focus}
-                  onChange={e => setNow({...now!, focus: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-all"
+                  value={getFieldVal('focus')}
+                  onChange={e => setFieldVal('focus', e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-all text-white font-medium"
                   placeholder="e.g. React & TypeScript"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Detailed Content (Markdown)</label>
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                Detailed Content (Markdown) {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+              </label>
               <textarea 
                 required
                 rows={15}
-                value={now?.content}
-                onChange={e => setNow({...now!, content: e.target.value})}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 outline-none focus:border-blue-500 transition-all text-sm leading-relaxed font-mono"
+                value={getFieldVal('content')}
+                onChange={e => setFieldVal('content', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 outline-none focus:border-blue-500 transition-all text-sm leading-relaxed font-mono text-gray-200"
                 placeholder="## What I'm doing now...
 - Working on...
 - Learning...

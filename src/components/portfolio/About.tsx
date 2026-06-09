@@ -3,6 +3,7 @@ import Section from './Section';
 import { motion } from 'motion/react';
 import { getDocument, ABOUT_DOC } from '../../services/firestoreService';
 import { Zap, Award } from 'lucide-react';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface Metric {
   label: string;
@@ -25,6 +26,7 @@ const DEFAULT_METRICS = [
 
 export default function About() {
   const [data, setData] = useState<AboutData | null>(null);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     async function load() {
@@ -38,10 +40,29 @@ export default function About() {
     load();
   }, []);
 
+  const getLocalizedField = (dbData: any, fieldName: string, localTKey: string) => {
+    if (!dbData) return t(localTKey);
+    if (language === 'en') return dbData[fieldName] || t(localTKey);
+    const translatedVal = dbData?.translations?.[language]?.[fieldName];
+    if (translatedVal && typeof translatedVal === 'string' && translatedVal.trim() !== '') {
+      return translatedVal;
+    }
+    return t(localTKey);
+  };
+
   const metrics = data?.metrics || DEFAULT_METRICS;
 
+  const getMetricLabel = (label: string) => {
+    const lower = label.toLowerCase();
+    if (lower.includes('experience')) return t('about.metric_years');
+    if (lower.includes('projects')) return t('about.metric_projects');
+    if (lower.includes('teams')) return t('about.metric_teams');
+    if (lower.includes('acceleration') || lower.includes('qae') || lower.includes('qa')) return t('about.metric_acceleration');
+    return label;
+  };
+
   return (
-    <Section id="about" title="Engineering Excellence" subtitle="About Me">
+    <Section id="about" title={t('about.title')} subtitle={t('about.subtitle')}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
         {/* Left: Content */}
         <div className="space-y-8">
@@ -52,14 +73,13 @@ export default function About() {
             className="space-y-6"
           >
             <h3 className="text-2xl lg:text-3xl font-bold text-white leading-tight">
-              Bridging the gap between <span className="text-brand">Software Engineering</span> and <span className="text-purple-400">AI Intelligence.</span>
+              {t('about.heading_bold')}{' '}
+              <span className="text-brand">{t('about.heading_mid')}</span>{' '}
+              {t('about.heading_and')}{' '}
+              <span className="text-purple-400">{t('about.heading_end')}</span>
             </h3>
             <p className="text-gray-400 text-lg leading-relaxed whitespace-pre-line">
-              {data?.content || `Results-driven QA Lead with 7+ years of experience in end-to-end testing across web, mobile, desktop, and API systems.
-
-Currently working as Software Test Specialist and Scrum Master at Amdocs, leading QA delivery for enterprise-scale telecom platforms.
-
-Specialized in AI-powered testing, prompt engineering, API validation, ETL testing, automation acceleration, and Agile delivery methodologies.`}
+              {getLocalizedField(data, 'content', 'about.content')}
             </p>
           </motion.div>
 
@@ -78,7 +98,7 @@ Specialized in AI-powered testing, prompt engineering, API validation, ETL testi
                   {metric.value}
                 </div>
                 <div className="text-sm text-gray-500 uppercase tracking-widest font-mono">
-                  {metric.label}
+                  {getMetricLabel(metric.label)}
                 </div>
               </motion.div>
             ))}
@@ -123,8 +143,8 @@ Specialized in AI-powered testing, prompt engineering, API validation, ETL testi
                 <Zap className="w-6 h-6 text-white" />
              </div>
              <div>
-                <div className="text-xs text-white/70 font-mono uppercase">Role</div>
-                <div className="text-sm font-bold text-white">QA Lead</div>
+                <div className="text-xs text-white/70 font-mono uppercase">{t('about.role_label')}</div>
+                <div className="text-sm font-bold text-white">{t('about.role')}</div>
              </div>
           </motion.div>
 
@@ -137,8 +157,8 @@ Specialized in AI-powered testing, prompt engineering, API validation, ETL testi
                 <Award className="w-6 h-6 text-purple-400" />
              </div>
              <div>
-                <div className="text-xs text-gray-500 font-mono uppercase">Efficiency</div>
-                <div className="text-sm font-bold text-white">99.9% Reliable</div>
+                <div className="text-xs text-gray-500 font-mono uppercase">{t('about.efficiency_label')}</div>
+                <div className="text-sm font-bold text-white">{t('about.reliability')}</div>
              </div>
           </motion.div>
         </motion.div>

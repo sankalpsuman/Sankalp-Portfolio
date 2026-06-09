@@ -1,5 +1,4 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import Lenis from '@studio-freight/lenis';
 import SEO from '../components/SEO';
 import { LazySection } from '../components/portfolio/LazySection';
 
@@ -8,44 +7,24 @@ import Navbar from '../components/portfolio/Navbar';
 import Hero from '../components/portfolio/Hero';
 import About from '../components/portfolio/About';
 import { WelcomePopup } from '../components/portfolio/WelcomePopup';
+import { lazyRetry } from '../lib/lazyRetry';
 
 // Below-the-fold Components (Lazy)
-const Experience = lazy(() => import('../components/portfolio/Experience'));
-const CareerTimeline = lazy(() => import('../components/portfolio/CareerTimeline'));
-const Skills = lazy(() => import('../components/portfolio/Skills'));
-const AISection = lazy(() => import('../components/portfolio/AISection'));
-const AIPlayground = lazy(() => import('../components/portfolio/AIPlayground'));
-const QADashboard = lazy(() => import('../components/portfolio/QADashboard'));
-const Projects = lazy(() => import('../components/portfolio/Projects'));
-const ImpactStories = lazy(() => import('../components/portfolio/ImpactStories'));
-const Certifications = lazy(() => import('../components/portfolio/Certifications'));
-const Testimonials = lazy(() => import('../components/portfolio/Testimonials'));
-const BlogPreview = lazy(() => import('../components/portfolio/BlogPreview'));
-const Contact = lazy(() => import('../components/portfolio/Contact'));
-const Footer = lazy(() => import('../components/portfolio/Footer'));
+const Experience = lazy(() => lazyRetry(() => import('../components/portfolio/Experience.tsx')));
+const CareerTimeline = lazy(() => lazyRetry(() => import('../components/portfolio/CareerTimeline.tsx')));
+const Skills = lazy(() => lazyRetry(() => import('../components/portfolio/Skills.tsx')));
+const AISection = lazy(() => lazyRetry(() => import('../components/portfolio/AISection.tsx')));
+const AIPlayground = lazy(() => lazyRetry(() => import('../components/portfolio/AIPlayground.tsx')));
+const QADashboard = lazy(() => lazyRetry(() => import('../components/portfolio/QADashboard.tsx')));
+const Projects = lazy(() => lazyRetry(() => import('../components/portfolio/Projects.tsx')));
+const ImpactStories = lazy(() => lazyRetry(() => import('../components/portfolio/ImpactStories.tsx')));
+const Certifications = lazy(() => lazyRetry(() => import('../components/portfolio/Certifications.tsx')));
+const Testimonials = lazy(() => lazyRetry(() => import('../components/portfolio/Testimonials.tsx')));
+const BlogPreview = lazy(() => lazyRetry(() => import('../components/portfolio/BlogPreview.tsx')));
+const Contact = lazy(() => lazyRetry(() => import('../components/portfolio/Contact.tsx')));
+const Footer = lazy(() => lazyRetry(() => import('../components/portfolio/Footer.tsx')));
 
 export default function PortfolioHome() {
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-    });
-
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
-
   // Handle initial page load hash URL deep-linking with lazy loaded elements
   useEffect(() => {
     const handleInitialHash = () => {
@@ -67,7 +46,7 @@ export default function PortfolioHome() {
       }
     };
 
-    // Delay slightly to give page structure and Lenis a chance to initialize
+    // Delay slightly to give page structure a chance to initialize
     const timer = setTimeout(handleInitialHash, 150);
     
     // Listen for manual hash changes (e.g. from footer links)

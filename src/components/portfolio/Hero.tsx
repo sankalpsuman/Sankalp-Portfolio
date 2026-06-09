@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getDocument, HERO_DOC } from '../../services/firestoreService';
 import { Download, Linkedin, Send, Calendar } from 'lucide-react';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface HeroData {
   headline: string;
@@ -9,6 +10,7 @@ interface HeroData {
   description: string;
   resumeUrl?: string;
   linkedinUrl?: string;
+  translations?: Record<string, any>;
 }
 
 const DEFAULT_TITLES = [
@@ -27,6 +29,7 @@ export default function Hero() {
   const [data, setData] = useState<HeroData | null>(null);
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
   const [titleIndex, setTitleIndex] = useState(0);
+  const { t, tArray, language } = useLanguage();
 
   useEffect(() => {
     async function load() {
@@ -44,14 +47,28 @@ export default function Hero() {
     load();
   }, []);
 
+  const fallbackTitles = tArray('hero.titles');
+  const titles = (language === 'en')
+    ? (data?.titles && data.titles.length > 0 ? data.titles : fallbackTitles.length > 0 ? fallbackTitles : DEFAULT_TITLES)
+    : (data?.translations?.[language]?.titles && data.translations[language].titles.length > 0 ? data.translations[language].titles : fallbackTitles.length > 0 ? fallbackTitles : DEFAULT_TITLES);
+
   useEffect(() => {
+    const titlesCount = titles.length;
     const interval = setInterval(() => {
-      setTitleIndex((prev) => (prev + 1) % (data?.titles?.length || DEFAULT_TITLES.length));
+      setTitleIndex((prev) => (prev + 1) % titlesCount);
     }, 3000);
     return () => clearInterval(interval);
-  }, [data]);
+  }, [titles]);
 
-  const titles = data?.titles || DEFAULT_TITLES;
+  const getLocalizedField = (dbData: any, fieldName: string, localTKey: string) => {
+    if (!dbData) return t(localTKey);
+    if (language === 'en') return dbData[fieldName] || t(localTKey);
+    const translatedVal = dbData?.translations?.[language]?.[fieldName];
+    if (translatedVal && typeof translatedVal === 'string' && translatedVal.trim() !== '') {
+      return translatedVal;
+    }
+    return t(localTKey);
+  };
 
   return (
     <>
@@ -78,11 +95,11 @@ export default function Hero() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
               </span>
-              <span className="text-xs font-mono text-brand uppercase tracking-widest">Available for new opportunities</span>
+              <span className="text-xs font-mono text-brand uppercase tracking-widest">{t('hero.badge')}</span>
             </div>
 
-            <h1 className="text-5xl lg:text-8xl font-black tracking-tight text-white leading-tight will-change-transform">
-              {data?.headline || "Hi, I'm Sankalp Suman"}
+             <h1 className="text-5xl lg:text-8xl font-black tracking-tight text-white leading-tight will-change-transform">
+              {getLocalizedField(data, 'headline', 'hero.headline')}
             </h1>
 
             <div className="h-12 lg:h-16 flex items-center justify-center">
@@ -101,7 +118,7 @@ export default function Hero() {
             </div>
 
             <p className="max-w-2xl mx-auto text-lg lg:text-xl text-gray-400 leading-relaxed">
-              {data?.description || "Transforming modern software quality through AI-powered testing, intelligent automation, API validation, and Agile leadership."}
+              {getLocalizedField(data, 'description', 'hero.description')}
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
@@ -111,7 +128,7 @@ export default function Hero() {
                 className="px-8 py-4 bg-brand hover:brightness-110 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-brand/10"
               >
                 <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
-                Download Resume
+                {t('hero.btn_resume')}
               </a>
               
               <a 
@@ -119,7 +136,7 @@ export default function Hero() {
                 className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 transition-all flex items-center gap-2"
               >
                 <Send className="w-5 h-5" />
-                Contact Me
+                {t('hero.btn_contact')}
               </a>
 
               {settings?.calendlyUrl && (
@@ -130,7 +147,7 @@ export default function Hero() {
                   className="px-8 py-4 bg-gradient-to-r from-brand to-brand/80 hover:brightness-110 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-brand/5"
                 >
                   <Calendar className="w-5 h-5" />
-                  Strategy Session
+                  {t('hero.btn_strategy')}
                 </a>
               )}
               <a 
@@ -145,16 +162,24 @@ export default function Hero() {
         </div>
 
         {/* Floating UI Elements */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2">
-          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Scroll to explore</span>
+        <button 
+          onClick={() => {
+            const el = document.getElementById('about');
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-2 cursor-pointer group focus:outline-none border-none bg-transparent hover:brightness-110 active:scale-95 transition-transform"
+        >
+          <span className="text-[10px] font-mono text-gray-500 group-hover:text-brand uppercase tracking-widest transition-colors">{t('hero.scroll')}</span>
           <motion.div 
             animate={{ y: [0, 8, 0] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
-            className="w-5 h-8 border-2 border-white/20 rounded-full flex justify-center pt-2"
+            className="w-5 h-8 border-2 border-white/20 group-hover:border-brand/40 rounded-full flex justify-center pt-2 transition-colors"
           >
-            <div className="w-1 h-1 bg-brand rounded-full"></div>
+            <div className="w-1 h-1 bg-brand rounded-full animate-pulse"></div>
           </motion.div>
-        </div>
+        </button>
       </section>
     </>
   );

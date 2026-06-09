@@ -7,14 +7,16 @@ import { HelmetProvider } from 'react-helmet-async';
 import { subscribeDocument } from './services/firestoreService';
 import { AIChatbot } from './components/portfolio/AIChatbot';
 import ErrorBoundary from './components/ErrorBoundary';
+import { LanguageProvider } from './hooks/useLanguage';
+import { lazyRetry } from './lib/lazyRetry';
 
 // Lazy load Pages
-const PortfolioHome = lazy(() => import('./pages/PortfolioHome'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const AdminLogin = lazy(() => import('./pages/AdminLogin'));
-const BlogList = lazy(() => import('./pages/BlogList'));
-const BlogDetail = lazy(() => import('./pages/BlogDetail'));
-const NowPage = lazy(() => import('./pages/NowPage'));
+const PortfolioHome = lazy(() => lazyRetry(() => import('./pages/PortfolioHome.tsx')));
+const AdminDashboard = lazy(() => lazyRetry(() => import('./pages/AdminDashboard.tsx')));
+const AdminLogin = lazy(() => lazyRetry(() => import('./pages/AdminLogin.tsx')));
+const BlogList = lazy(() => lazyRetry(() => import('./pages/BlogList.tsx')));
+const BlogDetail = lazy(() => lazyRetry(() => import('./pages/BlogDetail.tsx')));
+const NowPage = lazy(() => lazyRetry(() => import('./pages/NowPage.tsx')));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[#050816] flex items-center justify-center">
@@ -101,30 +103,32 @@ export default function App() {
 
   return (
     <HelmetProvider>
-      <Toaster position="bottom-right" />
-      <Router>
-        <ErrorBoundary>
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              <Route path="/" element={<PortfolioHome />} />
-              <Route path="/blog" element={<BlogList />} />
-              <Route path="/blog/:slug" element={<BlogDetail />} />
-              <Route path="/now" element={<NowPage />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route 
-                path="/admin/*" 
-                element={
-                  <AdminGuard user={user} authInitialized={authInitialized}>
-                    <AdminDashboard />
-                  </AdminGuard>
-                } 
-              />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </ErrorBoundary>
-        <AIChatbot />
-      </Router>
+      <LanguageProvider>
+        <Toaster position="bottom-right" />
+        <Router>
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<PortfolioHome />} />
+                <Route path="/blog" element={<BlogList />} />
+                <Route path="/blog/:slug" element={<BlogDetail />} />
+                <Route path="/now" element={<NowPage />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route 
+                  path="/admin/*" 
+                  element={
+                    <AdminGuard user={user} authInitialized={authInitialized}>
+                      <AdminDashboard />
+                    </AdminGuard>
+                  } 
+                />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
+          <AIChatbot />
+        </Router>
+      </LanguageProvider>
     </HelmetProvider>
   );
 }

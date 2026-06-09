@@ -3,11 +3,12 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { ABOUT_DOC, getDocument, saveDocument } from '../../services/firestoreService';
-import { Save, Loader2, Plus, Trash2, Image as ImageIcon, Video } from 'lucide-react';
+import { Save, Loader2, Plus, Trash2, Image as ImageIcon, Video, Globe } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
 import { motion, AnimatePresence } from 'motion/react';
+import { autoTranslateDocument } from '../../lib/translationUtils';
 
 import { ImageCropper } from '../../components/admin/ImageCropper';
 
@@ -19,6 +20,7 @@ const aboutSchema = z.object({
   })).max(10),
   imageUrl: z.string().optional().or(z.literal('')),
   videoUrl: z.string().optional().or(z.literal('')),
+  translations: z.any().optional()
 });
 
 type AboutData = z.infer<typeof aboutSchema>;
@@ -28,6 +30,8 @@ export default function AboutEditor() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<'image' | 'video' | null>(null);
   const [tempImage, setTempImage] = useState<string | null>(null);
+  const [activeEditorLang, setActiveEditorLang] = useState<'en' | 'hi' | 'fr' | 'de'>('en');
+  const [translating, setTranslating] = useState(false);
 
   const { register, control, handleSubmit, setValue, watch, formState: { errors } } = useForm<AboutData>({
     resolver: zodResolver(aboutSchema),
@@ -38,6 +42,25 @@ export default function AboutEditor() {
 
   const imageUrl = watch('imageUrl');
   const videoUrl = watch('videoUrl');
+  const contentVal = watch('content') || '';
+  const translationsVal = (watch('translations') || {}) as any;
+
+  const handleAutoTranslate = async () => {
+    if (!contentVal) return;
+    setTranslating(true);
+    try {
+      const docWithTranslations = await autoTranslateDocument({ content: contentVal });
+      if (docWithTranslations.translations) {
+        setValue('translations', docWithTranslations.translations);
+        alert('Translations generated successfully! Review the different tabs and save.');
+      }
+    } catch (error) {
+      console.error('Auto translation failed:', error);
+      alert('Auto translation failed. Please try again.');
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -54,6 +77,7 @@ export default function AboutEditor() {
         setValue('metrics', data.metrics || []);
         setValue('imageUrl', data.imageUrl || '');
         setValue('videoUrl', data.videoUrl || '');
+        setValue('translations', data.translations || {});
       }
       setLoading(false);
     }
@@ -256,17 +280,82 @@ export default function AboutEditor() {
             </div>
 
             {/* Content */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Bio Content</label>
-              <textarea
-                {...register('content')}
-                rows={8}
-                className={cn(
-                  "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 transition-all outline-none resize-none",
-                  errors.content && "border-red-500/50"
-                )}
-              />
-              {errors.content && <p className="text-xs text-red-500">{errors.content.message}</p>}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-300">Bio Content</label>
+                  {activeEditorLang !== 'en' && (
+                    <span className="text-[10px] px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded-md uppercase font-bold tracking-wider">
+                      {activeEditorLang} translation
+                    </span>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  {/* Language Switching Tabs */}
+                  <div className="flex items-center gap-1 p-0.5 bg-white/5 border border-white/10 rounded-lg">
+                    {(['en', 'hi', 'fr', 'de'] as const).map((lang) => (
+                      <button
+                        key={lang}
+                        type="button"
+                        onClick={() => setActiveEditorLang(lang)}
+                        className={cn(
+                          "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all duration-150 cursor-pointer",
+                          activeEditorLang === lang 
+                            ? "bg-blue-600 text-white" 
+                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                        )}
+                      >
+                        {lang}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Auto Translate Button */}
+                  <button
+                    type="button"
+                    onClick={handleAutoTranslate}
+                    disabled={translating || !contentVal}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20 cursor-pointer"
+                  >
+                    {translating ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Globe className="w-3 h-3" />
+                    )}
+                    <span>Auto-Translate</span>
+                  </button>
+                </div>
+              </div>
+
+              {activeEditorLang === 'en' ? (
+                <textarea
+                  {...register('content')}
+                  rows={8}
+                  className={cn(
+                    "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 transition-all outline-none resize-none text-white",
+                    errors.content && "border-red-500/50"
+                  )}
+                />
+              ) : (
+                <textarea
+                  value={translationsVal[activeEditorLang]?.content || ''}
+                  onChange={(e) => {
+                    const currentTrans = { ...translationsVal };
+                    if (!currentTrans[activeEditorLang]) {
+                      currentTrans[activeEditorLang] = {};
+                    }
+                    currentTrans[activeEditorLang].content = e.target.value;
+                    setValue('translations', currentTrans);
+                  }}
+                  rows={8}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 transition-all outline-none resize-none text-white"
+                  placeholder={`Provide ${activeEditorLang.toUpperCase()} translation for bio content...`}
+                />
+              )}
+              {activeEditorLang === 'en' && errors.content && (
+                <p className="text-xs text-red-500">{errors.content.message}</p>
+              )}
             </div>
 
             {/* Metrics */}

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Milestone, ChevronRight, MapPin, Calendar, Award, Building2, ExternalLink } from 'lucide-react';
 import { getCollection } from '../../services/firestoreService';
 import { cn } from '../../lib/utils';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface TimelineMilestone {
   id: string;
@@ -15,9 +16,17 @@ interface TimelineMilestone {
   logoUrl?: string;
 }
 
+const DEFAULT_BULLETS = [
+  "Spearheaded end-to-end QA strategy",
+  "Implemented robust automation framework",
+  "Optimized CI/CD release cycles",
+  "Managed stakeholders & test reporting"
+];
+
 export default function CareerTimeline() {
   const [milestones, setMilestones] = useState<TimelineMilestone[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const { t, tArray, resolveTranslation } = useLanguage();
 
   useEffect(() => {
     async function load() {
@@ -28,6 +37,12 @@ export default function CareerTimeline() {
     load();
   }, []);
 
+  const activeMilestone = milestones.find(m => m.id === activeId);
+
+  // Dynamic bullet lists translation
+  const rawBullets = tArray('career_timeline.bullets');
+  const bulletPoints = rawBullets && rawBullets.length > 0 ? rawBullets : DEFAULT_BULLETS;
+
   if (milestones.length === 0) return null;
 
   return (
@@ -37,8 +52,12 @@ export default function CareerTimeline() {
        
        <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="text-center mb-20">
-             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="text-blue-500 font-mono text-sm uppercase tracking-widest mb-4">Evolution of Excellence</motion.div>
-             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Interactive <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Career Timeline</span></h2>
+             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="text-blue-500 font-mono text-sm uppercase tracking-widest mb-4">
+                {t('career_timeline.badge')}
+             </motion.div>
+             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+                {t('career_timeline.title_prefix')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">{t('career_timeline.title_highlight')}</span>
+             </h2>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -75,9 +94,15 @@ export default function CareerTimeline() {
                            </div>
                            
                            <div className="flex-1">
-                              <div className="text-[10px] font-mono mb-1 uppercase tracking-widest" style={{ color: item.color }}>{item.date}</div>
-                              <h4 className={cn("font-bold transition-colors", activeId === item.id ? "text-white" : "text-gray-500")}>{item.title}</h4>
-                              <p className="text-xs text-gray-500 font-medium">{item.company}</p>
+                              <div className="text-[10px] font-mono mb-1 uppercase tracking-widest" style={{ color: item.color }}>
+                                 {resolveTranslation(item, 'date')}
+                              </div>
+                              <h4 className={cn("font-bold transition-colors", activeId === item.id ? "text-white" : "text-gray-500")}>
+                                 {resolveTranslation(item, 'title')}
+                              </h4>
+                              <p className="text-xs text-gray-500 font-medium">
+                                 {resolveTranslation(item, 'company')}
+                              </p>
                            </div>
 
                            <ChevronRight className={cn(
@@ -100,7 +125,7 @@ export default function CareerTimeline() {
              {/* Detail Viewer */}
              <div className="lg:col-span-7 sticky top-32">
                 <AnimatePresence mode="wait">
-                  {activeId && (
+                  {activeId && activeMilestone && (
                     <motion.div
                       key={activeId}
                       initial={{ opacity: 0, y: 20, scale: 0.98 }}
@@ -110,9 +135,9 @@ export default function CareerTimeline() {
                       className="bg-[#050816] border border-white/10 rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden group shadow-2xl"
                     >
                        {/* Background Logo Watermark */}
-                       {milestones.find(m => m.id === activeId)?.logoUrl && (
+                       {activeMilestone.logoUrl && (
                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] opacity-[0.03] pointer-events-none grayscale invert">
-                            <img src={milestones.find(m => m.id === activeId)?.logoUrl} alt="Watermark" className="w-full h-full object-contain" />
+                            <img src={activeMilestone.logoUrl} alt="Watermark" className="w-full h-full object-contain" />
                          </div>
                        )}
 
@@ -124,11 +149,13 @@ export default function CareerTimeline() {
                                       <Building2 className="w-6 h-6 text-blue-400" />
                                    </div>
                                    <div>
-                                      <h3 className="text-3xl font-bold text-white">{milestones.find(m => m.id === activeId)?.company}</h3>
+                                      <h3 className="text-3xl font-bold text-white">
+                                         {resolveTranslation(activeMilestone, 'company')}
+                                      </h3>
                                       <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
-                                         <MapPin className="w-3 h-3 text-blue-500" /> Delhi NCR, India 
+                                         <MapPin className="w-3 h-3 text-blue-500" /> {t('career_timeline.location')}
                                          <span className="mx-2 opacity-20">•</span>
-                                         <Calendar className="w-3 h-3 text-blue-500" /> {milestones.find(m => m.id === activeId)?.date}
+                                         <Calendar className="w-3 h-3 text-blue-500" /> {resolveTranslation(activeMilestone, 'date')}
                                       </div>
                                    </div>
                                 </div>
@@ -144,19 +171,16 @@ export default function CareerTimeline() {
 
                           <div className="space-y-6">
                              <div className="space-y-2">
-                                <h4 className="text-xl font-bold text-blue-400">{milestones.find(m => m.id === activeId)?.title}</h4>
+                                <h4 className="text-xl font-bold text-blue-400">
+                                   {resolveTranslation(activeMilestone, 'title')}
+                                </h4>
                                 <p className="text-gray-400 leading-relaxed text-lg">
-                                   {milestones.find(m => m.id === activeId)?.description}
+                                   {resolveTranslation(activeMilestone, 'description')}
                                 </p>
                              </div>
 
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 text-gray-300">
-                                {[
-                                  "Spearheaded end-to-end QA strategy",
-                                  "Implemented robust automation framework",
-                                  "Optimized CI/CD release cycles",
-                                  "Managed stakeholders & test reporting"
-                                ].map((bullet, i) => (
+                                {bulletPoints.map((bullet, i) => (
                                   <div key={i} className="flex items-start gap-3 p-4 rounded-2xl bg-white/2 border border-white/5 hover:border-white/10 transition-colors group/bullet">
                                      <div className="mt-1">
                                         <Award className="w-4 h-4 text-blue-500 group-hover/bullet:scale-110 transition-transform" />
@@ -169,7 +193,7 @@ export default function CareerTimeline() {
                           
                           <div className="pt-8 flex justify-center lg:justify-start">
                              <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-blue-600 text-white font-bold text-sm shadow-xl shadow-blue-600/20 hover:scale-105 active:scale-95 transition-all">
-                                <Award className="w-4 h-4" /> Professional Recognition
+                                <Award className="w-4 h-4" /> {t('career_timeline.recognition')}
                              </div>
                           </div>
                        </div>

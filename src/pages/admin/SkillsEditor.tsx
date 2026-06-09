@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { Save, Plus, Trash2, Loader2 } from 'lucide-react';
+import { Save, Plus, Trash2, Loader2, Globe } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
+import { autoTranslateDocument } from '../../lib/translationUtils';
 
 interface Skill {
   id: string;
   name: string;
   category: string;
   level: number;
+  translations?: Record<string, any>;
 }
 
 const CATEGORIES = [
@@ -28,6 +30,56 @@ export default function SkillsEditor() {
   const [saved, setSaved] = useState(false);
   const [newSkill, setNewSkill] = useState({ name: '', category: 'Testing', level: 80 });
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
+  const [activeEditorLang, setActiveEditorLang] = useState<'en' | 'hi' | 'fr' | 'de'>('en');
+  const [translating, setTranslating] = useState(false);
+
+  const getSkillName = (s: Skill) => {
+    if (activeEditorLang === 'en') return s.name;
+    return (s as any).translations?.[activeEditorLang]?.name || '';
+  };
+
+  const setSkillName = (id: string, nameVal: string) => {
+    setLocalSkills(localSkills.map(s => {
+      if (s.id !== id) return s;
+      const translations = (s as any).translations || {};
+      return {
+        ...s,
+        name: activeEditorLang === 'en' ? nameVal : s.name,
+        translations: {
+          ...translations,
+          [activeEditorLang]: {
+            ...(translations[activeEditorLang] || {}),
+            name: nameVal
+          }
+        }
+      };
+    }));
+  };
+
+  const handleAutoTranslateAll = async () => {
+    if (localSkills.length === 0) return;
+    setTranslating(true);
+    try {
+      const updated = await Promise.all(localSkills.map(async (skill) => {
+        if (!skill.name) return skill;
+        const res = await autoTranslateDocument({ name: skill.name });
+        return {
+          ...skill,
+          translations: {
+            ...((skill as any).translations || {}),
+            ...res.translations
+          }
+        };
+      }));
+      setLocalSkills(updated);
+      alert('All skills auto-translated successfully! Don’t forget to click "Save All Changes".');
+    } catch (e) {
+      console.error(e);
+      alert('Skills auto-translation failed.');
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   useEffect(() => {
     async function load() {
@@ -103,11 +155,23 @@ export default function SkillsEditor() {
       // Find changed skills
       const changedSkills = localSkills.filter(local => {
         const original = skills.find(s => s.id === local.id);
-        return original && (original.level !== local.level || original.name !== local.name || original.category !== local.category);
+        const originalTransStr = JSON.stringify(original?.translations || {});
+        const localTransStr = JSON.stringify(local?.translations || {});
+        return original && (
+          original.level !== local.level || 
+          original.name !== local.name || 
+          original.category !== local.category ||
+          originalTransStr !== localTransStr
+        );
       });
 
       await Promise.all(changedSkills.map(s => 
-        updateCollectionDocument('skills', s.id, { level: s.level, name: s.name, category: s.category })
+        updateCollectionDocument('skills', s.id, { 
+          level: s.level, 
+          name: s.name, 
+          category: s.category,
+          translations: (s as any).translations || null
+        })
       ));
 
       setSkills(localSkills);
@@ -123,7 +187,7 @@ export default function SkillsEditor() {
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-blue-500" /></div>;
 
   return (
-    <div className="max-w-5xl space-y-8">
+    <div className="max-w-5xl space-y-8 animate-in fade-in duration-300">
       <DeleteConfirmModal 
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, id: null })}
@@ -132,6 +196,48 @@ export default function SkillsEditor() {
         title="Delete Skill"
         message="Are you sure you want to delete this skill? This will remove it from all categories."
       />
+      
+      {/* Top localization bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[#050816] border border-white/5 rounded-2xl">
+        <div className="flex items-center gap-2">
+          <Globe className="w-4 h-4 text-blue-400" />
+          <span className="text-xs font-bold text-gray-300">Skills Localization (Active: {activeEditorLang.toUpperCase()})</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 p-0.5 bg-white/5 border border-white/10 rounded-lg">
+            {(['en', 'hi', 'fr', 'de'] as const).map((lang) => (
+              <button
+                key={lang}
+                type="button"
+                onClick={() => setActiveEditorLang(lang)}
+                className={cn(
+                  "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all duration-150 cursor-pointer",
+                  activeEditorLang === lang 
+                    ? "bg-blue-600 text-white" 
+                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                )}
+              >
+                {lang}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleAutoTranslateAll}
+            disabled={translating || localSkills.length === 0}
+            className="flex items-center gap-1.5 px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20 cursor-pointer"
+          >
+            {translating ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Globe className="w-3 h-3" />
+            )}
+            <span>Bulk Auto-Translate All</span>
+          </button>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Skills & Expertise</h2>
         <button 
@@ -152,7 +258,7 @@ export default function SkillsEditor() {
       <div className="bg-[#050816] border border-white/5 rounded-2xl p-6">
         <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
           <Plus className="w-5 h-5 text-blue-400" />
-          Add New Skill
+          Add New Skill (English)
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
@@ -197,7 +303,21 @@ export default function SkillsEditor() {
                   <div key={skill.id} className="p-4 bg-white/2 border border-white/5 rounded-xl flex items-center justify-between group hover:bg-white/5 transition-all">
                     <div className="flex-1 mr-4">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">{skill.name}</span>
+                        {activeEditorLang === 'en' ? (
+                          <input 
+                            value={skill.name}
+                            onChange={(e) => setSkillName(skill.id, e.target.value)}
+                            className="bg-transparent border-b border-transparent focus:border-blue-500/50 outline-none font-medium text-white p-0.5 text-sm"
+                            placeholder="Skill Name"
+                          />
+                        ) : (
+                          <input 
+                            value={(skill as any).translations?.[activeEditorLang]?.name || ''}
+                            onChange={(e) => setSkillName(skill.id, e.target.value)}
+                            className="bg-transparent border-b border-white/10 focus:border-blue-500 outline-none font-medium text-sm text-blue-400 p-0.5"
+                            placeholder={`Provide ${activeEditorLang.toUpperCase()} translation...`}
+                          />
+                        )}
                         <span className="text-xs text-blue-400 font-mono">{skill.level}%</span>
                       </div>
                         <input

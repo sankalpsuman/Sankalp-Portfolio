@@ -1,11 +1,12 @@
 import { useState, useEffect, ChangeEvent, useMemo, memo } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { Save, Plus, Trash2, Loader2, Layers, ExternalLink, Github, Image as ImageIcon, X, FileUp, Search } from 'lucide-react';
+import { Save, Plus, Trash2, Loader2, Layers, ExternalLink, Github, Image as ImageIcon, X, FileUp, Search, Globe } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 import { ImageCropper } from '../../components/admin/ImageCropper';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
 import { motion, AnimatePresence } from 'motion/react';
+import { autoTranslateDocument } from '../../lib/translationUtils';
 
 interface Project {
   id: string;
@@ -16,6 +17,7 @@ interface Project {
   liveUrl?: string;
   githubUrl?: string;
   order: number;
+  translations?: Record<string, any>;
 }
 
 const ProjectListItem = memo(({ item, isActive, onSelect, onDelete }: { 
@@ -63,6 +65,62 @@ export default function ProjectsEditor() {
   const [uploading, setUploading] = useState(false);
   const [tempImage, setTempImage] = useState<string | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
+  const [activeEditorLang, setActiveEditorLang] = useState<'en' | 'hi' | 'fr' | 'de'>('en');
+  const [translating, setTranslating] = useState(false);
+
+  const handleAutoTranslate = async () => {
+    if (!localItem) return;
+    setTranslating(true);
+    try {
+      const docWithTranslations = await autoTranslateDocument({
+        title: localItem.title,
+        description: localItem.description
+      });
+      if (docWithTranslations.translations) {
+        setLocalItem({
+          ...localItem,
+          translations: {
+            ...(localItem.translations || {}),
+            ...docWithTranslations.translations
+          }
+        });
+        alert('Project translated! Review other language tabs and click Save Changes.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to generate automatic translations.');
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  const getFieldVal = (field: 'title' | 'description') => {
+    if (!localItem) return '';
+    if (activeEditorLang === 'en') {
+      return localItem[field] || '';
+    }
+    return localItem.translations?.[activeEditorLang]?.[field] || '';
+  };
+
+  const setFieldVal = (field: 'title' | 'description', val: string) => {
+    if (!localItem) return;
+    if (activeEditorLang === 'en') {
+      setLocalItem({ ...localItem, [field]: val });
+    } else {
+      const translations = localItem.translations || {};
+      const langData = translations[activeEditorLang] || {};
+      setLocalItem({
+        ...localItem,
+        translations: {
+          ...translations,
+          [activeEditorLang]: {
+            ...langData,
+            [field]: val
+          }
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     async function load() {
@@ -85,6 +143,7 @@ export default function ProjectsEditor() {
   const handleSelect = (item: Project) => {
     setActiveItem(item);
     setLocalItem({...item}); // Deep copy for local editing
+    setActiveEditorLang('en');
   };
 
   const handleCreate = async () => {
@@ -100,6 +159,7 @@ export default function ProjectsEditor() {
     setItems([...items, item]);
     setActiveItem(item);
     setLocalItem(item);
+    setActiveEditorLang('en');
     setSaving(false);
   };
 
@@ -292,10 +352,53 @@ export default function ProjectsEditor() {
 
             <div className="space-y-6">
                <div className="space-y-2">
-                 <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Project Title</label>
+                 {/* Language Editor Tabs and Auto translate */}
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white/5 border border-white/10 rounded-2xl mb-6">
+                   <div className="flex items-center gap-2">
+                     <Globe className="w-4 h-4 text-blue-400" />
+                     <span className="text-xs font-bold text-gray-300">Localization (Active: {activeEditorLang.toUpperCase()})</span>
+                   </div>
+                   <div className="flex items-center gap-3">
+                     <div className="flex items-center gap-1 p-0.5 bg-white/5 border border-white/10 rounded-xl">
+                       {(['en', 'hi', 'fr', 'de'] as const).map((lang) => (
+                         <button
+                           key={lang}
+                           type="button"
+                           onClick={() => setActiveEditorLang(lang)}
+                           className={cn(
+                             "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all duration-150 cursor-pointer",
+                             activeEditorLang === lang 
+                               ? "bg-blue-600 text-white" 
+                               : "text-gray-400 hover:text-white"
+                           )}
+                         >
+                           {lang}
+                         </button>
+                       ))}
+                     </div>
+
+                     <button
+                       type="button"
+                       onClick={handleAutoTranslate}
+                       disabled={translating || !localItem?.title}
+                       className="flex items-center gap-1.5 px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20 cursor-pointer"
+                     >
+                       {translating ? (
+                         <Loader2 className="w-3 h-3 animate-spin" />
+                       ) : (
+                         <Globe className="w-3 h-3" />
+                       )}
+                       <span>Auto-Translate</span>
+                     </button>
+                   </div>
+                 </div>
+
+                 <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">
+                   Project Title {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                 </label>
                  <input 
-                   value={localItem.title}
-                   onChange={(e) => handleLocalUpdate({ title: e.target.value })}
+                   value={getFieldVal('title')}
+                   onChange={(e) => setFieldVal('title', e.target.value)}
                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 outline-none text-white text-lg font-bold"
                  />
                </div>
@@ -372,10 +475,12 @@ export default function ProjectsEditor() {
                </div>
 
                <div className="space-y-2">
-                 <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Description</label>
+                 <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">
+                   Description {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                 </label>
                  <textarea 
-                   value={localItem.description}
-                   onChange={(e) => handleLocalUpdate({ description: e.target.value })}
+                   value={getFieldVal('description')}
+                   onChange={(e) => setFieldVal('description', e.target.value)}
                    rows={6}
                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 outline-none resize-none text-gray-300"
                  />

@@ -1,11 +1,12 @@
 import { useState, useEffect, ChangeEvent } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { Save, Plus, Trash2, Loader2, Award, Image as ImageIcon, FileUp, X } from 'lucide-react';
+import { Save, Plus, Trash2, Loader2, Award, Image as ImageIcon, FileUp, X, Globe } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 import { ImageCropper } from '../../components/admin/ImageCropper';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
 import { motion, AnimatePresence } from 'motion/react';
+import { autoTranslateDocument } from '../../lib/translationUtils';
 
 interface Certification {
   id: string;
@@ -15,6 +16,7 @@ interface Certification {
   url?: string;
   imageUrl?: string;
   order: number;
+  translations?: Record<string, any>;
 }
 
 export default function CertificationsEditor() {
@@ -27,6 +29,63 @@ export default function CertificationsEditor() {
   const [uploading, setUploading] = useState(false);
   const [tempImage, setTempImage] = useState<string | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
+  const [activeEditorLang, setActiveEditorLang] = useState<'en' | 'hi' | 'fr' | 'de'>('en');
+  const [translating, setTranslating] = useState(false);
+
+  const getFieldVal = (field: 'name' | 'issuer' | 'date'): string => {
+    if (!localItem) return '';
+    if (activeEditorLang === 'en') {
+      return localItem[field] || '';
+    }
+    return localItem.translations?.[activeEditorLang]?.[field] || '';
+  };
+
+  const setFieldVal = (field: 'name' | 'issuer' | 'date', val: string) => {
+    if (!localItem) return;
+    if (activeEditorLang === 'en') {
+      setLocalItem({ ...localItem, [field]: val });
+    } else {
+      const translations = localItem.translations || {};
+      const langData = translations[activeEditorLang] || {};
+      setLocalItem({
+        ...localItem,
+        translations: {
+          ...translations,
+          [activeEditorLang]: {
+            ...langData,
+            [field]: val
+          }
+        }
+      });
+    }
+  };
+
+  const handleAutoTranslate = async () => {
+    if (!localItem) return;
+    setTranslating(true);
+    try {
+      const docWithTranslations = await autoTranslateDocument({
+        name: localItem.name,
+        issuer: localItem.issuer,
+        date: localItem.date
+      });
+      if (docWithTranslations.translations) {
+        setLocalItem({
+          ...localItem,
+          translations: {
+            ...((localItem as any).translations || {}),
+            ...docWithTranslations.translations
+          }
+        });
+        alert('Certification translated! Review tabs and Click Save Changes.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to generate automatic translations.');
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   useEffect(() => {
     async function load() {
@@ -38,6 +97,7 @@ export default function CertificationsEditor() {
   }, []);
 
   const handleSelect = (item: Certification) => {
+    setActiveEditorLang('en');
     setActiveItem(item);
     setLocalItem(item);
   };
@@ -53,6 +113,7 @@ export default function CertificationsEditor() {
     const id = await addCollectionDocument('certifications', newItem);
     const item = { ...newItem, id };
     setItems([...items, item]);
+    setActiveEditorLang('en');
     setActiveItem(item);
     setLocalItem(item);
     setSaving(false);
@@ -159,7 +220,7 @@ export default function CertificationsEditor() {
           <button 
             onClick={handleCreate}
             disabled={saving}
-            className="p-1 px-3 bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-md text-xs font-bold flex items-center gap-1 hover:bg-blue-600/20"
+            className="p-1 px-[10px] bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-md text-xs font-bold flex items-center gap-1 hover:bg-blue-600/20"
           >
             <Plus className="w-3 h-3" /> Add New
           </button>
@@ -198,7 +259,7 @@ export default function CertificationsEditor() {
         {localItem ? (
           <div className="bg-[#050816] border border-white/5 rounded-2xl p-6 lg:p-8 space-y-6">
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
-               <h3 className="text-xl font-bold">Edit Certification</h3>
+               <h3 className="text-xl font-bold flex items-center gap-2">Edit Certification</h3>
                <button 
                  onClick={handleSave} 
                  disabled={saving}
@@ -212,85 +273,130 @@ export default function CertificationsEditor() {
                  {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
                </button>
             </div>
+
+            {/* Language Editor Tabs Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-blue-400" />
+                <span className="text-xs font-bold text-gray-300">Localization (Active: {activeEditorLang.toUpperCase()})</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 p-0.5 bg-white/5 border border-white/10 rounded-lg">
+                  {(['en', 'hi', 'fr', 'de'] as const).map((lang) => (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => setActiveEditorLang(lang)}
+                      className={cn(
+                        "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all duration-150 cursor-pointer",
+                        activeEditorLang === lang 
+                          ? "bg-blue-600 text-white" 
+                          : "text-gray-400 hover:text-white"
+                      )}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAutoTranslate}
+                  disabled={translating}
+                  className="flex items-center gap-1 px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20 cursor-pointer"
+                >
+                  {translating ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Globe className="w-3" />
+                  )}
+                  <span>Auto-Translate</span>
+                </button>
+              </div>
+            </div>
             
             <div className="space-y-4">
                <div className="space-y-2">
-                 <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Certification Name</label>
+                 <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Certification Name {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}</label>
                  <input 
-                   value={localItem.name}
-                   onChange={(e) => handleLocalUpdate({ name: e.target.value })}
+                   value={getFieldVal('name')}
+                   onChange={(e) => setFieldVal('name', e.target.value)}
                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none"
                  />
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Issuer</label>
+                    <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Issuer {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}</label>
                     <input 
-                      value={localItem.issuer}
-                      onChange={(e) => handleLocalUpdate({ issuer: e.target.value })}
+                      value={getFieldVal('issuer')}
+                      onChange={(e) => setFieldVal('issuer', e.target.value)}
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Date</label>
+                    <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Date {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}</label>
                     <input 
-                      value={localItem.date}
-                      onChange={(e) => handleLocalUpdate({ date: e.target.value })}
+                      value={getFieldVal('date')}
+                      onChange={(e) => setFieldVal('date', e.target.value)}
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none"
                     />
                   </div>
                </div>
 
-               <div className="space-y-2">
-                 <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Credential Image/Badge</label>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="relative aspect-video rounded-xl overflow-hidden bg-white/5 border border-white/10 group flex items-center justify-center">
-                      {localItem.imageUrl ? (
-                        <img src={localItem.imageUrl} alt="Preview" className="w-full h-full object-contain p-2" />
-                      ) : (
-                        <div className="flex flex-col items-center justify-center text-gray-500">
-                          <ImageIcon className="w-8 h-8 mb-2" />
-                          <span className="text-xs">No image</span>
+               {activeEditorLang === 'en' && (
+                 <>
+                   <div className="space-y-2">
+                     <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Credential Image/Badge</label>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="relative aspect-video rounded-xl overflow-hidden bg-white/5 border border-white/10 group flex items-center justify-center">
+                          {localItem.imageUrl ? (
+                            <img src={localItem.imageUrl} alt="Preview" className="w-full h-full object-contain p-2" />
+                          ) : (
+                            <div className="flex flex-col items-center justify-center text-gray-500">
+                              <ImageIcon className="w-8 h-8 mb-2" />
+                              <span className="text-xs">No image</span>
+                            </div>
+                          )}
+                          {uploading && (
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                              <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {uploading && (
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                        <div className="flex flex-col justify-center gap-3">
+                          <label className="flex items-center justify-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl hover:border-blue-500/50 hover:bg-white/10 transition-all cursor-pointer group">
+                            <input type="file" className="hidden" accept="image/*" onChange={handleImageSelect} disabled={uploading} />
+                            <FileUp className="w-4 h-4 text-gray-400 group-hover:text-blue-400" />
+                            <span className="text-sm font-medium text-center">Update Image</span>
+                          </label>
+                          <div className="space-y-1">
+                            <span className="text-[10px] text-gray-500 uppercase tracking-widest block font-bold">Or enter URL</span>
+                            <input 
+                              value={localItem.imageUrl || ''}
+                              onChange={(e) => handleLocalUpdate({ imageUrl: e.target.value })}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 focus:border-blue-500 outline-none text-xs"
+                              placeholder="Badge URL..."
+                            />
+                          </div>
                         </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col justify-center gap-3">
-                      <label className="flex items-center justify-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl hover:border-blue-500/50 hover:bg-white/10 transition-all cursor-pointer group">
-                        <input type="file" className="hidden" accept="image/*" onChange={handleImageSelect} disabled={uploading} />
-                        <FileUp className="w-4 h-4 text-gray-400 group-hover:text-blue-400" />
-                        <span className="text-sm font-medium text-center">Update Image</span>
-                      </label>
-                      <div className="space-y-1">
-                        <span className="text-[10px] text-gray-500 uppercase tracking-widest block font-bold">Or enter URL</span>
-                        <input 
-                          value={localItem.imageUrl || ''}
-                          onChange={(e) => handleLocalUpdate({ imageUrl: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 focus:border-blue-500 outline-none text-xs"
-                          placeholder="Badge URL..."
-                        />
-                      </div>
-                    </div>
-                 </div>
-               </div>
+                     </div>
+                   </div>
 
-               <div className="space-y-2">
-                 <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Credential URL</label>
-                 <input 
-                   value={localItem.url || ''}
-                   onChange={(e) => handleLocalUpdate({ url: e.target.value })}
-                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none"
-                 />
-               </div>
+                   <div className="space-y-2">
+                     <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Credential URL</label>
+                     <input 
+                       value={localItem.url || ''}
+                       onChange={(e) => handleLocalUpdate({ url: e.target.value })}
+                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none"
+                     />
+                   </div>
+                 </>
+               )}
             </div>
           </div>
         ) : (
-          <div className="h-64 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-gray-500 italic">
+          <div className="h-64 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-gray-500 italic animate-in fade-in">
             Select a certification to edit
           </div>
         )}

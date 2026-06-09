@@ -3,6 +3,7 @@ import Section from './Section';
 import { motion } from 'motion/react';
 import { getCollection } from '../../services/firestoreService';
 import { Briefcase, Calendar } from 'lucide-react';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface Experience {
   id: string;
@@ -43,6 +44,7 @@ const DEFAULT_EXPERIENCE: Experience[] = [
 
 export default function Experience() {
   const [items, setItems] = useState<Experience[]>([]);
+  const { t, resolveTranslation } = useLanguage();
 
   useEffect(() => {
     async function load() {
@@ -61,8 +63,52 @@ export default function Experience() {
     load();
   }, []);
 
+  const getExperienceCompany = (item: Experience) => {
+    if (item.id === '1') return t('experience.exp1_company');
+    if (item.id === '2') return t('experience.exp2_company');
+    if (item.id === '3') return t('experience.exp3_company');
+    return resolveTranslation(item, 'company');
+  };
+
+  const getExperienceRole = (item: Experience) => {
+    if (item.id === '1') return t('experience.exp1_role');
+    if (item.id === '2') return t('experience.exp2_role');
+    if (item.id === '3') return t('experience.exp3_role');
+    return resolveTranslation(item, 'role');
+  };
+
+  const getExperiencePeriod = (item: Experience) => {
+    if (item.id === '1') return t('experience.exp1_period');
+    if (item.id === '2') return t('experience.exp2_period');
+    if (item.id === '3') return t('experience.exp3_period');
+    return resolveTranslation(item, 'period');
+  };
+
+  const getExperienceDesc = (item: Experience) => {
+    if (item.id === '1') return t('experience.exp1_desc');
+    if (item.id === '2') return t('experience.exp2_desc');
+    if (item.id === '3') return t('experience.exp3_desc');
+    return resolveTranslation(item, 'description');
+  };
+
+  const getPeriodEnd = (period: string) => {
+    const parts = period.split(/[–-]/);
+    const end = parts[1]?.trim() || '';
+    const endLower = end.toLowerCase();
+    if (
+      endLower.includes('present') || 
+      endLower.includes('heute') || 
+      endLower.includes('वर्तमान') || 
+      endLower.includes('présent')
+    ) {
+      const transPresent = t('experience.present');
+      return transPresent !== 'experience.present' ? transPresent : 'Present';
+    }
+    return end || 'Current';
+  };
+
   return (
-    <Section id="experience" title="Career Journey" subtitle="Experience">
+    <Section id="experience" title={t('experience.title')} subtitle={t('experience.subtitle')}>
       <div className="relative space-y-16 lg:space-y-24 after:absolute after:inset-y-0 after:left-4 lg:after:left-1/2 after:w-px after:bg-gradient-to-b after:from-brand/50 after:via-white/5 after:to-transparent after:-translate-x-1/2">
         {items.map((item, idx) => (
           <motion.div
@@ -91,22 +137,22 @@ export default function Experience() {
                 
                 <div className="flex items-center gap-3 text-brand mb-4 font-mono text-[10px] uppercase tracking-[0.3em] font-bold">
                   <Calendar className="w-3.5 h-3.5 text-brand" />
-                  {item.period}
+                  {getExperiencePeriod(item)}
                 </div>
                 
                 <h3 className="text-3xl font-black text-white mb-2 tracking-tight group-hover:text-brand transition-colors duration-300">
-                  {item.company}
+                  {getExperienceCompany(item)}
                 </h3>
                 
                 <div className="flex items-center gap-2 mb-6">
                   <div className="flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-brand/10 to-purple-500/10 border border-white/5 rounded-xl">
                     <Briefcase className="w-3.5 h-3.5 text-brand" />
-                    <span className="text-sm font-bold text-gray-200 tracking-wide">{item.role}</span>
+                    <span className="text-sm font-bold text-gray-200 tracking-wide">{getExperienceRole(item)}</span>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  {item.description.split('\n').map((line, i) => {
+                  {getExperienceDesc(item).split('\n').map((line, i) => {
                     const trimmedLine = line.trim();
                     if (!trimmedLine) return <div key={i} className="h-2" />;
                     
@@ -140,7 +186,7 @@ export default function Experience() {
             {/* Date Indicator on other side for desktop */}
             <div className={`hidden lg:flex w-1/2 ${idx % 2 === 0 ? 'justify-start' : 'justify-end'} items-center`}>
                <span className="text-8xl font-black text-white/[0.015] select-none tracking-tighter group-hover:text-brand/[0.03] transition-colors duration-700">
-                 {item.period.split(/[–-]/)[1]?.trim() || 'Current'}
+                 {getPeriodEnd(getExperiencePeriod(item))}
                </span>
             </div>
           </motion.div>

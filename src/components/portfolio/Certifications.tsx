@@ -3,6 +3,7 @@ import Section from './Section';
 import { motion } from 'motion/react';
 import { getCollection } from '../../services/firestoreService';
 import { Award, ExternalLink, Calendar } from 'lucide-react';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface Certification {
   id: string;
@@ -19,6 +20,7 @@ const DEFAULT_CERTS: Certification[] = [
 
 export default function Certifications() {
   const [items, setItems] = useState<Certification[]>([]);
+  const { t, resolveTranslation } = useLanguage();
 
   useEffect(() => {
     async function load() {
@@ -40,7 +42,7 @@ export default function Certifications() {
   if (items.length === 0) return null;
 
   return (
-    <Section id="certifications" title="Accolades" subtitle="Certifications" className="bg-[#050816]">
+    <Section id="certifications" title={t('certifications.title')} subtitle={t('certifications.subtitle')} className="bg-[#050816]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((cert, idx) => (
           <motion.div
@@ -61,14 +63,14 @@ export default function Certifications() {
                </div>
                
                <div>
-                  <h4 className="text-lg font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">{cert.name}</h4>
-                  <p className="text-gray-400 text-sm">{cert.issuer}</p>
+                  <h4 className="text-lg font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">{resolveTranslation(cert, 'name')}</h4>
+                  <p className="text-gray-400 text-sm">{resolveTranslation(cert, 'issuer')}</p>
                </div>
 
                <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-4">
                   <div className="flex items-center gap-2 text-xs text-gray-500 font-mono">
                      <Calendar className="w-3 h-3" />
-                     {cert.date}
+                     {resolveTranslation(cert, 'date')}
                   </div>
                   {cert.url && (
                     <a 
@@ -76,7 +78,7 @@ export default function Certifications() {
                       target="_blank"
                       className="text-blue-400 hover:text-blue-300 flex items-center gap-1 text-xs font-bold uppercase tracking-wider"
                     >
-                       Verify <ExternalLink className="w-3 h-3" />
+                       {t('certifications.verify')} <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
                </div>

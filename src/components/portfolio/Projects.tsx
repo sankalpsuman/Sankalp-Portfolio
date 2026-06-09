@@ -5,6 +5,7 @@ import { getCollection } from '../../services/firestoreService';
 import { ExternalLink, Github, Layers, PlayCircle, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import LazyImage from '../ui/LazyImage';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface Project {
   id: string;
@@ -48,6 +49,7 @@ const DEFAULT_PROJECTS: Project[] = [
 export default function Projects() {
   const [items, setItems] = useState<Project[]>([]);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const { t, resolveTranslation } = useLanguage();
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>, id: string) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -74,8 +76,22 @@ export default function Projects() {
     load();
   }, []);
 
+  const getProjectTitle = (p: Project) => {
+    if (p.id === '1') return t('projects.p1_title');
+    if (p.id === '2') return t('projects.p2_title');
+    if (p.id === '3') return t('projects.p3_title');
+    return resolveTranslation(p, 'title');
+  };
+
+  const getProjectDescription = (p: Project) => {
+    if (p.id === '1') return t('projects.p1_description');
+    if (p.id === '2') return t('projects.p2_description');
+    if (p.id === '3') return t('projects.p3_description');
+    return resolveTranslation(p, 'description');
+  };
+
   return (
-    <Section id="projects" title="Featured Work" subtitle="Success Stories">
+    <Section id="projects" title={t('projects.title')} subtitle={t('projects.subtitle')}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
         {items.map((project, idx) => (
           <motion.div
@@ -109,7 +125,7 @@ export default function Projects() {
 
               <LazyImage 
                 src={project.imageUrl || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop"} 
-                alt={project.title}
+                alt={getProjectTitle(project)}
                 className="grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
                 wrapperClassName="w-full h-full"
               />
@@ -137,7 +153,7 @@ export default function Projects() {
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-90 group-hover:scale-100 z-20">
                 <div className="px-6 py-3 bg-brand text-white rounded-full font-bold text-sm tracking-widest uppercase flex items-center gap-2 shadow-xl shadow-brand/20">
                   <PlayCircle className="w-5 h-5" />
-                  View Case Study
+                  {t('projects.view_case')}
                 </div>
               </div>
             </motion.div>
@@ -152,7 +168,7 @@ export default function Projects() {
                   "font-bold text-white group-hover:text-brand transition-colors",
                   idx === 0 ? "text-3xl md:text-5xl tracking-tight" : "text-2xl"
                 )}>
-                  {project.title}
+                  {getProjectTitle(project)}
                 </h3>
                 <div className="flex items-center gap-4 text-gray-500">
                    {project.githubUrl && <a href={project.githubUrl} className="hover:text-white transition-colors"><Github className="w-5 h-5" /></a>}
@@ -163,12 +179,12 @@ export default function Projects() {
                 "text-gray-400 leading-relaxed",
                 idx === 0 ? "text-lg md:text-xl max-w-2xl" : "max-w-xl text-sm"
               )}>
-                {project.description}
+                {getProjectDescription(project)}
               </p>
               <div className="flex items-center gap-2 pt-2">
                  <Layers className="w-4 h-4 text-brand" />
                  <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
-                   {idx === 0 ? 'Flagship Application' : 'Enterprise QA Solution'}
+                   {idx === 0 ? t('projects.flagship') : t('projects.enterprise')}
                  </span>
               </div>
             </div>
@@ -183,8 +199,8 @@ export default function Projects() {
         viewport={{ once: true }}
         className="mt-20 text-center"
       >
-         <button className="px-8 py-4 bg-white/2 hover:bg-white/5 border border-white/10 hover:border-brand/30 rounded-2xl transition-all text-sm font-bold tracking-widest uppercase inline-flex items-center gap-3">
-            Exploration Archive
+         <button className="px-8 py-4 bg-white/2 hover:bg-white/5 border border-white/10 hover:border-brand/30 rounded-2xl transition-all text-sm font-bold tracking-widest uppercase inline-flex items-center gap-3 cursor-pointer">
+            {t('projects.archive_btn')}
             <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center">
                <ChevronRight className="w-4 h-4 text-brand" />
             </div>

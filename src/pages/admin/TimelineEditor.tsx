@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { Milestone, Plus, Trash2, Edit2, Loader2, Save, X } from 'lucide-react';
+import { Milestone, Plus, Trash2, Edit2, Loader2, Save, X, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
+import { autoTranslateDocument } from '../../lib/translationUtils';
 
 interface TimelineMilestone {
   id?: string;
@@ -14,6 +15,7 @@ interface TimelineMilestone {
   icon: string;
   color: string;
   order: number;
+  translations?: Record<string, any>;
 }
 
 export default function TimelineEditor() {
@@ -22,6 +24,61 @@ export default function TimelineEditor() {
   const [editing, setEditing] = useState<TimelineMilestone | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
+  const [activeEditorLang, setActiveEditorLang] = useState<'en' | 'hi' | 'fr' | 'de'>('en');
+  const [translating, setTranslating] = useState(false);
+
+  const getEditingFieldVal = (field: 'title' | 'company' | 'description' | 'date') => {
+    if (!editing) return '';
+    if (activeEditorLang === 'en') {
+      return editing[field] || '';
+    }
+    return editing.translations?.[activeEditorLang]?.[field] || '';
+  };
+
+  const setEditingFieldVal = (field: 'title' | 'company' | 'description' | 'date', val: string) => {
+    if (!editing) return;
+    if (activeEditorLang === 'en') {
+      setEditing({ ...editing, [field]: val });
+    } else {
+      const translations = editing.translations || {};
+      const langData = translations[activeEditorLang] || {};
+      setEditing({
+        ...editing,
+        translations: {
+          ...translations,
+          [activeEditorLang]: {
+            ...langData,
+            [field]: val
+          }
+        }
+      });
+    }
+  };
+
+  const handleMilestoneAutoTranslate = async () => {
+    if (!editing) return;
+    setTranslating(true);
+    try {
+      const docWithTranslations = await autoTranslateDocument({
+        title: editing.title,
+        company: editing.company,
+        description: editing.description,
+        date: editing.date
+      });
+      if (docWithTranslations.translations) {
+        setEditing({
+          ...editing,
+          translations: docWithTranslations.translations
+        });
+        alert('Milestone translation generated successfully! Review language tabs and save changes.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Translation failed.');
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   useEffect(() => {
     loadMilestones();
@@ -63,6 +120,16 @@ export default function TimelineEditor() {
     loadMilestones();
   };
 
+  const handleStartEdit = (item: TimelineMilestone) => {
+    setActiveEditorLang('en');
+    setEditing(item);
+  };
+
+  const handleStartCreate = () => {
+    setActiveEditorLang('en');
+    setEditing({ title: '', company: '', date: '', description: '', icon: 'Briefcase', color: '#3b82f6', order: milestones.length });
+  };
+
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin" /></div>;
 
   return (
@@ -93,7 +160,7 @@ export default function TimelineEditor() {
               </div>
             </div>
             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => setEditing(item)} className="p-2 hover:bg-white/10 rounded-lg"><Edit2 className="w-4 h-4" /></button>
+              <button onClick={() => handleStartEdit(item)} className="p-2 hover:bg-white/10 rounded-lg"><Edit2 className="w-4 h-4" /></button>
               <button onClick={() => setDeleteModal({ isOpen: true, id: item.id! })} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg"><Trash2 className="w-4 h-4" /></button>
             </div>
           </div>
@@ -124,36 +191,83 @@ export default function TimelineEditor() {
                 <button type="button" onClick={() => setEditing(null)} className="p-2 hover:bg-white/5 rounded-full"><X className="w-5 h-5" /></button>
               </div>
 
+              {/* Language Switcher Tabs */}
+              <div className="p-4 mx-6 mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs font-bold text-gray-300">Milestone Localization</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1 p-0.5 bg-white/5 border border-white/10 rounded-lg">
+                    {(['en', 'hi', 'fr', 'de'] as const).map((lang) => (
+                      <button
+                        key={lang}
+                        type="button"
+                        onClick={() => setActiveEditorLang(lang)}
+                        className={cn(
+                          "px-2 py-1 rounded-md text-[10px] font-bold uppercase transition-all duration-150 cursor-pointer",
+                          activeEditorLang === lang 
+                            ? "bg-blue-600 text-white" 
+                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                        )}
+                      >
+                        {lang}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleMilestoneAutoTranslate}
+                    disabled={translating || !editing.title}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20 cursor-pointer"
+                  >
+                    {translating ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Globe className="w-3 h-3" />
+                    )}
+                    <span>Auto-Translate</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs text-gray-500">Title</label>
+                    <label className="text-xs text-gray-500">
+                      Title {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                    </label>
                     <input 
                       required
-                      value={editing.title}
-                      onChange={e => setEditing({...editing, title: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm" 
+                      value={getEditingFieldVal('title')}
+                      onChange={e => setEditingFieldVal('title', e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm text-white font-bold" 
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs text-gray-500">Company</label>
+                    <label className="text-xs text-gray-500">
+                      Company {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                    </label>
                     <input 
                       required
-                      value={editing.company}
-                      onChange={e => setEditing({...editing, company: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm" 
+                      value={getEditingFieldVal('company')}
+                      onChange={e => setEditingFieldVal('company', e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm text-white font-semibold" 
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs text-gray-500">Date Range (e.g. 2021 - Present)</label>
+                    <label className="text-xs text-gray-500">
+                      Date Range (e.g. 2021 - Present) {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                    </label>
                     <input 
                       required
-                      value={editing.date}
-                      onChange={e => setEditing({...editing, date: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm" 
+                      value={getEditingFieldVal('date')}
+                      onChange={e => setEditingFieldVal('date', e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm text-white font-mono" 
                     />
                   </div>
                   <div className="space-y-2">
@@ -168,12 +282,14 @@ export default function TimelineEditor() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs text-gray-500">Description</label>
+                  <label className="text-xs text-gray-500">
+                    Description {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                  </label>
                   <textarea 
                     rows={3}
-                    value={editing.description}
-                    onChange={e => setEditing({...editing, description: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm resize-none" 
+                    value={getEditingFieldVal('description')}
+                    onChange={e => setEditingFieldVal('description', e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm resize-none text-gray-300" 
                   />
                 </div>
 

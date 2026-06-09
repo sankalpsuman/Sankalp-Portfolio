@@ -1,0 +1,214 @@
+{
+  "nav": {
+    "about": "About",
+    "journey": "Journey",
+    "toolkit": "Toolkit",
+    "ai_qa": "AI QA",
+    "projects": "Projects",
+    "blog": "Blog",
+    "now": "Now",
+    "inquire": "Inquire",
+    "establish_connection": "Establish Connection"
+  },
+  "hero": {
+    "badge": "Available for new opportunities",
+    "headline": "Hi, I'm Sankalp Suman",
+    "fallback_title": "AI-Driven QA Lead",
+    "titles": [
+      "AI-Driven QA Lead",
+      "Software Test Specialist",
+      "Scrum Master",
+      "AI Testing Engineer",
+      "Prompt Engineering Professional"
+    ],
+    "description": "Transforming modern software quality through AI-powered testing, intelligent automation, API validation, and Agile leadership.",
+    "btn_resume": "Download Resume",
+    "btn_contact": "Contact Me",
+    "btn_strategy": "Strategy Session",
+    "scroll": "Scroll to explore"
+  },
+  "about": {
+    "title": "Engineering Excellence",
+    "subtitle": "About Me",
+    "heading_bold": "Bridging the gap between",
+    "heading_mid": "Software Engineering",
+    "heading_and": "and",
+    "heading_end": "AI Intelligence.",
+    "content": "Results-driven QA Lead with 7+ years of experience in end-to-end testing across web, mobile, desktop, and API systems.\n\nCurrently working as Software Test Specialist and Scrum Master at Amdocs, leading QA delivery for enterprise-scale telecom platforms.\n\nSpecialized in AI-powered testing, prompt engineering, API validation, ETL testing, automation acceleration, and Agile delivery methodologies.",
+    "metric_years": "Years Experience",
+    "metric_projects": "Projects Delivered",
+    "metric_teams": "Teams Led",
+    "metric_acceleration": "QA Acceleration",
+    "role_label": "Role",
+    "role": "QA Lead",
+    "efficiency_label": "Efficiency",
+    "reliability": "99.9% Reliable"
+  },
+  "skills": {
+    "title": "Technical Arsenal",
+    "subtitle": "Skills",
+    "categories": {
+      "testing": "Testing",
+      "api_data": "API & Data",
+      "ai_qa": "AI in QA",
+      "automation_devops": "Automation & DevOps",
+      "leadership": "Leadership"
+    },
+    "list": {
+      "ai_testing": "AI-Driven Testing",
+      "prompt_heavy": "Prompt Engineering",
+      "api_validation": "API Validation (REST/SOAP)",
+      "selenium_playwright": "Selenium / Playwright",
+      "sql_db": "SQL & Database Testing",
+      "scrum_lead": "Scrum Leadership",
+      "cicd_pipeline": "CI/CD Pipelines (Jenkins/GitHub Actions)",
+      "etl_testing": "ETL Testing"
+    }
+  },
+  "projects": {
+    "title": "Featured Work",
+    "subtitle": "Success Stories",
+    "view_case": "View Case Study",
+    "flagship": "Flagship Application",
+    "enterprise": "Enterprise QA Solution",
+    "archive_btn": "Exploration Archive",
+    "p1_title": "AI Test Case Generator",
+    "p1_desc": "Autonomous QA agent that extracts test scenarios from natural language documentation with 95% accuracy.",
+    "p2_title": "Resume Morph AI",
+    "p2_desc": "Dynamic portfolio application that adapts its content based on the target job description using prompt engineering.",
+    "p3_title": "QA Copilot Dashboard",
+    "p3_desc": "Real-time monitoring dashboard for automated test execution with AI defect analysis and root cause detection."
+  },
+  "experience": {
+    "title": "Career Journey",
+    "subtitle": "Experience",
+    "present": "Present",
+    "exp1_company": "AMDOCS",
+    "exp1_role": "Software Test Specialist & Scrum Master",
+    "exp1_period": "Dec 2021 – Present",
+    "exp1_desc": "Leading QA delivery for enterprise-scale telecom platforms. Implementing AI-assisted testing workflows and managing Agile sprints as Scrum Master.",
+    "exp2_company": "HEXAVIEW (Adobe Client)",
+    "exp2_role": "Senior Quality Engineer",
+    "exp2_period": "Jun 2019 – Dec 2021",
+    "exp2_desc": "Focused on complex software validation for Adobe products. Built automation frameworks and optimized regression suites.",
+    "exp3_company": "OPKEY",
+    "exp3_role": "Quality Engineer",
+    "exp3_period": "Aug 2018 – May 2019",
+    "exp3_desc": "Manual and automated testing for cloud platforms. Contributed to early-stage test case generation logic."
+  },
+  "contact": {
+    "title": "Start a Conversation",
+    "subtitle": "Contact",
+    "heading": "Let’s build something Extraordinary.",
+    "description": "Whether you’re looking to transform your QA processes with AI or need a seasoned lead for your next enterprise project, I’m only a message away.",
+    "label_name": "Your Name",
+    "label_email": "Email Address",
+    "label_message": "Message",
+    "label_email_info": "Email",
+    "label_phone_info": "Phone",
+    "label_location_info": "Location",
+    "loc_val": "Delhi NCR, India",
+    "placeholder_name": "John Doe",
+    "placeholder_email": "john@company.com",
+    "placeholder_message": "Tell me about your project...",
+    "btn_send": "Transmit Message",
+    "validation_name_min": "Name must be at least 2 characters.",
+    "validation_email_req": "Email address is required.",
+    "validation_email_invalid": "Please enter a valid email address.",
+    "validation_msg_min": "Message must be at least 10 characters.",
+    "success_title": "Transmission Complete!",
+    "success_desc": "Thanks for reaching out! Your message was transmitted successfully. Sankalp will reply to your inbox within the next 24 hours.",
+    "btn_another_msg": "Send Another Message",
+    "msg_send_failed": "Failed to send message. Please try again."
+  },
+  "footer": {
+    "pioneering": "Pioneering the future of quality engineering through AI-driven automation and intelligent testing strategies.",
+    "nav_title": "Navigation",
+    "contact_title": "Contact",
+    "working_globally": "Based in Delhi NCR, working globally.",
+    "copyright": "© {year} Sankalp Suman. Built with React & Intelligence.",
+    "login": "Sankalp Login",
+    "privacy": "Privacy Protocol",
+    "security": "Security Standards",
+    "book_session": "Book Session"
+  },
+  "now": {
+    "live_status": "Live Status",
+    "title_prefix": "What I'm doing ",
+    "title_highlight": "Now",
+    "nownownow_prefix": "This is a ",
+    "nownownow_suffix": ", and if you have your own site, you should have one, too.",
+    "location": "Location",
+    "status": "Status",
+    "current_focus": "Current Focus",
+    "last_updated": "Last updated",
+    "back_to_experience": "Back to Full Experience"
+  },
+  "blog": {
+    "badge": "QA Intelligence",
+    "title_prefix": "The ",
+    "title_highlight": "Thinking Engine",
+    "subtitle": "Deep dives into quality engineering, automation architecture, and AI integration in modern software testing.",
+    "browse_library": "Browse Library",
+    "read_analysis": "Read Analysis"
+  },
+  "blog_list": {
+    "badge": "Knowledge Base",
+    "title_prefix": "The ",
+    "title_highlight": "QA Engine",
+    "subtitle": "Exploring the intersection of Quality Engineering, AI Automation, and Agile Excellence.",
+    "search_placeholder": "Search articles, categories, or tech stack...",
+    "read_article": "Read Article",
+    "no_articles": "No articles matching your search"
+  },
+  "blog_detail": {
+    "back_to_archive": "Back to Archive",
+    "read_time": "8 min read",
+    "newsletter_title": "Enjoyed this analysis?",
+    "newsletter_subtitle": "Join my newsletter to get monthly deep dives into QA engineering, performance testing, and AI-powered quality workflows delivered straight to your inbox.",
+    "sub_success_title": "Subscription Successful!",
+    "sub_success_desc": "Welcome aboard. You have been subscribed to premium quality digests.",
+    "sub_failed": "Failed to subscribe. Please try again later.",
+    "subscribe_btn": "Subscribe",
+    "subscribing_btn": "Subscribing...",
+    "share_article": "Share Article",
+    "copy_link": "Copy Link",
+    "twitter": "Twitter"
+  },
+  "impact_stories": {
+    "badge": "Case Studies",
+    "title_prefix": "Solving ",
+    "title_highlight": "Complex Puzzles",
+    "subtitle": "Detailed narratives of how I bridged business goals with technical excellence through strategic QA intervention.",
+    "explore_full_archive": "Explore Full Archive",
+    "the_pivot": "The Pivot",
+    "read_deep_dive": "Read Deep Dive",
+    "challenge_title": "Have a ",
+    "challenge_highlight": "Quality Challenge?",
+    "challenge_subtitle": "Let's discuss how data-driven QA can transform your deployment cycles and software reliability.",
+    "book_session": "Book a Strategy Session"
+  },
+  "certifications": {
+    "title": "Accolades",
+    "subtitle": "Certifications",
+    "verify": "Verify"
+  },
+  "testimonials": {
+    "badge": "Industry Feedback",
+    "title_prefix": "Voices of ",
+    "title_highlight": "Validation"
+  },
+  "career_timeline": {
+    "badge": "Evolution of Excellence",
+    "title_prefix": "Interactive ",
+    "title_highlight": "Career Timeline",
+    "location": "Delhi NCR, India",
+    "recognition": "Professional Recognition",
+    "bullets": [
+      "Spearheaded end-to-end QA strategy",
+      "Implemented robust automation framework",
+      "Optimized CI/CD release cycles",
+      "Managed stakeholders & test reporting"
+    ]
+  }
+}

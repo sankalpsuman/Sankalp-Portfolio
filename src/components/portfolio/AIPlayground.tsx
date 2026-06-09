@@ -6,6 +6,7 @@ import { getCollection, getDocument, SETTINGS_DOC } from '../../services/firesto
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '../../lib/utils';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface AITool {
   id: string;
@@ -25,6 +26,7 @@ export default function AIPlayground() {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [siteSettings, setSiteSettings] = useState<any>(null);
+  const { resolveTranslation } = useLanguage();
 
   useEffect(() => {
     async function loadData() {
@@ -162,9 +164,9 @@ export default function AIPlayground() {
                               )}>
                                  <Bot className="w-4 h-4" />
                               </div>
-                              <span className="font-bold text-sm">{tool.name}</span>
+                              <span className="font-bold text-sm">{resolveTranslation(tool, 'name')}</span>
                            </div>
-                           <p className="text-[10px] mt-2 opacity-60 leading-relaxed font-medium">{tool.description}</p>
+                           <p className="text-[10px] mt-2 opacity-60 leading-relaxed font-medium">{resolveTranslation(tool, 'description')}</p>
                         </button>
                       ))}
                    </div>
@@ -255,7 +257,7 @@ export default function AIPlayground() {
                                    <textarea 
                                      value={input}
                                      onChange={e => setInput(e.target.value)}
-                                     placeholder={selectedTool?.placeholder || "Enter requirements, user stories, or code snippets..."}
+                                     placeholder={resolveTranslation(selectedTool, 'placeholder') || "Enter requirements, user stories, or code snippets..."}
                                      className="w-full bg-white/2 border border-white/5 rounded-2xl p-6 text-white text-sm outline-none focus:border-blue-500/50 transition-all min-h-[120px] resize-none leading-relaxed font-mono"
                                    />
                                    <button 

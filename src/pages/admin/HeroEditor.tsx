@@ -3,10 +3,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { HERO_DOC, getDocument, saveDocument, getCachedData } from '../../services/firestoreService';
-import { Save, Loader2, Plus, X, FileUp, Link as LinkIcon } from 'lucide-react';
+import { Save, Loader2, Plus, X, FileUp, Link as LinkIcon, Globe } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
+import { autoTranslateDocument } from '../../lib/translationUtils';
 
 const heroSchema = z.object({
   headline: z.string().min(1, 'Headline is required').max(200),
@@ -14,6 +15,7 @@ const heroSchema = z.object({
   titles: z.array(z.string()).min(1, 'At least one title is required'),
   resumeUrl: z.string().optional().or(z.literal('')),
   linkedinUrl: z.string().url().optional().or(z.literal('')),
+  translations: z.any().optional()
 });
 
 type HeroData = z.infer<typeof heroSchema>;
@@ -24,6 +26,8 @@ export default function HeroEditor() {
   const [newTitle, setNewTitle] = useState('');
   const [uploading, setUploading] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; title: string | null }>({ isOpen: false, title: null });
+  const [activeEditorLang, setActiveEditorLang] = useState<'en' | 'hi' | 'fr' | 'de'>('en');
+  const [translating, setTranslating] = useState(false);
 
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<HeroData>({
     resolver: zodResolver(heroSchema),
@@ -34,6 +38,30 @@ export default function HeroEditor() {
 
   const titles = watch('titles') || [];
   const resumeUrl = watch('resumeUrl');
+  const headlineVal = watch('headline') || '';
+  const descriptionVal = watch('description') || '';
+  const translationsVal = (watch('translations') || {}) as any;
+
+  const handleAutoTranslate = async () => {
+    if (!headlineVal && !descriptionVal) return;
+    setTranslating(true);
+    try {
+      const docWithTranslations = await autoTranslateDocument({
+        headline: headlineVal,
+        description: descriptionVal,
+        titles: titles, // let's translate titles too!
+      });
+      if (docWithTranslations.translations) {
+        setValue('translations', docWithTranslations.translations);
+        alert('Hero translations generated successfully! Review the different tabs and save.');
+      }
+    } catch (error) {
+      console.error('Auto translation failed:', error);
+      alert('Auto translation failed. Please try again.');
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -133,23 +161,86 @@ export default function HeroEditor() {
           </div>
 
           <div className="p-6 space-y-6">
+            {/* Language and AI Tools Switcher */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-blue-400" />
+                <span className="text-xs font-bold text-gray-300">Section Localization</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Language Switcher Tabs */}
+                <div className="flex items-center gap-1 p-0.5 bg-white/5 border border-white/10 rounded-lg">
+                  {(['en', 'hi', 'fr', 'de'] as const).map((lang) => (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => setActiveEditorLang(lang)}
+                      className={cn(
+                        "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all duration-150 cursor-pointer",
+                        activeEditorLang === lang 
+                          ? "bg-blue-600 text-white" 
+                          : "text-gray-400 hover:text-white hover:bg-white/5"
+                      )}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Auto Translate Button */}
+                <button
+                  type="button"
+                  onClick={handleAutoTranslate}
+                  disabled={translating || (!headlineVal && !descriptionVal)}
+                  className="flex items-center gap-1.5 px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20 cursor-pointer"
+                >
+                  {translating ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Globe className="w-3 h-3" />
+                  )}
+                  <span>Auto-Translate</span>
+                </button>
+              </div>
+            </div>
+
             {/* Headline */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Headline</label>
-              <input
-                {...register('headline')}
-                className={cn(
-                  "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none",
-                  errors.headline && "border-red-500/50 focus:border-red-500"
-                )}
-                placeholder="e.g. Hi, I’m Sankalp Suman"
-              />
-              {errors.headline && <p className="text-xs text-red-500">{errors.headline.message}</p>}
+              <label className="text-sm font-medium text-gray-300">
+                Headline {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+              </label>
+              {activeEditorLang === 'en' ? (
+                <input
+                  {...register('headline')}
+                  className={cn(
+                    "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none text-white",
+                    errors.headline && "border-red-500/50 focus:border-red-500"
+                  )}
+                  placeholder="e.g. Hi, I’m Sankalp Suman"
+                />
+              ) : (
+                <input
+                  value={translationsVal[activeEditorLang]?.headline || ''}
+                  onChange={(e) => {
+                    const currentTrans = { ...translationsVal };
+                    if (!currentTrans[activeEditorLang]) {
+                      currentTrans[activeEditorLang] = {};
+                    }
+                    currentTrans[activeEditorLang].headline = e.target.value;
+                    setValue('translations', currentTrans);
+                  }}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none text-white"
+                  placeholder={`Provide ${activeEditorLang.toUpperCase()} translation for headline...`}
+                />
+              )}
+              {activeEditorLang === 'en' && errors.headline && (
+                <p className="text-xs text-red-500">{errors.headline.message}</p>
+              )}
             </div>
 
             {/* Rotating Titles */}
             <div className="space-y-3">
-              <label className="text-sm font-medium text-gray-300">Rotating Titles</label>
+              <label className="text-sm font-medium text-gray-300">Rotating Titles (English Source)</label>
               <div className="flex flex-wrap gap-2 mb-3">
                 {titles.map((title) => (
                   <span key={title} className="flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full text-sm">
@@ -169,7 +260,7 @@ export default function HeroEditor() {
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTitle())}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
+                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none text-white"
                   placeholder="Add new title..."
                 />
                 <button
@@ -185,17 +276,38 @@ export default function HeroEditor() {
 
             {/* Description */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Description</label>
-              <textarea
-                {...register('description')}
-                rows={4}
-                className={cn(
-                  "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none resize-none",
-                  errors.description && "border-red-500/50 focus:border-red-500"
-                )}
-                placeholder="Brief introduction displayed in hero section..."
-              />
-              {errors.description && <p className="text-xs text-red-500">{errors.description.message}</p>}
+              <label className="text-sm font-medium text-gray-300">
+                Description {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+              </label>
+              {activeEditorLang === 'en' ? (
+                <textarea
+                  {...register('description')}
+                  rows={4}
+                  className={cn(
+                    "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none resize-none text-white",
+                    errors.description && "border-red-500/50 focus:border-red-500"
+                  )}
+                  placeholder="Brief introduction displayed in hero section..."
+                />
+              ) : (
+                <textarea
+                  value={translationsVal[activeEditorLang]?.description || ''}
+                  onChange={(e) => {
+                    const currentTrans = { ...translationsVal };
+                    if (!currentTrans[activeEditorLang]) {
+                      currentTrans[activeEditorLang] = {};
+                    }
+                    currentTrans[activeEditorLang].description = e.target.value;
+                    setValue('translations', currentTrans);
+                  }}
+                  rows={4}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none resize-none text-white"
+                  placeholder={`Provide ${activeEditorLang.toUpperCase()} translation for description...`}
+                />
+              )}
+              {activeEditorLang === 'en' && errors.description && (
+                <p className="text-xs text-red-500">{errors.description.message}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">

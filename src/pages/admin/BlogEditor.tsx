@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
 import { suggestImageKeywords } from '../../services/geminiService';
-import { FileText, Plus, Trash2, Loader2, Save, X, Search, Clock, Hash, Tag, Sparkles } from 'lucide-react';
+import { FileText, Plus, Trash2, Loader2, Save, X, Search, Clock, Hash, Tag, Sparkles, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
+import { autoTranslateDocument } from '../../lib/translationUtils';
 
 interface BlogPost {
   id: string;
@@ -17,6 +18,7 @@ interface BlogPost {
   imageUrl: string;
   status: 'draft' | 'published';
   publishedAt: string;
+  translations?: Record<string, any>;
 }
 
 const BlogListItem = memo(({ item, isActive, onSelect, onDelete }: { 
@@ -72,6 +74,64 @@ export default function BlogEditor() {
   const [localItem, setLocalItem] = useState<BlogPost | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
+  const [activeEditorLang, setActiveEditorLang] = useState<'en' | 'hi' | 'fr' | 'de'>('en');
+  const [translating, setTranslating] = useState(false);
+
+  const handleAutoTranslate = async () => {
+    if (!localItem) return;
+    setTranslating(true);
+    try {
+      const docWithTranslations = await autoTranslateDocument({
+        title: localItem.title,
+        content: localItem.content,
+        excerpt: localItem.excerpt,
+        category: localItem.category
+      });
+      if (docWithTranslations.translations) {
+        setLocalItem({
+          ...localItem,
+          translations: {
+            ...(localItem.translations || {}),
+            ...docWithTranslations.translations
+          }
+        });
+        alert('Article auto-translated! Review other language tabs and persist changes.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to generate automatic translations.');
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  const getFieldVal = (field: 'title' | 'content' | 'excerpt' | 'category') => {
+    if (!localItem) return '';
+    if (activeEditorLang === 'en') {
+      return localItem[field] || '';
+    }
+    return localItem.translations?.[activeEditorLang]?.[field] || '';
+  };
+
+  const setFieldVal = (field: 'title' | 'content' | 'excerpt' | 'category', val: string) => {
+    if (!localItem) return;
+    if (activeEditorLang === 'en') {
+      setLocalItem({ ...localItem, [field]: val });
+    } else {
+      const translations = localItem.translations || {};
+      const langData = translations[activeEditorLang] || {};
+      setLocalItem({
+        ...localItem,
+        translations: {
+          ...translations,
+          [activeEditorLang]: {
+            ...langData,
+            [field]: val
+          }
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     load();
@@ -97,6 +157,7 @@ export default function BlogEditor() {
   const handleSelect = (item: BlogPost) => {
     setActiveItem(item);
     setLocalItem({...item}); // Deep copy
+    setActiveEditorLang('en');
   };
 
   const handleCreate = () => {
@@ -114,6 +175,7 @@ export default function BlogEditor() {
     };
     setActiveItem(newItem);
     setLocalItem(newItem);
+    setActiveEditorLang('en');
   };
 
   const handleAIGenerateImage = async () => {
@@ -266,14 +328,57 @@ export default function BlogEditor() {
               </div>
 
               <div className="space-y-6">
+                {/* Language Editor Tabs and Auto translate */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white/5 border border-white/10 rounded-2xl">
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-blue-400" />
+                    <span className="text-xs font-bold text-gray-300">Localization (Active: {activeEditorLang.toUpperCase()})</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 p-0.5 bg-white/5 border border-white/10 rounded-xl">
+                      {(['en', 'hi', 'fr', 'de'] as const).map((lang) => (
+                        <button
+                          key={lang}
+                          type="button"
+                          onClick={() => setActiveEditorLang(lang)}
+                          className={cn(
+                            "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all duration-150 cursor-pointer",
+                            activeEditorLang === lang 
+                              ? "bg-blue-600 text-white" 
+                              : "text-gray-400 hover:text-white"
+                          )}
+                        >
+                          {lang}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleAutoTranslate}
+                      disabled={translating || !localItem?.title}
+                      className="flex items-center gap-1.5 px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20 cursor-pointer"
+                    >
+                      {translating ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Globe className="w-3 h-3" />
+                      )}
+                      <span>Auto-Translate</span>
+                    </button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-1">Article Title</label>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-1">
+                      Article Title {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                    </label>
                     <div className="relative">
                       <FileText className="absolute left-4 top-3.5 w-4 h-4 text-gray-600" />
                       <input 
-                        value={localItem.title}
-                        onChange={e => setLocalItem({...localItem, title: e.target.value})}
+                        value={getFieldVal('title')}
+                        onChange={e => setFieldVal('title', e.target.value)}
                         className="w-full bg-white/[0.03] border border-white/5 rounded-xl pl-12 pr-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all placeholder:text-gray-700 font-medium text-white"
                         placeholder="e.g. The Future of AI in QA Engineering"
                       />
@@ -295,12 +400,14 @@ export default function BlogEditor() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-1">Category</label>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-1">
+                      Category {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                    </label>
                     <div className="relative">
                       <Tag className="absolute left-4 top-3.5 w-4 h-4 text-gray-600" />
                       <input 
-                        value={localItem.category}
-                        onChange={e => setLocalItem({...localItem, category: e.target.value})}
+                        value={getFieldVal('category')}
+                        onChange={e => setFieldVal('category', e.target.value)}
                         className="w-full bg-white/[0.03] border border-white/5 rounded-xl pl-12 pr-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all placeholder:text-gray-700 text-white"
                         placeholder="e.g. Research"
                       />
@@ -332,10 +439,12 @@ export default function BlogEditor() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-1">Article Excerpt</label>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-1">
+                    Article Excerpt {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                  </label>
                   <textarea 
-                    value={localItem.excerpt}
-                    onChange={e => setLocalItem({...localItem, excerpt: e.target.value})}
+                    value={getFieldVal('excerpt')}
+                    onChange={e => setFieldVal('excerpt', e.target.value)}
                     rows={2}
                     className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all placeholder:text-gray-700 resize-none text-white"
                     placeholder="Short summary for the feed card..."
@@ -368,12 +477,14 @@ export default function BlogEditor() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between pl-1">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Content Body (Markdown)</label>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                      Content Body (Markdown) {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                    </label>
                     <span className="text-[10px] font-mono text-blue-500/50">MD Support Enabled</span>
                   </div>
                   <textarea 
-                    value={localItem.content}
-                    onChange={e => setLocalItem({...localItem, content: e.target.value})}
+                    value={getFieldVal('content')}
+                    onChange={e => setFieldVal('content', e.target.value)}
                     rows={12}
                     className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 outline-none transition-all placeholder:text-gray-700 font-mono custom-scrollbar text-white"
                     placeholder="# Your analysis starts here..."

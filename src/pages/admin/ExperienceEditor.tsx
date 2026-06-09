@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { Save, Plus, Trash2, Loader2, Briefcase, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
+import { Save, Plus, Trash2, Loader2, Briefcase, Calendar, ChevronUp, ChevronDown, Globe } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
+import { autoTranslateDocument } from '../../lib/translationUtils';
 
 interface Experience {
   id: string;
@@ -12,6 +13,7 @@ interface Experience {
   description: string;
   tags?: string[];
   order: number;
+  translations?: Record<string, any>;
 }
 
 export default function ExperienceEditor() {
@@ -23,6 +25,54 @@ export default function ExperienceEditor() {
   const [localItem, setLocalItem] = useState<Experience | null>(null);
   const [newTag, setNewTag] = useState('');
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
+  const [activeEditorLang, setActiveEditorLang] = useState<'en' | 'hi' | 'fr' | 'de'>('en');
+  const [translating, setTranslating] = useState(false);
+
+  const getFieldVal = (fieldName: 'company' | 'role' | 'period' | 'description') => {
+    if (activeEditorLang === 'en') {
+      return localItem?.[fieldName] || '';
+    }
+    return localItem?.translations?.[activeEditorLang]?.[fieldName] || '';
+  };
+
+  const setFieldVal = (fieldName: 'company' | 'role' | 'period' | 'description', val: string) => {
+    if (!localItem) return;
+    if (activeEditorLang === 'en') {
+      handleLocalUpdate({ [fieldName]: val });
+    } else {
+      const translations = localItem.translations || {};
+      const updatedTranslations = {
+        ...translations,
+        [activeEditorLang]: {
+          ...(translations[activeEditorLang] || {}),
+          [fieldName]: val
+        }
+      };
+      handleLocalUpdate({ translations: updatedTranslations });
+    }
+  };
+
+  const handleActiveAutoTranslate = async () => {
+    if (!localItem) return;
+    setTranslating(true);
+    try {
+      const docWithTranslations = await autoTranslateDocument({
+        company: localItem.company,
+        role: localItem.role,
+        period: localItem.period,
+        description: localItem.description,
+      });
+      if (docWithTranslations.translations) {
+        handleLocalUpdate({ translations: docWithTranslations.translations });
+        alert('Translations generated! Review each language tab and save changes.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Translation failed.');
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   useEffect(() => {
     async function load() {
@@ -36,6 +86,7 @@ export default function ExperienceEditor() {
   const handleSelect = (item: Experience) => {
     setActiveItem(item);
     setLocalItem(item);
+    setActiveEditorLang('en');
   };
 
   const handleCreate = async () => {
@@ -53,6 +104,7 @@ export default function ExperienceEditor() {
     setItems([...items, item]);
     setActiveItem(item);
     setLocalItem(item);
+    setActiveEditorLang('en');
     setSaving(false);
   };
 
@@ -196,41 +248,90 @@ export default function ExperienceEditor() {
                </button>
             </div>
             
+            {/* Language Switcher Tabs */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-blue-400" />
+                <span className="text-xs font-bold text-gray-300">Experience Localization</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 p-0.5 bg-white/5 border border-white/10 rounded-lg">
+                  {(['en', 'hi', 'fr', 'de'] as const).map((lang) => (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => setActiveEditorLang(lang)}
+                      className={cn(
+                        "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all duration-150 cursor-pointer",
+                        activeEditorLang === lang 
+                          ? "bg-blue-600 text-white" 
+                          : "text-gray-400 hover:text-white hover:bg-white/5"
+                      )}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleActiveAutoTranslate}
+                  disabled={translating || !localItem.company}
+                  className="flex items-center gap-1.5 px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20 cursor-pointer"
+                >
+                  {translating ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Globe className="w-3 h-3" />
+                  )}
+                  <span>Auto-Translate</span>
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Company Name</label>
+                <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">
+                  Company Name {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                </label>
                 <input 
-                  value={localItem.company}
-                  onChange={(e) => handleLocalUpdate({ company: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none"
+                  value={getFieldVal('company')}
+                  onChange={(e) => setFieldVal('company', e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none text-white font-bold"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Period</label>
+                <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">
+                  Period {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                </label>
                 <input 
-                  value={localItem.period}
-                  onChange={(e) => handleLocalUpdate({ period: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none"
+                  value={getFieldVal('period')}
+                  onChange={(e) => setFieldVal('period', e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none text-white font-mono"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Role Title</label>
+              <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">
+                Role Title {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+              </label>
               <input 
-                value={localItem.role}
-                onChange={(e) => handleLocalUpdate({ role: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none"
+                value={getFieldVal('role')}
+                onChange={(e) => setFieldVal('role', e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none text-white font-semibold"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">Description</label>
+              <label className="text-xs text-gray-500 uppercase font-mono tracking-widest">
+                Description {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+              </label>
               <textarea 
-                value={localItem.description}
-                onChange={(e) => handleLocalUpdate({ description: e.target.value })}
+                value={getFieldVal('description')}
+                onChange={(e) => setFieldVal('description', e.target.value)}
                 rows={6}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none resize-none"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none resize-none text-gray-300"
               />
             </div>
 

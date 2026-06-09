@@ -1,0 +1,206 @@
+{
+  "nav": {
+    "about": "Über Mich",
+    "journey": "Werdegang",
+    "toolkit": "Werkzeuge",
+    "ai_qa": "KI QA",
+    "projects": "Projekte",
+    "blog": "Blog",
+    "now": "Jetzt",
+    "inquire": "Inquire",
+    "establish_connection": "Verbindung Aufbauen"
+  },
+  "hero": {
+    "badge": "Offen für neue Möglichkeiten",
+    "headline": "Hallo, ich bin Sankalp Suman",
+    "fallback_title": "KI-orientierter QA-Leiter",
+    "titles": [
+      "KI-orientierter QA-Leiter",
+      "Software-Testspezialist",
+      "Scrum Master",
+      "KI-Test-Ingenieur",
+      "Prompt-Engineering-Profi"
+    ],
+    "description": "Transformation moderner Softwarequalität durch KI-gestütztes Testen, intelligente Automatisierung, API-Validierung und Agile Führung.",
+    "btn_resume": "Lebenslauf herunterladen",
+    "btn_contact": "Kontaktieren Sie mich",
+    "btn_strategy": "Strategie-Sitzung",
+    "scroll": "Scrollen, um zu erkunden"
+  },
+  "about": {
+    "title": "Exzellente Ingenieurskunst",
+    "subtitle": "Über Mich",
+    "heading_bold": "Überbrückung der Lücke zwischen",
+    "heading_mid": "Software-Entwicklung",
+    "heading_and": "und",
+    "heading_end": "KI-Intelligenz.",
+    "content": "Ergebnisorientierter QA-Leiter mit über 7 Jahren Erfahrung im End-to-End-Testen von Web-, Mobil-, Desktop- und API-Systemen.\n\nDerzeit als Software-Testspezialist und Scrum Master bei Amdocs tätig, wo ich die QA-Bereitstellung für Telekommunikationsplattformen im Enterprise-Bereich leite.\n\nSpezialisiert auf KI-gestütztes Testen, Prompt-Engineering, API-Validierung, ETL-Testen, Automatisierungsbeschleunigung und agile Bereitstellungsmethoden.",
+    "metric_years": "Jahre Erfahrung",
+    "metric_projects": "Erfolgreiche Projekte",
+    "metric_teams": "Geführte Teams",
+    "metric_acceleration": "QA-Beschleunigung",
+    "role_label": "Rolle",
+    "role": "QA Leiter",
+    "efficiency_label": "Effizienz",
+    "reliability": "99.9% Zuverlässig"
+  },
+  "skills": {
+    "title": "Technisches Arsenal",
+    "subtitle": "Fähigkeiten",
+    "categories": {
+      "testing": "Softwaretests",
+      "api_data": "API & Daten",
+      "ai_qa": "KI in der QA",
+      "automation_devops": "Automatisierung & DevOps",
+      "leadership": "Führungskraft"
+    },
+    "list": {
+      "ai_testing": "KI-gestütztes Testen",
+      "prompt_heavy": "Prompt-Engineering",
+      "api_validation": "API-Validierung (REST/SOAP)",
+      "selenium_playwright": "Selenium / Playwright",
+      "sql_db": "SQL- und Datenbanktests",
+      "scrum_lead": "Scrum-Führung",
+      "cicd_pipeline": "CI/CD-Pipelines (Jenkins/GitHub Actions)",
+      "etl_testing": "ETL-Tests"
+    }
+  },
+  "projects": {
+    "title": "Ausgewählte Arbeiten",
+    "subtitle": "Erfolgsgeschichten",
+    "view_case": "Fallstudie ansehen",
+    "flagship": "Flaggschiff-Anwendung",
+    "enterprise": "Enterprise-QA-Lösung",
+    "archive_btn": "Erkundungsarchiv",
+    "p1_title": "KI-Testfallgenerator",
+    "p1_desc": "Autonomer QA-Agent, der mit 95 % Genauigkeit Testfälle aus natürlichsprachlichen Dokumenten extrahiert.",
+    "p2_title": "Resume Morph AI",
+    "p2_desc": "Dynamische Portfolio-Anwendung, die ihren Inhalt mithilfe von Prompt-Engineering an die gewünschte Stellenbeschreibung anpasst.",
+    "p3_title": "QA Copilot Dashboard",
+    "p3_desc": "Echtzeit-Überwachungs-Dashboard für automatisierte Testdurchführung mit KI-Fehleranalyse und Ursachenerkennung."
+  },
+  "experience": {
+    "title": "Beruflicher Werdegang",
+    "subtitle": "Erfahrung",
+    "present": "Heute",
+    "exp1_company": "AMDOCS",
+    "exp1_role": "Software-Testspezialist & Scrum Master",
+    "exp1_period": "Dez 2021 – Heute",
+    "exp1_desc": "Leitung der QA-Bereitstellung für Telekommunikationsplattformen auf Unternehmensebene. Implementierung von KI-gestützten Test-Workflows und Management agiler Sprints als Scrum Master."
+  },
+  "contact": {
+    "title": "Gespräch beginnen",
+    "subtitle": "Kontakt",
+    "heading": "Lassen Sie uns etwas Außergewöhnliches schaffen.",
+    "description": "Egal, ob Sie Ihre QA-Prozesse mit KI transformieren möchten oder einen erfahrenen Leiter für Ihr nächstes Enterprise-Projekt suchen, ich bin nur eine Nachricht entfernt.",
+    "label_name": "Ihr Name",
+    "label_email": "E-Mail-Adresse",
+    "label_message": "Nachricht",
+    "label_email_info": "E-Mail",
+    "label_phone_info": "Telefon",
+    "label_location_info": "Standort",
+    "loc_val": "Delhi NCR, Indien",
+    "placeholder_name": "Max Mustermann",
+    "placeholder_email": "max@firma.de",
+    "placeholder_message": "Erzählen Sie mir von Ihrem Projekt...",
+    "btn_send": "Nachricht Senden",
+    "validation_name_min": "Der Name muss mindestens 2 Zeichen lang sein.",
+    "validation_email_req": "E-Mail-Adresse ist erforderlich.",
+    "validation_email_invalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "validation_msg_min": "Die Nachricht muss mindestens 10 Zeichen lang sein.",
+    "success_title": "Übermittlung abgeschlossen!",
+    "success_desc": "Vielen Dank für Ihre Nachricht! Sie wurde erfolgreich übermittelt. Sankalp wird Ihnen innerhalb der nächsten 24 Stunden antworten.",
+    "btn_another_msg": "Eine weitere Nachricht senden",
+    "msg_send_failed": "Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+  },
+  "footer": {
+    "pioneering": "Wegbereiter für die Zukunft der Qualitätssicherung durch KI-gestützte Automatisierung und intelligente Teststrategien.",
+    "nav_title": "Navigation",
+    "contact_title": "Kontakt",
+    "working_globally": "Sitz in Delhi NCR, weltweit tätig.",
+    "copyright": "© {year} Sankalp Suman. Erstellt mit React & Intelligenz.",
+    "login": "Sankalp Login",
+    "privacy": "Datenschutzprotokoll",
+    "security": "Sicherheitsstandards",
+    "book_session": "Sitzung buchen"
+  },
+  "now": {
+    "live_status": "Live-Status",
+    "title_prefix": "Was ich gerade ",
+    "title_highlight": "mache",
+    "nownownow_prefix": "Dies ist eine ",
+    "nownownow_suffix": ", und wenn Sie eine eigene Website haben, sollten Sie auch eine haben.",
+    "location": "Standort",
+    "status": "Status",
+    "current_focus": "Aktueller Fokus",
+    "last_updated": "Zuletzt aktualisiert",
+    "back_to_experience": "Zurück zur vollständigen Erfahrung"
+  },
+  "blog": {
+    "badge": "QA-Intelligenz",
+    "title_prefix": "Die ",
+    "title_highlight": "Denkmaschine",
+    "subtitle": "Tiefgreifende Analysen von Quality Engineering, Automatisierungsarchitektur und KI-Integration.",
+    "browse_library": "Bibliothek durchstöbern",
+    "read_analysis": "Analyse lesen"
+  },
+  "blog_list": {
+    "badge": "Wissensdatenbank",
+    "title_prefix": "Die ",
+    "title_highlight": "QA-Maschine",
+    "subtitle": "Erkundung der Schnittstelle zwischen Quality Engineering, KI-Automatisierung und Agile Exzellenz.",
+    "search_placeholder": "Suche nach Artikeln, Kategorien...",
+    "read_article": "Artikel lesen",
+    "no_articles": "Keine Artikel entsprechen Ihrer Suche"
+  },
+  "blog_detail": {
+    "back_to_archive": "Zurück zum Archiv",
+    "read_time": "8 Min. Lesezeit",
+    "newsletter_title": "Hat Ihnen diese Analyse gefallen?",
+    "newsletter_subtitle": "Melden Sie sich für meinen Newsletter an, um monatlich tiefgehende Analysen direkt in Ihr Postfach zu erhalten.",
+    "sub_success_title": "Abonnement erfolgreich!",
+    "sub_success_desc": "Willkommen an Bord. Sie haben Premium-Quality-Digests abonniert.",
+    "sub_failed": "Abonnement fehlgeschlagen. Bitte versuchen Sie es später noch einmal.",
+    "subscribe_btn": "Abonnieren",
+    "subscribing_btn": "Abonniere...",
+    "share_article": "Artikel teilen",
+    "copy_link": "Link kopieren",
+    "twitter": "Twitter"
+  },
+  "impact_stories": {
+    "badge": "Fallstudien",
+    "title_prefix": "Lösung ",
+    "title_highlight": "komplexer Rätsel",
+    "subtitle": "Ausführliche Berichte darüber, wie ich durch strategische QA-Interventionen geschäftliche Ziele mit technischer Exzellenz verbunden habe.",
+    "explore_full_archive": "Vollständiges Archiv erkunden",
+    "the_pivot": "Der Pivot",
+    "read_deep_dive": "Fallstudie lesen",
+    "challenge_title": "Haben Sie ein ",
+    "challenge_highlight": "Qualitätsproblem?",
+    "challenge_subtitle": "Lassen Sie uns besprechen, wie datengesteuertes QA Ihre Bereitstellungszyklen verändern kann.",
+    "book_session": "Strategie-Sitzung buchen"
+  },
+  "certifications": {
+    "title": "Auszeichnungen",
+    "subtitle": "Zertifikate",
+    "verify": "Überprüfen"
+  },
+  "testimonials": {
+    "badge": "Feedback der Branche",
+    "title_prefix": "Stimmen der ",
+    "title_highlight": "Validierung"
+  },
+  "career_timeline": {
+    "badge": "Evolution der Exzellenz",
+    "title_prefix": "Interaktiver ",
+    "title_highlight": "Werdegang",
+    "location": "Delhi NCR, Indien",
+    "recognition": "Berufliche Anerkennung",
+    "bullets": [
+      "Leitung der End-to-End-QA-Strategie",
+      "Implementierung eines robusten Automatisierungs-Build-Systems",
+      "Optimierung von CI/CD-Release-Zyklen",
+      "Stakeholder-Management & Testberichte"
+    ]
+  }
+}

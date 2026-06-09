@@ -3,6 +3,7 @@ import Section from './Section';
 import { motion } from 'motion/react';
 import { Bot, Sparkles, Brain, Cpu, Search, CheckCircle2, Workflow } from 'lucide-react';
 import { getDocument, AI_DOC } from '../../services/firestoreService';
+import { useLanguage } from '../../hooks/useLanguage';
 
 const ICON_MAP: Record<string, any> = {
   Sparkles,
@@ -32,6 +33,7 @@ interface AIData {
 
 export default function AISection() {
   const [data, setData] = useState<AIData | null>(null);
+  const { resolveTranslation, t } = useLanguage();
 
   useEffect(() => {
     async function load() {
@@ -45,17 +47,32 @@ export default function AISection() {
     load();
   }, []);
 
-  const steps = data?.steps || [
+  const headline = resolveTranslation(data, 'headline') || "Quantum Leap In QA";
+  const subheadline = resolveTranslation(data, 'subheadline') || "AI in Quality Engineering";
+  const strategy = resolveTranslation(data, 'strategy') || "Currently leading QA acceleration at Amdocs by integrating Agentic workflows into the STLC. My approach focuses on bridging the gap between traditional automation and generative intelligence to achieve 40% faster delivery cycles.";
+  const efficiency = resolveTranslation(data, 'efficiency') || "+320%";
+  const reliability = resolveTranslation(data, 'reliability') || "99.9%";
+
+  const rawSteps = data?.steps || [
     { title: 'Requirement Intelligence', desc: 'Agentic extraction of acceptance criteria and functional flows from ambiguous specifications.', icon: 'Search' },
     { title: 'Prompt Engineering', desc: 'Proprietary QA prompt libraries optimized for telecom and enterprise business logic.', icon: 'Brain' },
     { title: 'Agentic Debugging', desc: 'Automated log analysis and root cause identification using LLMs to reduce MTTR.', icon: 'Cpu' },
     { title: 'Strategic Automation', desc: 'Predictive impact analysis to optimize regression suites and accelerate STLC by 40%.', icon: 'Workflow' }
   ];
 
+  const translatedStepsArray = resolveTranslation(data, 'steps');
+  const steps = Array.isArray(translatedStepsArray) && translatedStepsArray.length > 0 
+    ? rawSteps.map((step, idx) => ({
+      title: translatedStepsArray[idx]?.title || step.title,
+      desc: translatedStepsArray[idx]?.desc || step.desc,
+      icon: step.icon
+    }))
+    : rawSteps;
+
   const features = data?.features || ['Gemini Flash', 'LangChain', 'Prompt Engineering', 'API Validation', 'Impact Analysis', 'ETL Intelligence'];
 
   return (
-    <Section id="ai-qa" title={data?.subheadline || "AI in Quality Engineering"} subtitle={data?.headline || "Quantum Leap In QA"} className="bg-[#02040a]">
+    <Section id="ai-qa" title={subheadline} subtitle={headline} className="bg-[#02040a]">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none overflow-hidden opacity-20">
          <div className="absolute top-[20%] left-[10%] w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] animate-pulse"></div>
          <div className="absolute bottom-[20%] right-[10%] w-96 h-96 bg-purple-500/10 rounded-full blur-[100px]"></div>
@@ -69,7 +86,7 @@ export default function AISection() {
                <span className="text-blue-400">Agentic Testing Workflows</span>
              </h3>
              <p className="text-gray-400 text-lg leading-relaxed whitespace-pre-line">
-               {data?.strategy || "Currently leading QA acceleration at Amdocs by integrating Agentic workflows into the STLC. My approach focuses on bridging the gap between traditional automation and generative intelligence to achieve 40% faster delivery cycles."}
+               {strategy}
              </p>
 
              <div className="flex flex-wrap gap-2 pt-4">
@@ -153,11 +170,11 @@ export default function AISection() {
                    <div className="grid grid-cols-2 gap-4 pt-8">
                       <div className="p-4 bg-white/2 border border-white/5 rounded-2xl">
                          <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Efficiency</div>
-                         <div className="text-2xl font-bold text-blue-400">{data?.efficiency || "+320%"}</div>
+                         <div className="text-2xl font-bold text-blue-400">{efficiency}</div>
                       </div>
                       <div className="p-4 bg-white/2 border border-white/5 rounded-2xl">
                          <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Reliability</div>
-                         <div className="text-2xl font-bold text-purple-400">{data?.reliability || "99.9%"}</div>
+                         <div className="text-2xl font-bold text-purple-400">{reliability}</div>
                       </div>
                    </div>
                 </div>
