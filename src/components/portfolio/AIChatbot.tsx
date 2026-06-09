@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   MessageSquare, X, Send, Minus, Maximize2, 
-  Linkedin, FileText, Calendar, Moon, Sun, 
+  Linkedin, FileText, Calendar, 
   AlertCircle, ChevronRight, CheckCircle2, RefreshCw,
   User, Mail, Building
 } from 'lucide-react';
@@ -221,7 +221,7 @@ export const AIChatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const isDarkMode = true;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -686,17 +686,11 @@ Please make sure your server environment variables are configured (such as **GEM
               isExpanded 
                 ? 'sm:w-[650px] h-[650px] max-h-[85vh]' 
                 : 'sm:w-[430px] h-[540px] max-h-[80vh]'
-            } ${
-              isDarkMode 
-                ? 'bg-neutral-900/95 border-neutral-800 text-white shadow-neutral-950/50' 
-                : 'bg-white/95 border-neutral-200 text-neutral-800 shadow-neutral-400/20'
-            }`}
+            } bg-[#0b0e1a]/98 border-white/10 text-white shadow-neutral-950/70`}
             style={{ height: isExpanded ? undefined : '540px' }}
           >
             {/* Header */}
-            <div className={`p-4 flex items-center justify-between border-b ${
-              isDarkMode ? 'border-neutral-800 bg-neutral-950/40' : 'border-neutral-200 bg-neutral-50/40'
-            }`} id="chatbot-header">
+            <div className="p-4 flex items-center justify-between border-b border-white/10 bg-white/2" id="chatbot-header">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="w-10 h-10 bg-brand rounded-full flex items-center justify-center text-white font-bold tracking-wider shadow-md">
@@ -721,24 +715,10 @@ Please make sure your server environment variables are configured (such as **GEM
               </div>
               
               <div className="flex items-center gap-1">
-                {/* Theme Toggle */}
-                <button
-                  onClick={() => setIsDarkMode(!isDarkMode)}
-                  className={`p-1.5 rounded-lg opacity-70 hover:opacity-100 transition-colors ${
-                    isDarkMode ? 'hover:bg-neutral-800' : 'hover:bg-neutral-150'
-                  }`}
-                  title={isDarkMode ? "Light Mode" : "Dark Mode"}
-                  id="btn-chatbot-theme"
-                >
-                  {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
-                </button>
-
                 {/* Maximize / Expand (only sm and up) */}
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className={`p-1.5 rounded-lg opacity-70 hover:opacity-100 transition-colors hidden sm:block ${
-                    isDarkMode ? 'hover:bg-neutral-800' : 'hover:bg-neutral-150'
-                  }`}
+                  className="p-1.5 rounded-lg opacity-70 hover:opacity-100 hover:bg-white/10 text-white transition-colors hidden sm:block"
                   title={isExpanded ? "Restore Normal view" : "Maximize view"}
                   id="btn-chatbot-expand"
                 >
@@ -748,9 +728,7 @@ Please make sure your server environment variables are configured (such as **GEM
                 {/* Minimize */}
                 <button
                   onClick={() => setIsMinimized(true)}
-                  className={`p-1.5 rounded-lg opacity-70 hover:opacity-100 transition-colors ${
-                    isDarkMode ? 'hover:bg-neutral-800' : 'hover:bg-neutral-150'
-                  }`}
+                  className="p-1.5 rounded-lg opacity-70 hover:opacity-100 hover:bg-white/10 text-white transition-colors"
                   id="btn-chatbot-minimize"
                 >
                   <Minus size={15} />
@@ -759,9 +737,7 @@ Please make sure your server environment variables are configured (such as **GEM
                 {/* Clear/Restart */}
                 <button
                   onClick={handleClearHistory}
-                  className={`p-1.5 rounded-lg opacity-70 hover:opacity-100 transition-colors ${
-                    isDarkMode ? 'hover:bg-neutral-800' : 'hover:bg-neutral-150'
-                  }`}
+                  className="p-1.5 rounded-lg opacity-70 hover:opacity-100 hover:bg-white/10 text-white transition-colors"
                   title="Restart Chat"
                   id="btn-chatbot-restart"
                 >
@@ -778,9 +754,7 @@ Please make sure your server environment variables are configured (such as **GEM
                       handleDirectClose();
                     }
                   }}
-                  className={`p-1.5 rounded-lg opacity-70 hover:opacity-100 transition-colors ${
-                    isDarkMode ? 'hover:bg-neutral-800' : 'hover:bg-neutral-150'
-                  }`}
+                  className="p-1.5 rounded-lg opacity-70 hover:opacity-100 hover:bg-white/10 text-white transition-colors"
                   id="btn-chatbot-close"
                   title="Close and Save Session"
                 >
@@ -791,9 +765,7 @@ Please make sure your server environment variables are configured (such as **GEM
 
             {/* Quick Actions Panel */}
             {!showExitForm && (
-              <div className={`px-4 py-2 flex gap-2 overflow-x-auto justify-start border-b scrollbar-none text-[11px] ${
-                isDarkMode ? 'bg-neutral-950/20 border-neutral-850' : 'bg-neutral-50/20 border-neutral-150'
-              }`} id="chatbot-quick-cta-bar">
+              <div className="px-4 py-2 flex gap-2 overflow-x-auto justify-start border-b border-white/10 bg-[#050816]/30 scrollbar-none text-[11px]" id="chatbot-quick-cta-bar">
                 <a 
                   href={resumeUrl} 
                   target="_blank"
@@ -826,9 +798,7 @@ Please make sure your server environment variables are configured (such as **GEM
             {/* Messages Area / Scheduler view */}
             <div className="flex-1 flex flex-col min-h-0 relative">
               {showExitForm ? (
-                <div className={`p-6 flex-1 overflow-y-auto flex flex-col justify-center ${
-                  isDarkMode ? 'bg-neutral-900 text-white' : 'bg-neutral-50 text-neutral-800'
-                }`} id="chatbot-exit-form-container">
+                <div className="p-6 flex-1 overflow-y-auto flex flex-col justify-center bg-[#0b0e1a]/50 text-white" id="chatbot-exit-form-container">
                   {submitExitSuccess ? (
                     <motion.div
                       initial={{ scale: 0.9, opacity: 0 }}
@@ -867,11 +837,7 @@ Please make sure your server environment variables are configured (such as **GEM
                             value={exitName}
                             onChange={e => setExitName(e.target.value)}
                             placeholder="John Doe"
-                            className={`w-full p-2 rounded-lg border outline-none transition-all ${
-                              isDarkMode 
-                                ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30' 
-                                : 'bg-white border-neutral-200 text-neutral-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
-                            }`}
+                            className="w-full p-2 rounded-lg border border-white/10 bg-[#050816] text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30 outline-none transition-all placeholder:text-gray-600"
                           />
                         </div>
 
@@ -886,11 +852,7 @@ Please make sure your server environment variables are configured (such as **GEM
                             value={exitEmail}
                             onChange={e => setExitEmail(e.target.value)}
                             placeholder="john@example.com"
-                            className={`w-full p-2 rounded-lg border outline-none transition-all ${
-                              isDarkMode 
-                                ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/35' 
-                                : 'bg-white border-neutral-200 text-neutral-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/35'
-                            }`}
+                            className="w-full p-2 rounded-lg border border-white/10 bg-[#050816] text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/35 outline-none transition-all placeholder:text-gray-600"
                           />
                         </div>
 
@@ -905,11 +867,7 @@ Please make sure your server environment variables are configured (such as **GEM
                             value={exitCompany}
                             onChange={e => setExitCompany(e.target.value)}
                             placeholder="Acme Corp"
-                            className={`w-full p-2 rounded-lg border outline-none transition-all ${
-                              isDarkMode 
-                                ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30' 
-                                : 'bg-white border-neutral-200 text-neutral-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
-                            }`}
+                            className="w-full p-2 rounded-lg border border-white/10 bg-[#050816] text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30 outline-none transition-all placeholder:text-gray-600"
                           />
                         </div>
 
@@ -943,13 +901,13 @@ Please make sure your server environment variables are configured (such as **GEM
                   )}
                 </div>
               ) : showScheduler ? (
-                <div className={`p-5 flex-1 overflow-y-auto ${isDarkMode ? 'bg-neutral-900' : 'bg-neutral-25'}`}>
+                <div className="p-5 flex-1 overflow-y-auto bg-[#0b0e1a]/50 text-white">
                   <div className="flex justify-between items-center mb-4">
                     <h5 className="font-semibold text-sm flex items-center gap-1.5">
                       <Calendar className="text-brand" size={16} />
                       Interview Scheduling Panel
                     </h5>
-                    <button onClick={() => setShowScheduler(false)} className="opacity-70 hover:opacity-100">
+                    <button onClick={() => setShowScheduler(false)} className="opacity-70 hover:opacity-100 cursor-pointer">
                       <X size={16} />
                     </button>
                   </div>
@@ -977,11 +935,7 @@ Please make sure your server environment variables are configured (such as **GEM
                           value={scheduleName}
                           onChange={e => setScheduleName(e.target.value)}
                           placeholder="Visitor Name or Recruiting Firm"
-                          className={`w-full p-2 rounded-xl border outline-none transition-all ${
-                            isDarkMode 
-                              ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand focus:ring-1 focus:ring-brand/30' 
-                              : 'bg-white border-neutral-250 text-neutral-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
-                          }`}
+                          className="w-full p-2 rounded-xl border border-white/10 bg-[#050816] text-white focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]/30 outline-none transition-all placeholder:text-gray-600"
                         />
                       </div>
                       <div>
@@ -992,11 +946,7 @@ Please make sure your server environment variables are configured (such as **GEM
                           value={scheduleEmail}
                           onChange={e => setScheduleEmail(e.target.value)}
                           placeholder="recruiter@company.com"
-                          className={`w-full p-2 rounded-xl border outline-none transition-all ${
-                            isDarkMode 
-                              ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand focus:ring-1 focus:ring-brand/30' 
-                              : 'bg-white border-neutral-250 text-neutral-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
-                          }`}
+                          className="w-full p-2 rounded-xl border border-white/10 bg-[#050816] text-white focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]/30 outline-none transition-all placeholder:text-gray-600"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
@@ -1007,11 +957,7 @@ Please make sure your server environment variables are configured (such as **GEM
                             required
                             value={scheduledDate}
                             onChange={e => setScheduledDate(e.target.value)}
-                            className={`w-full p-2 rounded-xl border outline-none transition-all ${
-                              isDarkMode 
-                                ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand focus:ring-1 focus:ring-brand/30' 
-                                : 'bg-white border-neutral-250 text-neutral-850 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
-                            }`}
+                            className="w-full p-2 rounded-xl border border-white/10 bg-[#050816] text-white focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]/30 outline-none transition-all"
                           />
                         </div>
                         <div>
@@ -1021,11 +967,7 @@ Please make sure your server environment variables are configured (such as **GEM
                             required
                             value={scheduledTime}
                             onChange={e => setScheduledTime(e.target.value)}
-                            className={`w-full p-2 rounded-xl border outline-none transition-all ${
-                              isDarkMode 
-                                ? 'bg-neutral-950 border-neutral-800 text-white focus:border-brand focus:ring-1 focus:ring-brand/30' 
-                                : 'bg-white border-neutral-250 text-neutral-850 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30'
-                            }`}
+                            className="w-full p-2 rounded-xl border border-white/10 bg-[#050816] text-white focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]/30 outline-none transition-all"
                           />
                         </div>
                       </div>
@@ -1063,33 +1005,30 @@ Please make sure your server environment variables are configured (such as **GEM
                           className={`flex items-start gap-2 max-w-[85%] ${isAI ? 'self-start' : 'self-end ml-auto flex-row-reverse'}`}
                         >
                           {/* Mini Bubble Abbreviation avatar */}
-                          <div className={`h-7 min-w-[28px] px-2.5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm ${
-                            isAI 
-                              ? 'bg-brand text-white' 
-                              : isDarkMode ? 'bg-neutral-800 text-neutral-300 border border-neutral-700' : 'bg-neutral-200 text-neutral-700'
+                          <div className={`h-7 min-w-[28px] px-2.5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm bg-blue-600 text-white ${
+                            !isAI && 'bg-[#1e293b] text-slate-300 border border-white/10'
                           }`}>
                             {isAI ? 'Sankalp' : 'You'}
                           </div>
                           
                           <div className="flex flex-col max-w-full">
-                            <div className={`p-3 rounded-2xl text-xs leading-relaxed break-words shadow-sm ${
+                            <div className={`p-3.5 rounded-2xl text-xs leading-relaxed break-words shadow-md ${
                               isAI 
-                                ? isDarkMode 
-                                  ? 'bg-neutral-800/80 text-gray-100 rounded-tl-none border border-neutral-750/30' 
-                                  : 'bg-neutral-100/90 text-neutral-800 rounded-tl-none border-neutral-200/50' 
-                                : 'bg-brand-primary text-white rounded-tr-none'
+                                ? 'bg-[#15192c] text-white rounded-tl-none border border-white/10' 
+                                : 'bg-[#2563eb] text-white rounded-tr-none border border-blue-500/20'
                             }`}>
                               {isAI ? (
-                                <div className="prose prose-xs max-w-none dark:prose-invert">
+                                <div>
                                   <ReactMarkdown
                                     components={{
-                                      p: ({ node, ...props }) => <p className="mb-1.5 last:mb-0 leading-relaxed text-inherit" {...props} />,
-                                      strong: ({ node, ...props }) => <strong className="font-bold text-[#2563eb] dark:text-[#60a5fa]" {...props} />,
-                                      ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-2 space-y-0.5 text-inherit" {...props} />,
-                                      ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5 text-inherit" {...props} />,
-                                      li: ({ node, ...props }) => <li className="mb-px leading-snug text-inherit" {...props} />,
-                                      a: ({ node, ...props }) => <a className="text-[#3b82f6] dark:text-blue-400 font-medium underline hover:opacity-85" target="_blank" rel="noopener noreferrer" {...props} />,
-                                      code: ({ node, ...props }) => <code className="bg-black/15 dark:bg-black/40 px-1 py-0.5 rounded font-mono text-[10.5px] text-pink-500 dark:text-pink-300 border border-neutral-700/10" {...props} />
+                                      p: ({ node, ...props }) => <p className="mb-2 last:mb-0 leading-relaxed text-slate-100 font-normal" {...props} />,
+                                      strong: ({ node, ...props }) => <strong className="font-bold text-blue-400" {...props} />,
+                                      ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-2 mt-1 space-y-1 text-slate-200" {...props} />,
+                                      ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-2 mt-1 space-y-1 text-slate-200" {...props} />,
+                                      li: ({ node, ...props }) => <li className="mb-0.5 leading-relaxed text-slate-200" {...props} />,
+                                      a: ({ node, ...props }) => <a className="text-blue-400 font-semibold underline hover:text-blue-300 transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
+                                      code: ({ node, ...props }) => <code className="bg-white/10 px-1.5 py-0.5 rounded font-mono text-[11px] text-pink-400 border border-white/5" {...props} />,
+                                      blockquote: ({ node, ...props }) => <blockquote className="border-l-2 border-blue-500 pl-3 italic my-2 text-slate-400" {...props} />
                                     }}
                                   >
                                     {m.content}
@@ -1112,9 +1051,7 @@ Please make sure your server environment variables are configured (such as **GEM
                         <div className="h-7 min-w-[28px] px-2.5 rounded-full bg-brand text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm">
                           Sankalp
                         </div>
-                        <div className={`p-3 rounded-2xl rounded-tl-none text-xs shadow-sm ${
-                          isDarkMode ? 'bg-neutral-800 text-neutral-300 border border-neutral-750/30' : 'bg-neutral-100 text-neutral-700'
-                        }`}>
+                        <div className="p-3 rounded-2xl rounded-tl-none text-xs shadow-sm bg-white/5 text-gray-300 border border-white/10">
                           <div className="flex items-center gap-1.5 py-0.5 px-0.5" id="typing-dots">
                             <motion.span
                               animate={{ y: [0, -5, 0] }}
@@ -1140,17 +1077,13 @@ Please make sure your server environment variables are configured (such as **GEM
 
                   {/* Suggestion Chips */}
                   {messages.length < 5 && (
-                    <div className="px-3 py-1 flex gap-2 overflow-x-auto select-none p-1.5 border-t border-dotted border-neutral-800">
+                    <div className="px-3 py-2 flex gap-2 overflow-x-auto select-none border-t border-dotted border-white/10 scrollbar-none">
                       {suggestedQuestions.map((q, i) => (
                         <button
                           key={i}
                           onClick={() => handleSuggestedQuestion(q)}
                           id={`suggested-chip-${i}`}
-                          className={`text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap transition-all border outline-none cursor-pointer ${
-                            isDarkMode 
-                              ? 'bg-neutral-950/45 border-neutral-800 text-neutral-300 hover:bg-neutral-850 hover:text-white' 
-                              : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-black'
-                          }`}
+                          className="text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap transition-all border border-white/10 bg-white/2 text-neutral-300 hover:bg-white/10 hover:border-white/20 outline-none cursor-pointer"
                         >
                           {q}
                         </button>
@@ -1163,9 +1096,7 @@ Please make sure your server environment variables are configured (such as **GEM
 
             {/* Input Bar */}
             {!showExitForm && (
-              <div className={`p-3 border-t ${
-                isDarkMode ? 'border-neutral-800 bg-neutral-950/40' : 'border-neutral-200 bg-neutral-50/40'
-              }`} id="chatbot-input-bar">
+              <div className="p-3 border-t border-white/10 bg-[#050816]/50" id="chatbot-input-bar">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -1174,11 +1105,7 @@ Please make sure your server environment variables are configured (such as **GEM
                   onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
                   placeholder={showScheduler ? 'Please close scheduler panel to chat...' : 'Ask about expertise, USA/Germany interests...'}
                   disabled={isLoading || showScheduler}
-                  className={`flex-1 px-3.5 py-2.5 rounded-xl text-xs outline-none focus:ring-1 focus:ring-brand/50 transition-all ${
-                    isDarkMode 
-                      ? 'bg-neutral-950 text-white border border-neutral-800 focus:border-brand-primary' 
-                      : 'bg-neutral-50 text-neutral-800 border border-neutral-200 focus:border-brand-primary'
-                  }`}
+                  className="flex-1 px-3.5 py-2.5 rounded-xl text-xs outline-none focus:ring-1 focus:ring-brand/50 bg-[#050816] text-white border border-white/10 focus:border-brand-primary transition-all placeholder:text-gray-500"
                   id="chatbot-input"
                 />
                 <button
