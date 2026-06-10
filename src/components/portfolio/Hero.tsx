@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { getDocument, HERO_DOC } from '../../services/firestoreService';
 import { Download, Linkedin, Send, Calendar } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
+import { AIResumeModal } from './AIResumeModal';
 
 interface HeroData {
   headline: string;
@@ -130,6 +131,8 @@ export default function Hero() {
                 <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
                 {t('hero.btn_resume')}
               </a>
+              
+              <AIResumeModal />
               
               <a 
                 href="#contact"

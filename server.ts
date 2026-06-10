@@ -353,7 +353,7 @@ RULES FOR OPERATION and ANSWER COMPOSITION (CRITICAL FOR TONE):
    - Use warm, polite, and direct conversational Indian-English business phrasing (e.g., "Hi! Glad to connect with you.", "Sankalp has been doing some fantastic work leading the testing team at Amdocs in Gurgaon.", "Yes, absolutely! He's completed both ISTQB and CSM certifications and has a very strong command over Selenium and API testing.").
    - Sound genuine, respectful, highly skilled, and straightforward. Write in natural and readable sentences with professional humility and high technical authority.
    - Refer to Sankalp in the third person (e.g., "Sankalp", "he", "his") as his manager/liaison.
-5. Highlight relocations, career interests in India & global hubs (USA/Germany/etc.), Scrum Master qualifications (ISTQB/Scrum Master CSM), and invite the user to schedule an interview using the built-in "Book Interview" scheduler link.
+5. Highlight relocations, career interests in India & global hubs (USA/Germany/etc.), Scrum Master qualifications (ISTQB/Scrum Master CSM), and invite the user to schedule an interview using the built-in "Book Interview" scheduler link. Mention that recruiters can automatically generate/download his customized, professionally translated, and formatted ATS-friendly resume/CV in French, German, Hindi, or English by clicking the 'Generate AI Resume' button in the Hero section of the portfolio homepage!
 6. Recruiters: If keywords like "hiring", "interview", "opportunity", "role", "job", "salary", "relocation", "sponsorship" are mentioned in the conversation, politely ask for recruiter's contact details (Name, Company, Contact Email, Location, Role Details) so Sankalp can follow up.
 
 RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
@@ -557,7 +557,7 @@ STRICT OPERATIONAL RULES:
     try {
       const { content } = req.body || {};
       if (!content || typeof content !== 'object') {
-        return res.status(400).json({ error: 'Content object is required' });
+        return res.status(400).json({ error: 'content object is required' });
       }
 
       if (!GEMINI_API_KEY) {
@@ -626,6 +626,184 @@ Expected output format:
     } catch (error: any) {
       console.error('Translate API Error:', error);
       res.status(500).json({ error: error?.message || 'Failed to translate' });
+    }
+  });
+
+  // Dynamic AI-powered Resume Generator endpoint
+  app.post('/api/ai/generate-resume', async (req, res) => {
+    try {
+      const { targetLanguage, portfolioData } = req.body || {};
+      
+      if (!targetLanguage) {
+        return res.status(400).json({ error: 'targetLanguage is required' });
+      }
+
+      if (!GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
+      }
+
+      const systemPrompt = `You are an elite, professional ATS Resume and CV Writer.
+Your goal is to synthesize 100% of the raw portfolio data into a highly polished, clean, recruiter-ready resume/CV optimized for ATS (Applicant Tracking Systems).
+
+STRICT DATA PROCESSING & OPERATIONAL RULES:
+1. ZERO DATA LOSS & 100% COMPREHENSIVE INCLUSION:
+   - Carefully scan and extract details from EVERY single input section: "hero", "about" (with biography content and of all statistics metrics), "settings", "contact" (phone, email, locations, URLs), "experience", "projects" (including descriptions, tech stacks, links, role), "skills", "timeline" (milestones), "certifications", "testimonials", "impactStories" (transformative achievements), "qaMetrics" (concrete test and engineering measurements), "aiTools" (AI assisted QA assets), "now" (current activities & focus), and "blogs" (technical publications).
+   - If there are custom user-added blocks or sections that do not map directly to standard resume headers, map them elegantly under "additionalSections" in the response schema. Never omit any custom sections, no matter how small.
+2. INTELLIGENT MERGING & ZERO DUPLICATION:
+   - Identify career journey milestones in "timeline" that represent the same job role and company as listed in the primary "experience" history. MERGE their descriptions, highlights, and insights together into standard action-oriented bullet points under the unified Experience block. DO NOT produce separate duplicative job blocks.
+   - If a "timeline" milestone represents a school degree/academic milestone, map it neatly to "education".
+   - Merge all tools from "aiTools", technical stack listings from "projects", and core competencies from "skills" into a unified, clean, highly-organized, non-redundant checklist under "skills" categorized by logical domains.
+   - Incorporate qualitative QA breakthroughs from "impactStories", quantitative metrics from "qaMetrics" and "about.metrics", and current focus from "now" into either the corresponding experience bullets, or inside "achievements" (which is an array of strings in the schema), or as specific additional sections (e.g. "Key QA Metrics & Direct Impact") under "additionalSections".
+   - Include brief mentions of blog titles ("blogs") under a section named "Technical Publications & Written Insight" inside "additionalSections" to show active thought leadership.
+3. TARGET LANGUAGE: Translate ALL sections (titles, names, professional summaries, role names, descriptions, bullet points, locations, etc.) into the specified target language: "${targetLanguage}".
+   - Standard industry names and tools (e.g. "Selenium", "PostgreSQL", "React", "Docker", "QA", "ISTQB", "CSM", "Python", "Next.js", "Jenkins") should retain their standard technical/English spelling as widely recognized in professional job markets.
+4. ELEVATE CONTENT: Convert general descriptive paragraphs or passive bullets into punchy, recruiter-ready, action-oriented descriptions. Use active verbs (e.g., "Led", "Engineered", "Optimized", "Architected", "Spearheaded", "Revamped"). Quantify impact and performance in QA wherever possible using the candidate's exact numeric metrics.
+5. PRESERVE FACTS: Never invent, extrapolate, or hallucinate credentials, dates, companies, or degrees. Use ONLY the facts provided in the raw portfolio data.
+
+Raw Portfolio JSON:
+${JSON.stringify(portfolioData, null, 2)}
+
+Respond with ONLY the structured resume JSON matching the requested response schema.`;
+
+      const response = await generateContentWithFallback(ai, {
+        model: "gemini-3.5-flash",
+        contents: `${systemPrompt}\n\nGenerate and return the formatted ATS resume JSON in the target language: "${targetLanguage}".`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              personalInfo: {
+                type: Type.OBJECT,
+                properties: {
+                  name: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  summary: { type: Type.STRING },
+                  email: { type: Type.STRING },
+                  phone: { type: Type.STRING },
+                  location: { type: Type.STRING },
+                  linkedin: { type: Type.STRING },
+                  github: { type: Type.STRING },
+                  website: { type: Type.STRING }
+                },
+                required: ["name", "title", "summary"]
+              },
+              experience: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    role: { type: Type.STRING },
+                    company: { type: Type.STRING },
+                    period: { type: Type.STRING },
+                    location: { type: Type.STRING },
+                    bullets: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING }
+                    }
+                  },
+                  required: ["role", "company", "period", "bullets"]
+                }
+              },
+              projects: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    techStack: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING }
+                    },
+                    link: { type: Type.STRING },
+                    role: { type: Type.STRING }
+                  },
+                  required: ["name", "description"]
+                }
+              },
+              skills: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    category: { type: Type.STRING },
+                    items: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING }
+                    }
+                  },
+                  required: ["category", "items"]
+                }
+              },
+              education: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    degree: { type: Type.STRING },
+                    institution: { type: Type.STRING },
+                    period: { type: Type.STRING },
+                    grade: { type: Type.STRING }
+                  },
+                  required: ["degree", "institution"]
+                }
+              },
+              certifications: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING },
+                    issuer: { type: Type.STRING },
+                    date: { type: Type.STRING },
+                    link: { type: Type.STRING }
+                  },
+                  required: ["name", "issuer"]
+                }
+              },
+              achievements: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+              },
+              testimonials: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    author: { type: Type.STRING },
+                    role: { type: Type.STRING },
+                    company: { type: Type.STRING },
+                    text: { type: Type.STRING }
+                  },
+                  required: ["author", "text"]
+                }
+              },
+              additionalSections: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    title: { type: Type.STRING },
+                    bullets: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING }
+                    }
+                  },
+                  required: ["title", "bullets"]
+                }
+              }
+            },
+            required: ["personalInfo", "experience", "projects", "skills"]
+          }
+        }
+      });
+
+      const parsedResume = JSON.parse(response.text || '{}');
+      res.json(parsedResume);
+    } catch (error: any) {
+      console.error('Generate Resume API Error:', error);
+      res.status(500).json({ error: error?.message || 'Failed to generate resume data' });
     }
   });
 
