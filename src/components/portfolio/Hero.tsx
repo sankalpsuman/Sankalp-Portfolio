@@ -122,24 +122,24 @@ export default function Hero() {
               {getLocalizedField(data, 'description', 'hero.description')}
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 pt-4 max-w-3xl mx-auto w-full px-4">
               <a 
                 href={data?.resumeUrl || "#"} 
                 target="_blank"
-                className="px-8 py-4 bg-brand hover:brightness-110 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-brand/10"
+                className="h-10 px-5 bg-brand hover:brightness-110 text-white text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 group shadow-md shadow-brand/10 w-full sm:w-auto max-w-xs sm:max-w-none"
               >
-                <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
-                {t('hero.btn_resume')}
+                <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+                <span>{t('hero.btn_resume')}</span>
               </a>
               
               <AIResumeModal />
               
               <a 
                 href="#contact"
-                className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 transition-all flex items-center gap-2"
+                className="h-10 px-5 bg-white/5 hover:bg-white/10 text-white text-xs font-semibold rounded-lg border border-white/10 transition-all flex items-center justify-center gap-2 w-full sm:w-auto max-w-xs sm:max-w-none"
               >
-                <Send className="w-5 h-5" />
-                {t('hero.btn_contact')}
+                <Send className="w-4 h-4" />
+                <span>{t('hero.btn_contact')}</span>
               </a>
 
               {settings?.calendlyUrl && (
@@ -147,18 +147,20 @@ export default function Hero() {
                   href={settings.calendlyUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-8 py-4 bg-gradient-to-r from-brand to-brand/80 hover:brightness-110 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-brand/5"
+                  className="h-10 px-5 bg-gradient-to-r from-brand to-brand/80 hover:brightness-110 text-white text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 group shadow-md shadow-brand/5 w-full sm:w-auto max-w-xs sm:max-w-none"
                 >
-                  <Calendar className="w-5 h-5" />
-                  {t('hero.btn_strategy')}
+                  <Calendar className="w-4 h-4" />
+                  <span>{t('hero.btn_strategy')}</span>
                 </a>
               )}
+              
               <a 
                 href={data?.linkedinUrl || "https://www.linkedin.com/in/sankalpsuman"} 
                 target="_blank"
-                className="p-4 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 transition-all"
+                className="h-10 px-5 bg-[#0077b5]/10 hover:bg-[#0077b5]/20 text-[#00a0dc] hover:text-white rounded-lg border border-[#0077b5]/30 hover:border-[#0077b5] transition-all flex items-center justify-center gap-2 w-full sm:w-auto max-w-xs sm:max-w-none"
               >
-                <Linkedin className="w-5 h-5" />
+                <Linkedin className="w-4 h-4" />
+                <span>LinkedIn</span>
               </a>
             </div>
           </motion.div>

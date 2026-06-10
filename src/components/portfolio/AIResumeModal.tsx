@@ -637,11 +637,11 @@ export const AIResumeModal: React.FC = () => {
       {/* Prime user interface trigger button */}
       <button
         onClick={handleGenerateResume}
-        className="px-8 py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-brand hover:brightness-110 text-white font-bold rounded-xl transition-all flex items-center gap-2 group shadow-xl shadow-brand/10 select-none cursor-pointer"
+        className="h-10 px-5 bg-gradient-to-r from-blue-600 via-indigo-600 to-brand hover:brightness-110 text-white text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 group shadow-md shadow-brand/10 select-none cursor-pointer border border-transparent w-full sm:w-auto max-w-xs sm:max-w-none"
         aria-label="Generate an AI-powered resume in the current active language"
         id="generate-ai-resume-btn"
       >
-        <Sparkles className="w-5 h-5 text-indigo-200 animate-pulse" />
+        <Sparkles className="w-4 h-4 text-indigo-200 animate-pulse" />
         <span>{language === 'en' ? 'Generate AI Resume' : language === 'hi' ? 'एआई बायोडाटा जनरेट करें' : language === 'fr' ? 'Générer un CV IA' : 'KI-Lebenslauf erstellen'}</span>
       </button>
 
