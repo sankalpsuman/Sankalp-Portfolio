@@ -380,6 +380,8 @@ export const AIResumeModal: React.FC = () => {
               ${info.email ? `<div class="contact-item">✉ ${info.email}</div>` : ''}
               ${info.phone ? `<div class="contact-item">☎ ${info.phone}</div>` : ''}
               ${info.location ? `<div class="contact-item">📍 ${info.location}</div>` : ''}
+              ${info.yearsOfExperience ? `<div class="contact-item">⏱ ${info.yearsOfExperience}</div>` : ''}
+              ${info.languages && info.languages.length > 0 ? `<div class="contact-item">💬 ${info.languages.join(', ')}</div>` : ''}
               ${info.linkedin ? `<div class="contact-item">🔗 <a href="${info.linkedin}" target="_blank">${info.linkedin.replace(/^https?:\/\/(www\.)?/, '')}</a></div>` : ''}
               ${info.github ? `<div class="contact-item">⚙ <a href="${info.github}" target="_blank">${info.github.replace(/^https?:\/\/(www\.)?/, '')}</a></div>` : ''}
               ${info.website ? `<div class="contact-item">🌐 <a href="${info.website}" target="_blank">${info.website.replace(/^https?:\/\/(www\.)?/, '')}</a></div>` : ''}
@@ -827,6 +829,10 @@ export const AIResumeModal: React.FC = () => {
                             {resumeData.personalInfo?.email && <span className="flex items-center gap-1">✉ <a href={`mailto:${resumeData.personalInfo.email}`} className="underline text-indigo-700 hover:text-indigo-900">{resumeData.personalInfo.email}</a></span>}
                             {resumeData.personalInfo?.phone && <span className="flex items-center gap-1">☎ {resumeData.personalInfo.phone}</span>}
                             {resumeData.personalInfo?.location && <span className="flex items-center gap-1">📍 {resumeData.personalInfo.location}</span>}
+                            {resumeData.personalInfo?.yearsOfExperience && <span className="flex items-center gap-1">⏱ {resumeData.personalInfo.yearsOfExperience}</span>}
+                            {resumeData.personalInfo?.languages && resumeData.personalInfo.languages.length > 0 && (
+                              <span className="flex items-center gap-1">💬 {resumeData.personalInfo.languages.join(', ')}</span>
+                            )}
                             {resumeData.personalInfo?.linkedin && (
                               <span className="flex items-center gap-1">
                                 🔗 <a href={resumeData.personalInfo.linkedin} target="_blank" rel="noopener noreferrer" className="underline text-indigo-700 hover:text-indigo-900">{resumeData.personalInfo.linkedin.replace(/^https?:\/\/(www\.)?/, '')}</a>

@@ -641,20 +641,45 @@ Your goal is to synthesize 100% of the raw portfolio data into a highly polished
 
 STRICT DATA PROCESSING & OPERATIONAL RULES:
 1. ZERO DATA LOSS & 100% COMPREHENSIVE INCLUSION:
-   - Carefully scan and extract details from EVERY single input section: "hero", "about" (with biography content and of all statistics metrics), "settings", "contact" (phone, email, locations, URLs), "experience", "projects" (including descriptions, tech stacks, links, role), "skills", "timeline" (milestones), "certifications", "testimonials", "impactStories" (transformative achievements), "qaMetrics" (concrete test and engineering measurements), "aiTools" (AI assisted QA assets), "now" (current activities & focus), and "blogs" (technical publications).
+   - Carefully scan and extract details from EVERY single input section. Ensure the following details are always included and never omitted, regardless of standard template constraints:
+     * Full Name (personalInfo.name)
+     * Professional Title / Current Role (personalInfo.title)
+     * Contact Information (Email, Phone, Location) (personalInfo.email, personalInfo.phone, personalInfo.location)
+     * LinkedIn Profile (personalInfo.linkedin)
+     * Portfolio Website (personalInfo.website, mapped to the provided "portfolioUrl")
+     * Professional Summary (personalInfo.summary)
+     * Total Years of Experience (personalInfo.yearsOfExperience, calculated or summarized from history)
+     * Languages (personalInfo.languages, translated/extracted from "about" or other sections, or fallback list)
+     * Work Experience (experience, with responsibilities, achievements, and quantified metrics)
+     * Projects (projects, with name, role, descriptions, technologies used, outcomes, and links)
+     * Technical Skills / Tools & Technologies (skills, categorized domain lists containing all technical languages, frameworks, automation tools, and assistive systems)
+     * Certifications (certifications)
+     * Education (education)
+     * Awards & Achievements (achievements, combining major recognitions and metrics)
+     * Career Timeline / Career Journey (integrated dynamically or added under achievements/additionalSections)
+     * Publications, Blogs, or Content (as an additionalSection, or list details under "Technical Publications & Written Insight")
+     * All External Links (under contact, projects, and certifications where available)
    - Under "personalInfo", the "website" field MUST be mapped to the provided "portfolioUrl" in the payload (unless there is an official custom website specified in "contact") to guarantee recruiters can access the live portfolio!
    - For every single project in "projects", always capture and include its live/GitHub url as "link" in the response schema. Never omit the links.
    - If there are custom user-added blocks or sections that do not map directly to standard resume headers, map them elegantly under "additionalSections" in the response schema. Never omit any custom sections, no matter how small.
+
 2. INTELLIGENT MERGING & ZERO DUPLICATION:
    - Identify career journey milestones in "timeline" that represent the same job role and company as listed in the primary "experience" history. MERGE their descriptions, highlights, and insights together into standard action-oriented bullet points under the unified Experience block. DO NOT produce separate duplicative job blocks.
    - If a "timeline" milestone represents a school degree/academic milestone, map it neatly to "education".
    - Merge all tools from "aiTools", technical stack listings from "projects", and core competencies from "skills" into a unified, clean, highly-organized, non-redundant checklist under "skills" categorized by logical domains.
    - Incorporate qualitative QA breakthroughs from "impactStories", quantitative metrics from "qaMetrics" and "about.metrics", and current focus from "now" into either the corresponding experience bullets, or inside "achievements" (which is an array of strings in the schema), or as specific additional sections (e.g. "Key QA Metrics & Direct Impact") under "additionalSections".
-   - Include brief mentions of blog titles ("blogs") under a section named "Technical Publications & Written Insight" inside "additionalSections" to show active thought leadership.
+   - Include direct, clean mentions of blog titles ("blogs") under a section named "Technical Publications & Written Insight" inside "additionalSections" to show active thought leadership, linking them properly as text descriptions or list links if available.
+
 3. TARGET LANGUAGE: Translate ALL sections (titles, names, professional summaries, role names, descriptions, bullet points, locations, etc.) into the specified target language: "${targetLanguage}".
    - Standard industry names and tools (e.g. "Selenium", "PostgreSQL", "React", "Docker", "QA", "ISTQB", "CSM", "Python", "Next.js", "Jenkins") should retain their standard technical/English spelling as widely recognized in professional job markets.
-4. ELEVATE CONTENT: Convert general descriptive paragraphs or passive bullets into punchy, recruiter-ready, action-oriented descriptions. Use active verbs (e.g., "Led", "Engineered", "Optimized", "Architected", "Spearheaded", "Revamped"). Quantify impact and performance in QA wherever possible using the candidate's exact numeric metrics.
-5. PRESERVE FACTS: Never invent, extrapolate, or hallucinate credentials, dates, companies, or degrees. Use ONLY the facts provided in the raw portfolio data.
+
+4. ELEVATE CONTENT & PRESERVE FACTS:
+   - Convert general descriptive paragraphs or passive bullets into punchy, recruiter-ready, action-oriented descriptions. Use active verbs (e.g., "Led", "Engineered", "Optimized", "Architected", "Spearheaded", "Revamped").
+   - Quantify impact and performance in QA wherever possible using the candidate's exact numeric metrics.
+   - Never invent, extrapolate, or hallucinate credentials, dates, companies, or degrees. Use ONLY the facts provided in the raw portfolio data.
+
+5. VERIFICATION:
+   - Validate that none of the core sections (personalInfo, experience, projects, skills, education) are missing before outputting the final JSON.
 
 Raw Portfolio JSON:
 ${JSON.stringify(portfolioData, null, 2)}
@@ -680,7 +705,12 @@ Respond with ONLY the structured resume JSON matching the requested response sch
                   location: { type: Type.STRING },
                   linkedin: { type: Type.STRING },
                   github: { type: Type.STRING },
-                  website: { type: Type.STRING }
+                  website: { type: Type.STRING },
+                  yearsOfExperience: { type: Type.STRING },
+                  languages: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING }
+                  }
                 },
                 required: ["name", "title", "summary"]
               },
