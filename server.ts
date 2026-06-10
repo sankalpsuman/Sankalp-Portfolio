@@ -276,9 +276,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Standard, fully-compatible Express body parsing middleware for all environments
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Standard, fully-compatible Express body parsing middleware for all environments with a generous size limit
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ limit: '15mb', extended: true }));
 
 export let initPromise: Promise<void> | null = null;
 
@@ -976,6 +976,14 @@ Respond with ONLY the structured resume JSON matching the requested response sch
       }
     });
   }
+
+  // Global error-handling middleware to return clean JSON error responses for payload limits or uncaught exceptions
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error('[Express Global Error]:', err);
+    res.status(err.status || err.statusCode || 500).json({
+      error: err.message || 'An unexpected server error occurred.'
+    });
+  });
 
   if (!process.env.VERCEL) {
     app.listen(PORT, '0.0.0.0', () => {

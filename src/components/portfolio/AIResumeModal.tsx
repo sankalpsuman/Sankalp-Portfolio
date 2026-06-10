@@ -126,14 +126,26 @@ export const AIResumeModal: React.FC = () => {
       });
 
       if (!response.ok) {
-        let errMessage = `Failed to generate resume: ${response.statusText}`;
+        let errMessage = '';
         try {
-          const errPayload = await response.json();
-          if (errPayload && errPayload.error) {
-            errMessage = errPayload.error;
+          const text = await response.text();
+          try {
+            const errPayload = JSON.parse(text);
+            if (errPayload && errPayload.error) {
+              errMessage = errPayload.error;
+            } else {
+              errMessage = text;
+            }
+          } catch {
+            // Not valid JSON, output text (trimmed) or status fallback
+            if (text && text.length > 0) {
+              errMessage = text.length > 250 ? text.substring(0, 250) + '...' : text;
+            } else {
+              errMessage = `HTTP ${response.status} ${response.statusText || 'Error'}`;
+            }
           }
-        } catch (jsonErr) {
-          // Fallback if not JSON
+        } catch (readErr) {
+          errMessage = `HTTP ${response.status} ${response.statusText || 'Error'}`;
         }
         throw new Error(errMessage);
       }
