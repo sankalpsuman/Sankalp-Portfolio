@@ -220,14 +220,8 @@ const ai = new GoogleGenAI({
 async function generateContentWithFallback(aiInstance: any, params: any) {
   const requestedModel = params.model || "gemini-3.5-flash";
   const modelsToTry = [requestedModel];
-  if (requestedModel !== "gemini-flash-latest") {
-    modelsToTry.push("gemini-flash-latest");
-  }
-  if (!modelsToTry.includes("gemini-2.5-flash")) {
-    modelsToTry.push("gemini-2.5-flash");
-  }
-  if (!modelsToTry.includes("gemini-2.0-flash")) {
-    modelsToTry.push("gemini-2.0-flash");
+  if (requestedModel !== "gemini-3.1-flash-lite") {
+    modelsToTry.push("gemini-3.1-flash-lite");
   }
   
   let lastError: any = null;
@@ -648,6 +642,8 @@ Your goal is to synthesize 100% of the raw portfolio data into a highly polished
 STRICT DATA PROCESSING & OPERATIONAL RULES:
 1. ZERO DATA LOSS & 100% COMPREHENSIVE INCLUSION:
    - Carefully scan and extract details from EVERY single input section: "hero", "about" (with biography content and of all statistics metrics), "settings", "contact" (phone, email, locations, URLs), "experience", "projects" (including descriptions, tech stacks, links, role), "skills", "timeline" (milestones), "certifications", "testimonials", "impactStories" (transformative achievements), "qaMetrics" (concrete test and engineering measurements), "aiTools" (AI assisted QA assets), "now" (current activities & focus), and "blogs" (technical publications).
+   - Under "personalInfo", the "website" field MUST be mapped to the provided "portfolioUrl" in the payload (unless there is an official custom website specified in "contact") to guarantee recruiters can access the live portfolio!
+   - For every single project in "projects", always capture and include its live/GitHub url as "link" in the response schema. Never omit the links.
    - If there are custom user-added blocks or sections that do not map directly to standard resume headers, map them elegantly under "additionalSections" in the response schema. Never omit any custom sections, no matter how small.
 2. INTELLIGENT MERGING & ZERO DUPLICATION:
    - Identify career journey milestones in "timeline" that represent the same job role and company as listed in the primary "experience" history. MERGE their descriptions, highlights, and insights together into standard action-oriented bullet points under the unified Experience block. DO NOT produce separate duplicative job blocks.

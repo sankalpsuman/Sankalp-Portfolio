@@ -52,14 +52,8 @@ Sankalp's Contact details:
 async function generateContentWithFallback(aiInstance: any, params: any) {
   const requestedModel = params.model || "gemini-3.5-flash";
   const modelsToTry = [requestedModel];
-  if (requestedModel !== "gemini-flash-latest") {
-    modelsToTry.push("gemini-flash-latest");
-  }
-  if (!modelsToTry.includes("gemini-2.5-flash")) {
-    modelsToTry.push("gemini-2.5-flash");
-  }
-  if (!modelsToTry.includes("gemini-2.0-flash")) {
-    modelsToTry.push("gemini-2.0-flash");
+  if (requestedModel !== "gemini-3.1-flash-lite") {
+    modelsToTry.push("gemini-3.1-flash-lite");
   }
   
   let lastError: any = null;

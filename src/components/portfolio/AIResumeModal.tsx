@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sparkles, 
   X, 
+  Minus,
   Printer, 
   Download, 
   FileText, 
@@ -28,9 +29,12 @@ import html2canvas from 'html2canvas';
 
 export const AIResumeModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [resumeData, setResumeData] = useState<any>(null);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [pdfStatus, setPdfStatus] = useState<string>('');
   const { language, t } = useLanguage();
 
   // Mapping browser language code to target friendly language name
@@ -50,6 +54,7 @@ export const AIResumeModal: React.FC = () => {
     try {
       setLoading(true);
       setIsOpen(true);
+      setIsMinimized(false);
       setStatus('Gathering portfolio statistics and details...');
 
       // Read all portfolio collections & docs parallel
@@ -104,7 +109,8 @@ export const AIResumeModal: React.FC = () => {
         qaMetrics,
         aiTools,
         now,
-        blogs
+        blogs,
+        portfolioUrl: window.location.origin
       };
 
       // Call our secure backend endpoint
@@ -120,15 +126,26 @@ export const AIResumeModal: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to generate resume: ${response.statusText}`);
+        let errMessage = `Failed to generate resume: ${response.statusText}`;
+        try {
+          const errPayload = await response.json();
+          if (errPayload && errPayload.error) {
+            errMessage = errPayload.error;
+          }
+        } catch (jsonErr) {
+          // Fallback if not JSON
+        }
+        throw new Error(errMessage);
       }
 
       const parsedResume = await response.json();
       setResumeData(parsedResume);
+      setIsMinimized(false);
       setStatus('');
     } catch (error: any) {
       console.error('Failed to generate resume:', error);
       setStatus(`Error: ${error.message || 'Check your Gemini configurations'}`);
+      setIsMinimized(false);
     } finally {
       setLoading(false);
     }
@@ -155,7 +172,10 @@ export const AIResumeModal: React.FC = () => {
     const testimonialsList = resumeData.testimonials || [];
     const additionalSectionsList = resumeData.additionalSections || [];
 
-    const formatBullet = (bullet: string) => `<li>${bullet}</li>`;
+    const formatBullet = (bullet: string) => {
+      const cleaned = bullet.replace(/^[\s*•-]+\s*/, '');
+      return `<li>${cleaned}</li>`;
+    };
 
     // Construct the printable page structure
     printWindow.document.write(`
@@ -348,9 +368,9 @@ export const AIResumeModal: React.FC = () => {
               ${info.email ? `<div class="contact-item">✉ ${info.email}</div>` : ''}
               ${info.phone ? `<div class="contact-item">☎ ${info.phone}</div>` : ''}
               ${info.location ? `<div class="contact-item">📍 ${info.location}</div>` : ''}
-              ${info.linkedin ? `<div class="contact-item">🔗 <a href="${info.linkedin}" target="_blank">LinkedIn</a></div>` : ''}
-              ${info.github ? `<div class="contact-item">⚙ <a href="${info.github}" target="_blank">GitHub</a></div>` : ''}
-              ${info.website ? `<div class="contact-item">🌐 <a href="${info.website}" target="_blank">Portfolio</a></div>` : ''}
+              ${info.linkedin ? `<div class="contact-item">🔗 <a href="${info.linkedin}" target="_blank">${info.linkedin.replace(/^https?:\/\/(www\.)?/, '')}</a></div>` : ''}
+              ${info.github ? `<div class="contact-item">⚙ <a href="${info.github}" target="_blank">${info.github.replace(/^https?:\/\/(www\.)?/, '')}</a></div>` : ''}
+              ${info.website ? `<div class="contact-item">🌐 <a href="${info.website}" target="_blank">${info.website.replace(/^https?:\/\/(www\.)?/, '')}</a></div>` : ''}
             </div>
           </div>
           
@@ -395,7 +415,7 @@ export const AIResumeModal: React.FC = () => {
               <div class="item">
                 <div class="item-header">
                   <span>${proj.name}</span>
-                  ${proj.link ? `<span><a href="${proj.link}" target="_blank">${language === 'en' ? 'Live View' : language === 'hi' ? 'लाइव देखें' : language === 'fr' ? 'Voir en direct' : 'Live-Ansicht'} ↗</a></span>` : ''}
+                  ${proj.link ? `<span><a href="${proj.link}" target="_blank">${proj.link.replace(/^https?:\/\/(www\.)?/, '')} ↗</a></span>` : ''}
                 </div>
                 <div class="item-subheader">
                   <span>${proj.role || 'Contributor'}</span>
@@ -482,21 +502,23 @@ export const AIResumeModal: React.FC = () => {
 
     const originalGetComputedStyle = window.getComputedStyle;
 
-    // 1. Save original styles to perfectly restore them after capture
-    const originalWidth = element.style.width || '';
-    const originalMaxWidth = element.style.maxWidth || '';
-    const originalPadding = element.style.padding || '';
-    const originalBoxSizing = element.style.boxSizing || '';
+    // Create a high-fidelity isolated clone off-screen to avoid modal width constraints and reactive resizes
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.id = 'resume-pdf-render-clone';
+    clone.style.position = 'absolute';
+    clone.style.top = '-9999px';
+    clone.style.left = '-9999px';
+    clone.style.width = '820px';
+    clone.style.maxWidth = '820px';
+    clone.style.padding = '40px';
+    clone.style.boxSizing = 'border-box';
+    clone.style.backgroundColor = '#ffffff';
+    clone.style.color = '#1e293b';
+    document.body.appendChild(clone);
 
     try {
-      setLoading(true);
-      setStatus('Composing high resolution layout rendering canvas...');
-
-      // 2. Force A4 proportional desktop canvas dimensions for pristine text-wrapping and scaling
-      element.style.width = '820px';
-      element.style.maxWidth = '820px';
-      element.style.padding = '40px';
-      element.style.boxSizing = 'border-box';
+      setPdfGenerating(true);
+      setPdfStatus('Composing high resolution layout rendering canvas...');
 
       // Dynamic math tools to convert oklch colors into classical rgb representation, 
       // which completely circumvents color-parsing library crashes on Tailwind v4 elements.
@@ -582,8 +604,8 @@ export const AIResumeModal: React.FC = () => {
         });
       };
 
-      // Capture element using html2canvas with optimal settings
-      const canvas = await html2canvas(element, {
+      // Capture clone element using html2canvas with optimal settings
+      const canvas = await html2canvas(clone, {
         scale: 2,
         useCORS: true,
         logging: false,
@@ -592,7 +614,7 @@ export const AIResumeModal: React.FC = () => {
         windowWidth: 820
       });
 
-      setStatus('Compiling PDF file...');
+      setPdfStatus('Compiling PDF file...');
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jspdf('p', 'mm', 'a4');
       const imgWidth = 210; // A4 standard width in mm
@@ -606,29 +628,27 @@ export const AIResumeModal: React.FC = () => {
       heightLeft -= pageHeight;
 
       // Create extra pages if content overflows standard single page A4
-      while (heightLeft >= 0) {
+      while (heightLeft > 2) {
         position = heightLeft - imgHeight;
         pdf.addPage();
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
 
-      setStatus('Initiating file download...');
+      setPdfStatus('Initiating file download...');
       pdf.save(`Sankalp_Suman_Resume_${language === 'en' ? 'en' : language}.pdf`);
-      setStatus('');
+      setPdfStatus('');
     } catch (err: any) {
       console.error(err);
-      setStatus(`Direct compilation failed. Use "Print Selection-Text PDF" for best results.`);
+      setPdfStatus(`Direct compilation failed. Use "Print Selection-Text PDF" for best results.`);
     } finally {
-      // 3. Restore original styles perfectly
-      element.style.width = originalWidth;
-      element.style.maxWidth = originalMaxWidth;
-      element.style.padding = originalPadding;
-      element.style.boxSizing = originalBoxSizing;
-
+      // Remove temporary clone from DOM
+      if (document.getElementById('resume-pdf-render-clone')) {
+        document.body.removeChild(clone);
+      }
       // Restore standard browser getComputedStyle implementation
       window.getComputedStyle = originalGetComputedStyle;
-      setLoading(false);
+      setPdfGenerating(false);
     }
   };
 
@@ -648,43 +668,59 @@ export const AIResumeModal: React.FC = () => {
       {/* Primary Accessible Modal Layer */}
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-[#050816]/90 backdrop-blur-sm overflow-hidden text-white no-print">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-4xl bg-[#0a0e23] border border-white/10 rounded-2xl flex flex-col h-[90vh] md:h-[85vh] relative shadow-2xl overflow-hidden"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="resume-modal-title"
-            >
-              {/* Decorative side lights */}
-              <div className="absolute top-0 left-1/4 w-1/2 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
+          !isMinimized ? (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-[#050816]/90 backdrop-blur-sm overflow-hidden text-white no-print" key="maximized-modal">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="w-full max-w-4xl bg-[#0a0e23] border border-white/10 rounded-2xl flex flex-col h-[90vh] md:h-[85vh] relative shadow-2xl overflow-hidden"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="resume-modal-title"
+              >
+                {/* Decorative side lights */}
+                <div className="absolute top-0 left-1/4 w-1/2 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
 
-              {/* Modal Header */}
-              <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between z-10 shrink-0 bg-[#0c1433]/50">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 bg-blue-600/10 border border-blue-500/20 rounded-lg text-blue-400">
-                    <FileText className="w-5 h-5" />
+                {/* Modal Header */}
+                <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between z-10 shrink-0 bg-[#0c1433]/50">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 bg-blue-600/10 border border-blue-500/20 rounded-lg text-blue-400">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 id="resume-modal-title" className="text-base font-bold text-white leading-tight">
+                        {language === 'en' ? 'Personalized AI Resume Assistant' : language === 'hi' ? 'व्यक्तिगत एआई बायोडाटा सहायक' : language === 'fr' ? 'Assistant de CV IA personnalisé' : 'Personalisierter KI-Lebenslauf-Assistent'}
+                      </h3>
+                      <p className="text-[10px] text-gray-400">
+                        {language === 'en' ? `Formulating resume in your active locale: ${currentLanguageName}` : language === 'hi' ? `आपकी सक्रिय भाषा में जैव-डेटा: ${currentLanguageName}` : language === 'fr' ? `Formulation du CV en locale active: ${currentLanguageName}` : `Lebenslauf-Erstellung auf: ${currentLanguageName}`}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 id="resume-modal-title" className="text-base font-bold text-white leading-tight">
-                      {language === 'en' ? 'Personalized AI Resume Assistant' : language === 'hi' ? 'व्यक्तिगत एआई बायोडाटा सहायक' : language === 'fr' ? 'Assistant de CV IA personnalisé' : 'Personalisierter KI-Lebenslauf-Assistent'}
-                    </h3>
-                    <p className="text-[10px] text-gray-400">
-                      {language === 'en' ? `Formulating resume in your active locale: ${currentLanguageName}` : language === 'hi' ? `आपकी सक्रिय भाषा में जैव-डेटा: ${currentLanguageName}` : language === 'fr' ? `Formulation du CV en locale active: ${currentLanguageName}` : `Lebenslauf-Erstellung auf: ${currentLanguageName}`}
-                    </p>
+
+                  <div className="flex items-center gap-2">
+                    {/* Minimize Button */}
+                    <button
+                      onClick={() => setIsMinimized(true)}
+                      className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-all cursor-pointer flex items-center justify-center"
+                      title={language === 'en' ? 'Minimize' : language === 'hi' ? 'छोटा करें' : 'Minimiser'}
+                      aria-label="Minimize"
+                    >
+                      <Minus className="w-5 h-5" />
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        setIsMinimized(false);
+                      }}
+                      className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-all cursor-pointer flex items-center justify-center"
+                      aria-label="Close dialog"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
-
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-all cursor-pointer"
-                  aria-label="Close dialog"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
 
               {/* Loader / Content Splitter */}
               <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col min-h-0 bg-[#06091c]">
@@ -720,7 +756,8 @@ export const AIResumeModal: React.FC = () => {
                         <div className="space-y-2">
                           <button
                             onClick={handlePrintResume}
-                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-500/10 cursor-pointer"
+                            disabled={pdfGenerating}
+                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-500/10 cursor-pointer"
                             aria-label="Directly print or save the selectable-text vector PDF"
                           >
                             <Printer className="w-4 h-4" />
@@ -729,12 +766,26 @@ export const AIResumeModal: React.FC = () => {
 
                           <button
                             onClick={handleDownloadPDF}
-                            className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/15 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                            disabled={pdfGenerating}
+                            className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 disabled:opacity-50 border border-white/15 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                             aria-label="Download the resume instantly"
                           >
-                            <Download className="w-4 h-4" />
-                            {language === 'en' ? 'Direct PDF Download' : language === 'hi' ? 'सीधा पीडीएफ डाउनलोड' : language === 'fr' ? 'Téléchargement PDF direct' : 'Direkter PDF-Download'}
+                            {pdfGenerating ? (
+                              <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
+                            {pdfGenerating 
+                              ? (language === 'hi' ? 'तैयार किया जा रहा है...' : 'Generating PDF...') 
+                              : (language === 'en' ? 'Direct PDF Download' : language === 'hi' ? 'सीधा पीडीएफ डाउनलोड' : language === 'fr' ? 'Téléchargement PDF direct' : 'Direkter PDF-Download')
+                            }
                           </button>
+
+                          {pdfStatus && (
+                            <div className="text-[10px] text-indigo-400 font-semibold animate-pulse text-center mt-1">
+                              {pdfStatus}
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -761,11 +812,24 @@ export const AIResumeModal: React.FC = () => {
                           </div>
                           
                           <div className="flex flex-wrap justify-center gap-3 text-[10px] text-indigo-700 font-medium mt-3">
-                            {resumeData.personalInfo?.email && <span className="flex items-center gap-1">✉ {resumeData.personalInfo.email}</span>}
+                            {resumeData.personalInfo?.email && <span className="flex items-center gap-1">✉ <a href={`mailto:${resumeData.personalInfo.email}`} className="underline text-indigo-700 hover:text-indigo-900">{resumeData.personalInfo.email}</a></span>}
                             {resumeData.personalInfo?.phone && <span className="flex items-center gap-1">☎ {resumeData.personalInfo.phone}</span>}
                             {resumeData.personalInfo?.location && <span className="flex items-center gap-1">📍 {resumeData.personalInfo.location}</span>}
-                            {resumeData.personalInfo?.linkedin && <span className="flex items-center gap-1">🔗 LinkedIn</span>}
-                            {resumeData.personalInfo?.github && <span className="flex items-center gap-1">⚙ GitHub</span>}
+                            {resumeData.personalInfo?.linkedin && (
+                              <span className="flex items-center gap-1">
+                                🔗 <a href={resumeData.personalInfo.linkedin} target="_blank" rel="noopener noreferrer" className="underline text-indigo-700 hover:text-indigo-900">{resumeData.personalInfo.linkedin.replace(/^https?:\/\/(www\.)?/, '')}</a>
+                              </span>
+                            )}
+                            {resumeData.personalInfo?.github && (
+                              <span className="flex items-center gap-1">
+                                ⚙ <a href={resumeData.personalInfo.github} target="_blank" rel="noopener noreferrer" className="underline text-indigo-700 hover:text-indigo-900">{resumeData.personalInfo.github.replace(/^https?:\/\/(www\.)?/, '')}</a>
+                              </span>
+                            )}
+                            {resumeData.personalInfo?.website && (
+                              <span className="flex items-center gap-1">
+                                🌐 <a href={resumeData.personalInfo.website} target="_blank" rel="noopener noreferrer" className="underline text-indigo-700 hover:text-indigo-900">{resumeData.personalInfo.website.replace(/^https?:\/\/(www\.)?/, '')}</a>
+                              </span>
+                            )}
                           </div>
                         </div>
 
@@ -810,11 +874,21 @@ export const AIResumeModal: React.FC = () => {
                                     <span>{exp.period}</span>
                                     <span>{exp.location || ''}</span>
                                   </div>
-                                  <ul className="list-disc pl-4 space-y-1 mt-1 text-[10px] text-slate-600 text-justify">
-                                    {exp.bullets.map((bullet: string, bIdx: number) => (
-                                      <li key={bIdx}>{bullet}</li>
-                                    ))}
-                                  </ul>
+                                  <div className="space-y-1 mt-1 text-[10px] text-slate-600 font-normal">
+                                    {exp.bullets.map((bullet: string, bIdx: number) => {
+                                      const cleaned = bullet.replace(/^[\s*•-]+\s*/, '');
+                                      return (
+                                        <table key={bIdx} className="w-full border-collapse border-none m-0 p-0 table-fixed" style={{ borderCollapse: 'collapse', border: 'none' }}>
+                                          <tbody>
+                                            <tr style={{ verticalAlign: 'top', border: 'none' }}>
+                                              <td style={{ width: '12px', verticalAlign: 'top', padding: '1px 2px 0 0', margin: 0 }} className="text-blue-900 font-bold shrink-0 select-none text-[11px] leading-tight">•</td>
+                                              <td style={{ verticalAlign: 'top', padding: 0, margin: 0 }} className="leading-normal text-justify text-slate-600 text-[10px]">{cleaned}</td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      );
+                                    })}
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -832,7 +906,7 @@ export const AIResumeModal: React.FC = () => {
                                 <div key={index} className="space-y-1">
                                   <div className="flex justify-between font-bold text-[11px] text-slate-900">
                                     <span>{proj.name}</span>
-                                    {proj.link && <span className="text-[10px] text-blue-600 font-semibold underline">{language === 'en' ? 'Live View' : language === 'hi' ? 'लाइव' : language === 'fr' ? 'En direct' : 'Live-Ansicht'} ↗</span>}
+                                    {proj.link && <span className="text-[10px] text-indigo-700 font-medium underline hover:text-indigo-950"><a href={proj.link} target="_blank" rel="noopener noreferrer">{proj.link.replace(/^https?:\/\/(www\.)?/, '')}</a> ↗</span>}
                                   </div>
                                   <div className="flex justify-between text-[9px] text-slate-500 italic">
                                     <span>{proj.role || 'Contributor'}</span>
@@ -891,11 +965,21 @@ export const AIResumeModal: React.FC = () => {
                             <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 mb-2 uppercase tracking-wide">
                               {language === 'en' ? 'Key Achievements & Impact' : language === 'hi' ? 'प्रमुख उपलब्धियां' : language === 'fr' ? 'Réalisations clés' : 'Wichtigste Erfolge'}
                             </h2>
-                            <ul className="list-disc pl-4 space-y-1 text-[10px] text-slate-600">
-                              {resumeData.achievements.map((ach: string, index: number) => (
-                                <li key={index}>{ach}</li>
-                              ))}
-                            </ul>
+                            <div className="space-y-1 mt-1 text-[10px] text-slate-600 font-normal">
+                              {resumeData.achievements.map((ach: string, index: number) => {
+                                const cleaned = ach.replace(/^[\s*•-]+\s*/, '');
+                                return (
+                                  <table key={index} className="w-full border-collapse border-none m-0 p-0 table-fixed" style={{ borderCollapse: 'collapse', border: 'none' }}>
+                                    <tbody>
+                                      <tr style={{ verticalAlign: 'top', border: 'none' }}>
+                                        <td style={{ width: '12px', verticalAlign: 'top', padding: '1px 2px 0 0', margin: 0 }} className="text-blue-900 font-bold shrink-0 select-none text-[11px] leading-tight">•</td>
+                                        <td style={{ verticalAlign: 'top', padding: 0, margin: 0 }} className="leading-normal text-justify text-slate-600 text-[10px]">{cleaned}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                );
+                              })}
+                            </div>
                           </div>
                         )}
 
@@ -926,11 +1010,21 @@ export const AIResumeModal: React.FC = () => {
                                 <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 mb-2 uppercase tracking-wide">
                                   {sec.title}
                                 </h2>
-                                <ul className="list-disc pl-4 space-y-1 text-[10px] text-slate-600">
-                                  {sec.bullets.map((bullet: string, bIdx: number) => (
-                                    <li key={bIdx}>{bullet}</li>
-                                  ))}
-                                </ul>
+                                <div className="space-y-1 mt-1 text-[10px] text-slate-600 font-normal">
+                                  {sec.bullets.map((bullet: string, bIdx: number) => {
+                                    const cleaned = bullet.replace(/^[\s*•-]+\s*/, '');
+                                    return (
+                                      <table key={bIdx} className="w-full border-collapse border-none m-0 p-0 table-fixed" style={{ borderCollapse: 'collapse', border: 'none' }}>
+                                        <tbody>
+                                          <tr style={{ verticalAlign: 'top', border: 'none' }}>
+                                            <td style={{ width: '12px', verticalAlign: 'top', padding: '1px 2px 0 0', margin: 0 }} className="text-blue-900 font-bold shrink-0 select-none text-[11px] leading-tight">•</td>
+                                            <td style={{ verticalAlign: 'top', padding: 0, margin: 0 }} className="leading-normal text-justify text-slate-600 text-[10px]">{cleaned}</td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    );
+                                  })}
+                                </div>
                               </div>
                             ))}
                           </>
@@ -960,6 +1054,64 @@ export const AIResumeModal: React.FC = () => {
               </div>
             </motion.div>
           </div>
+          ) : (
+            /* Floating minimized round widget (FAB) at bottom-left */
+            <motion.div
+              key="minimized-widget"
+              initial={{ y: 50, opacity: 0, scale: 0.8 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 50, opacity: 0, scale: 0.8 }}
+              onClick={() => setIsMinimized(false)}
+              className="fixed bottom-6 left-6 z-[130] w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#0c1433] to-[#070b1e] border-2 border-blue-500/40 hover:border-blue-400 shadow-2xl rounded-full flex items-center justify-center text-white no-print cursor-pointer group hover:scale-105 transition-all outline-none"
+              title={language === 'en' ? 'AI Resume Creator (Click to restore)' : 'एआई बायोडाटा सहायक (खोलने के लिए क्लिक करें)'}
+            >
+              {/* Dismiss / Close Badge Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpen(false);
+                  setIsMinimized(false);
+                }}
+                className="absolute -top-1 -right-1 p-1 bg-[#0f172a] hover:bg-slate-800 border border-white/10 rounded-full text-gray-400 hover:text-white shadow-lg transition-transform hover:scale-110 z-10 cursor-pointer w-5 h-5 flex items-center justify-center"
+                title={language === 'en' ? 'Dismiss' : 'बंद करें'}
+                aria-label="Dismiss resume assistant"
+              >
+                <X className="w-3 h-3" />
+              </button>
+
+              {/* Loader / Ready State Icon */}
+              <div className="relative w-10 h-10 flex items-center justify-center select-none">
+                {loading ? (
+                  <>
+                    <div className="absolute inset-0 border-2 border-transparent border-t-blue-500 border-r-indigo-500 rounded-full animate-spin"></div>
+                    <Sparkles className="w-4 h-4 text-blue-400 animate-pulse" />
+                  </>
+                ) : (
+                  <>
+                    <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping"></div>
+                    <FileText className="w-5 h-5 text-green-400 animate-bounce" />
+                  </>
+                )}
+              </div>
+
+              {/* Interactive Tooltip Badge (visible on hover / slide in) */}
+              <div className="absolute left-16 sm:left-20 bg-[#0a0e23] border border-blue-500/30 rounded-xl py-1.5 px-3 shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none hidden xs:block whitespace-nowrap">
+                <div className="text-[10px] font-bold text-white flex items-center gap-1.5">
+                  {loading ? (
+                    <>
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                      <span>{language === 'en' ? 'Formulating Resume...' : 'बायोडाटा तैयार किया जा रहा है...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                      <span className="text-green-400">{language === 'en' ? 'AI Resume Ready! Click to download' : 'बायोडाटा तैयार है! डाउनलोड करें'}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )
         )}
       </AnimatePresence>
     </>
