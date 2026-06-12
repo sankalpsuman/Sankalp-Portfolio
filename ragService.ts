@@ -1,5 +1,6 @@
 import { doc, getDoc, collection, getDocs, Firestore } from 'firebase/firestore';
 import { GoogleGenAI } from '@google/genai';
+import { getGeminiClient } from './lib/gemini';
 
 export interface DocumentChunk {
   id: string;
@@ -126,8 +127,9 @@ function cosineSimilarity(a: number[], b: number[]): number {
 /**
  * Builds the searchable Document Chunks by pulling from Firestore AND merging with baseline configs.
  */
-export async function buildKnowledgeBase(db: Firestore | null, ai: GoogleGenAI): Promise<void> {
+export async function buildKnowledgeBase(db: Firestore | null, ai?: GoogleGenAI): Promise<void> {
   console.log('[RAG] Indexing portfolio documents into vector database...');
+  const activeAi = ai || getGeminiClient();
   
   const chunks: DocumentChunk[] = [];
 
@@ -314,7 +316,7 @@ export async function buildKnowledgeBase(db: Firestore | null, ai: GoogleGenAI):
         try {
           const textToEmbed = `Title: ${chunk.title || ''}\nContent: ${chunk.content}`;
           // Generate embedding with gemini-embedding-2-preview model using GoogleGenAI unified SDK
-          const response = await ai.models.embedContent({
+          const response = await activeAi.models.embedContent({
             model: 'gemini-embedding-2-preview',
             contents: textToEmbed,
           }) as any;
@@ -343,10 +345,11 @@ export async function buildKnowledgeBase(db: Firestore | null, ai: GoogleGenAI):
  * Searches the vector DB for the closest matching portfolio content for a given question.
  * Returns up to maxResults matches sorted by cosine relevance.
  */
-export async function retrieveRelevantContext(queryText: string, ai: GoogleGenAI, db: Firestore | null, maxResults = 4): Promise<string> {
+export async function retrieveRelevantContext(queryText: string, ai: GoogleGenAI | null | undefined, db: Firestore | null, maxResults = 4): Promise<string> {
+  const activeAi = ai || getGeminiClient();
   // If not initially indexed, execute indexing first
   if (!hasBeenIndexed || vectorIndex.length === 0) {
-    await buildKnowledgeBase(db, ai);
+    await buildKnowledgeBase(db, activeAi);
   }
 
   if (vectorIndex.length === 0) {
@@ -355,7 +358,7 @@ export async function retrieveRelevantContext(queryText: string, ai: GoogleGenAI
 
   try {
     // Generate embedding vector for the question
-    const response = await ai.models.embedContent({
+    const response = await activeAi.models.embedContent({
       model: 'gemini-embedding-2-preview',
       contents: queryText,
     }) as any;

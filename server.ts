@@ -1,7 +1,8 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
+import { getGeminiClient, generateContentWithFallback, handleRouteError } from './lib/gemini';
 import dotenv from 'dotenv';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
@@ -208,63 +209,7 @@ if (firebaseConfig) {
   }
 }
 
-const ai = new GoogleGenAI({
-  apiKey: GEMINI_API_KEY || '',
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
-});
-
-async function generateContentWithFallback(aiInstance: any, params: any) {
-  const requestedModel = params.model || "gemini-3.5-flash";
-  const modelsToTry = [requestedModel];
-  if (requestedModel !== "gemini-3.1-flash-lite") {
-    modelsToTry.push("gemini-3.1-flash-lite");
-  }
-  
-  let lastError: any = null;
-
-  for (const model of modelsToTry) {
-    const maxRetries = 2;
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`[Gemini Backend] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
-        const response = await aiInstance.models.generateContent({
-          ...params,
-          model,
-        });
-        return response;
-      } catch (err: any) {
-        lastError = err;
-        const errMsg = err?.message || String(err);
-        const errStatus = err?.status;
-        console.log(`[Gemini Backend Info] Model ${model} busy on attempt ${attempt}. Checking fallbacks...`);
-
-        const isTransient = 
-          errStatus === 503 || 
-          errStatus === 429 || 
-          errMsg.includes("503") || 
-          errMsg.includes("429") || 
-          errMsg.toLowerCase().includes("unavailable") || 
-          errMsg.toLowerCase().includes("high demand") ||
-          errMsg.toLowerCase().includes("overloaded");
-
-        if (!isTransient) {
-          break;
-        }
-
-        if (attempt < maxRetries) {
-          const delay = attempt * 1200;
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-      }
-    }
-  }
-
-  throw lastError || new Error("Failed to generate content after attempting fallbacks");
-}
+// Centralized Gemini client and helpers are imported from './lib/gemini'
 
 export const app = express();
 
@@ -289,11 +234,10 @@ async function startServer() {
   app.post('/api/chat/sync', async (req, res) => {
     try {
       await invalidateRAGCache();
-      await buildKnowledgeBase(db, ai);
+      await buildKnowledgeBase(db);
       res.json({ success: true, message: 'Chatbot RAG knowledge base successfully re-indexed from current Firestore state.' });
     } catch (error: any) {
-      console.error('[RAG Sync] Failed re-initializing knowledge database index:', error);
-      res.status(500).json({ error: error?.message || 'Re-indexing failed' });
+      return handleRouteError(res, error, 'chat/sync');
     }
   });
 
@@ -301,9 +245,8 @@ async function startServer() {
     try {
       const { messages } = req.body || {};
 
-      if (!GEMINI_API_KEY) {
-        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
-      }
+      // Lazily resolve / verify client is configured
+      getGeminiClient();
 
       if (!Array.isArray(messages)) {
         return res.status(400).json({ error: 'messages must be an array of conversation items.' });
@@ -319,7 +262,7 @@ async function startServer() {
       const latestQuery = userMessages.length > 0 ? userMessages[userMessages.length - 1].content : '';
 
       // 2. RETRIEVE RELEVANT CONTEXT (RAG Semantic Search)
-      const retrievedContext = await retrieveRelevantContext(latestQuery, ai, db);
+      const retrievedContext = await retrieveRelevantContext(latestQuery, undefined, db);
 
       // 3. COMPOSE SYSTEM PROMPT WITH SECURE COMPREHENSIVE CONTEXT
       const systemPrompt = `You are Sankalp Suman’s premium professional Manager and Digital Representative based in India, acting as a real-world human liaison on Sankalp Suman's portfolio.
@@ -363,7 +306,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
   }
 }`;
 
-      const response = await generateContentWithFallback(ai, {
+      const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",
         contents: `${systemPrompt}\n\nClient Conversation History:\n${conversationHistory}\n\nAssess this conversation, and respond in the required JSON format. Provide the next reply.`,
         config: {
@@ -400,8 +343,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
       const data = JSON.parse(text.trim() || '{}');
       res.json(data);
     } catch (error: any) {
-      console.error('Gemini API Error in chat:', error);
-      res.status(500).json({ error: error?.message || 'Failed to generate chat response' });
+      return handleRouteError(res, error, 'chat/message');
     }
   });
 
@@ -521,11 +463,10 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
     try {
       const { prompt, userInput } = req.body || {};
 
-      if (!GEMINI_API_KEY) {
-        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
-      }
+      // Lazily resolve / verify client is configured
+      getGeminiClient();
 
-      const response = await generateContentWithFallback(ai, {
+      const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",
         contents: `${prompt}\n\nUser Input: ${userInput}`,
         config: {
@@ -542,8 +483,7 @@ STRICT OPERATIONAL RULES:
       });
       res.json({ text: response.text });
     } catch (error: any) {
-      console.error('Gemini API Error:', error);
-      res.status(500).json({ error: error?.message || 'Failed to generate AI response' });
+      return handleRouteError(res, error, 'ai/generate');
     }
   });
 
@@ -554,9 +494,8 @@ STRICT OPERATIONAL RULES:
         return res.status(400).json({ error: 'content object is required' });
       }
 
-      if (!GEMINI_API_KEY) {
-        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
-      }
+      // Lazily resolve / verify client is configured
+      getGeminiClient();
 
       const systemPrompt = `You are a professional, high-end translation agent for a software QA & AI Engineering portfolio.
 Translate the provided key-value pairs (which represent text content, descriptions, bullets, or metrics from the portfolio) into three languages:
@@ -589,7 +528,7 @@ Expected output format:
   }
 }`;
 
-      const response = await generateContentWithFallback(ai, {
+      const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",
         contents: `${systemPrompt}\n\nPerform translations and return the JSON.`,
         config: {
@@ -618,8 +557,7 @@ Expected output format:
       const translated = JSON.parse(response.text || '{}');
       res.json(translated);
     } catch (error: any) {
-      console.error('Translate API Error:', error);
-      res.status(500).json({ error: error?.message || 'Failed to translate' });
+      return handleRouteError(res, error, 'ai/translate');
     }
   });
 
@@ -632,9 +570,8 @@ Expected output format:
         return res.status(400).json({ error: 'targetLanguage is required' });
       }
 
-      if (!GEMINI_API_KEY) {
-        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
-      }
+      // Lazily resolve / verify client is configured
+      getGeminiClient();
 
       const systemPrompt = `You are an elite, professional ATS Resume and CV Writer.
 Your goal is to synthesize 100% of the raw portfolio data into a highly polished, clean, recruiter-ready resume/CV optimized for ATS (Applicant Tracking Systems).
@@ -693,7 +630,7 @@ ${JSON.stringify(portfolioData, null, 2)}
 
 Respond with ONLY the structured resume JSON matching the requested response schema.`;
 
-      const response = await generateContentWithFallback(ai, {
+      const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",
         contents: `${systemPrompt}\n\nGenerate and return the formatted ATS resume JSON in the target language: "${targetLanguage}".`,
         config: {
@@ -836,8 +773,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
       const parsedResume = JSON.parse(response.text || '{}');
       res.json(parsedResume);
     } catch (error: any) {
-      console.error('Generate Resume API Error:', error);
-      res.status(500).json({ error: error?.message || 'Failed to generate resume data' });
+      return handleRouteError(res, error, 'ai/generate-resume');
     }
   });
 
@@ -845,11 +781,10 @@ Respond with ONLY the structured resume JSON matching the requested response sch
     try {
       const { title, excerpt } = req.body || {};
 
-      if (!GEMINI_API_KEY) {
-        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
-      }
+      // Lazily resolve / verify client is configured
+      getGeminiClient();
 
-      const response = await generateContentWithFallback(ai, {
+      const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",
         contents: `Provide exactly 3 keywords separated by commas that describe a professional, high-quality technical or business-related image for this blog post.
         Title: ${title}
@@ -862,8 +797,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
       const keywords = response.text?.trim().replace(/\.$/, '') || "technology,software,business";
       res.json({ keywords });
     } catch (error: any) {
-      console.error('Gemini API Error:', error);
-      res.status(500).json({ error: error?.message || 'Failed to suggest image keywords' });
+      return handleRouteError(res, error, 'ai/suggest-image');
     }
   });
 
