@@ -44,59 +44,81 @@ export function formatErrorForLog(error: any): string {
  * Automatically handles retry delays for common transient status codes (429, 503).
  */
 export async function generateContentWithFallback(params: any): Promise<any> {
-  const ai = getGeminiClient();
-  const requestedModel = params.model || "gemini-3.5-flash";
-  const modelsToTry = [requestedModel];
+  const isVercel = !!process.env.VERCEL;
   
-  if (requestedModel !== "gemini-3.1-flash-lite") {
-    modelsToTry.push("gemini-3.1-flash-lite");
-  }
+  // Active timeout threshold to prevent unrecoverable 504 / FUNCTION_INVOCATION_FAILED gateway errors on Vercel
+  const apiTimeoutMs = isVercel ? 8200 : 35000;
 
-  let lastError: any = null;
+  const coreGenerationPromise = (async () => {
+    const ai = getGeminiClient();
+    const requestedModel = params.model || "gemini-3.5-flash";
+    const modelsToTry = [requestedModel];
+    
+    if (requestedModel !== "gemini-3.1-flash-lite") {
+      modelsToTry.push("gemini-3.1-flash-lite");
+    }
 
-  for (const model of modelsToTry) {
-    const maxRetries = 2;
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`[Gemini Centralized] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
-        const response = await ai.models.generateContent({
-          ...params,
-          model,
-        });
-        return response;
-      } catch (err: any) {
-        lastError = err;
-        const errMsg = err?.message || String(err);
-        const errStatus = err?.status || err?.statusCode;
-        console.warn(
-          `[Gemini Centralized Info] Model ${model} failed on attempt ${attempt}. Description: ${errMsg}. Code: ${errStatus || "none"}`
-        );
+    let lastError: any = null;
 
-        const isTransient =
-          errStatus === 503 ||
-          errStatus === 429 ||
-          errMsg.includes("503") ||
-          errMsg.includes("429") ||
-          errMsg.toLowerCase().includes("unavailable") ||
-          errMsg.toLowerCase().includes("high demand") ||
-          errMsg.toLowerCase().includes("overloaded") ||
-          errMsg.toLowerCase().includes("rate limit") ||
-          errMsg.toLowerCase().includes("quota");
+    for (const model of modelsToTry) {
+      // Limit retries on Vercel to preserve execution lifetime
+      const maxRetries = isVercel ? 1 : 2;
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`[Gemini Centralized] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
+          const response = await ai.models.generateContent({
+            ...params,
+            model,
+          });
+          return response;
+        } catch (err: any) {
+          lastError = err;
+          const errMsg = err?.message || String(err);
+          const errStatus = err?.status || err?.statusCode;
+          console.warn(
+            `[Gemini Centralized Info] Model ${model} failed on attempt ${attempt}. Description: ${errMsg}. Code: ${errStatus || "none"}`
+          );
 
-        if (!isTransient) {
-          // If it's a structural error (e.g. invalid arguments/schema), do not retry additional attempts/models
-          break;
-        }
+          const isTransient =
+            errStatus === 503 ||
+            errStatus === 429 ||
+            errMsg.includes("503") ||
+            errMsg.includes("429") ||
+            errMsg.toLowerCase().includes("unavailable") ||
+            errMsg.toLowerCase().includes("high demand") ||
+            errMsg.toLowerCase().includes("overloaded") ||
+            errMsg.toLowerCase().includes("rate limit") ||
+            errMsg.toLowerCase().includes("quota");
 
-        if (attempt < maxRetries) {
-          const delay = attempt * 1200;
-          await new Promise((resolve) => setTimeout(resolve, delay));
+          // Do not perform retry-delay loops under Vercel to avoid timing out the serverless function
+          if (!isTransient || isVercel) {
+            break;
+          }
+
+          if (attempt < maxRetries) {
+            const delay = attempt * 1200;
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
         }
       }
     }
-  }
 
-  throw lastError || new Error("Failed to generate content after attempting models and retries");
+    throw lastError || new Error("Failed to generate content after attempting models and retries");
+  })();
+
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(
+      () =>
+        reject(
+          new Error(
+            "Gemini AI generation exceeded the serverless safety threshold (8 seconds). Please try generating again as the serverless cold-start has completed."
+          )
+        ),
+      apiTimeoutMs
+    )
+  );
+
+  return Promise.race([coreGenerationPromise, timeoutPromise]);
 }
 
 /**

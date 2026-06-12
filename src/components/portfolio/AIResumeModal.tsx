@@ -95,49 +95,49 @@ export const AIResumeModal: React.FC = () => {
       setStatus(`Synthesizing & Translating into ${currentLanguageName}...`);
 
       // Clean up heavy properties to keep payload sizes and model inference times well beneath Vercel limits
-      const sanitizedBlogs = (blogs || []).map((b: any) => ({
+      const sanitizedBlogs = (blogs || []).slice(0, 2).map((b: any) => ({
         title: b.title || '',
         category: b.category || '',
         publishedAt: b.publishedAt || b.date || '',
         excerpt: b.excerpt || ''
       }));
 
-      const sanitizedTestimonials = (testimonials || []).map((t: any) => ({
+      const sanitizedTestimonials = (testimonials || []).slice(0, 1).map((t: any) => ({
         author: t.author || '',
         role: t.role || '',
         company: t.company || '',
-        text: (t.text || '').substring(0, 200) // Keep client text brief for resume generator AI
+        text: (t.text || '').substring(0, 150) // Keep client text brief for resume generator AI
       }));
 
-      const sanitizedExperience = (experience || []).slice(0, 4).map((e: any) => ({
+      const sanitizedExperience = (experience || []).slice(0, 3).map((e: any) => ({
         role: e.role || '',
         company: e.company || '',
         period: e.period || '',
         location: e.location || '',
-        bullets: Array.isArray(e.bullets) ? e.bullets.slice(0, 3) : (e.description ? [e.description.substring(0, 250)] : [])
+        bullets: Array.isArray(e.bullets) ? e.bullets.slice(0, 2) : (e.description ? [e.description.substring(0, 180)] : [])
       }));
 
-      const sanitizedProjects = (projects || []).slice(0, 4).map((p: any) => ({
+      const sanitizedProjects = (projects || []).slice(0, 3).map((p: any) => ({
         name: p.name || '',
-        description: (p.description || '').substring(0, 200),
-        techStack: p.techStack || p.tags || [],
+        description: (p.description || '').substring(0, 150),
+        techStack: (p.techStack || p.tags || []).slice(0, 4),
         link: p.link || p.github || '',
         role: p.role || ''
       }));
 
-      const sanitizedSkills = (skills || []).slice(0, 5).map((s: any) => ({
+      const sanitizedSkills = (skills || []).slice(0, 4).map((s: any) => ({
         category: s.category || '',
-        items: Array.isArray(s.items) ? s.items.slice(0, 6) : []
+        items: Array.isArray(s.items) ? s.items.slice(0, 5) : []
       }));
 
-      const sanitizedTimeline = (timeline || []).slice(0, 4).map((t: any) => ({
+      const sanitizedTimeline = (timeline || []).slice(0, 3).map((t: any) => ({
         role: t.role || '',
         company: t.company || '',
         period: t.period || '',
         milestones: Array.isArray(t.milestones) ? t.milestones.slice(0, 2) : []
       }));
 
-      const sanitizedCertifications = (certifications || []).slice(0, 5).map((c: any) => ({
+      const sanitizedCertifications = (certifications || []).slice(0, 4).map((c: any) => ({
         name: c.name || '',
         issuer: c.issuer || '',
         date: c.date || '',
