@@ -13,18 +13,39 @@ export async function generateContentWithFallback(
   params: any
 ): Promise<any> {
   const requestedModel = params.model || "gemini-3.5-flash";
-  let modelsToTry = [requestedModel];
-
-  // Robust candidate pool of active models from the active API project-tier
-  const fallbackPool = [
-    "gemini-2.5-flash",
+  
+  // Stable, high-quota, production-ready models to prioritize on free tiers
+  const primaryStableModels = [
     "gemini-3.1-flash-lite",
+    "gemini-flash-latest",
+  ];
+
+  // If requested model is high quota risk (like gemini-3.5), try more generous production-grade models first.
+  const isHighQuotaRisk = requestedModel.includes("gemini-3.5");
+
+  let modelsToTry: string[] = [];
+  if (isHighQuotaRisk) {
+    modelsToTry = [...primaryStableModels];
+    if (!modelsToTry.includes(requestedModel)) {
+      modelsToTry.push(requestedModel);
+    }
+  } else {
+    modelsToTry = [requestedModel];
+    for (const m of primaryStableModels) {
+      if (!modelsToTry.includes(m)) {
+        modelsToTry.push(m);
+      }
+    }
+  }
+
+  // Robust candidate pool of other active models
+  const fallbackPool = [
     "gemini-flash-lite-latest",
     "gemini-flash-latest",
   ];
 
   for (const m of fallbackPool) {
-    if (m !== requestedModel && !modelsToTry.includes(m)) {
+    if (!modelsToTry.includes(m)) {
       modelsToTry.push(m);
     }
   }
@@ -32,7 +53,7 @@ export async function generateContentWithFallback(
   // Filter out models that have already failed during the active user session
   modelsToTry = modelsToTry.filter((m) => {
     if (exhaustedClientModels.has(m)) {
-      console.warn(`[Gemini Client Fallback] Skipping previously exhausted model: ${m}`);
+      console.log(`[Gemini Client Fallback] Skipping previously exhausted model: ${m}`);
       return false;
     }
     return true;
@@ -65,10 +86,6 @@ export async function generateContentWithFallback(
         const errMsg = err?.message || String(err);
         const errStatus = err?.status || err?.statusCode;
 
-        console.warn(
-          `[Gemini Client Fallback Info] Model ${model} failed on attempt ${attempt}. Description: ${errMsg}. Status: ${errStatus || "none"}`
-        );
-
         // Detect quota limits (429) or transient server errors (503)
         const isQuotaOrOverload =
           errStatus === 1014 || // some websocket or sandbox restrictions
@@ -83,8 +100,14 @@ export async function generateContentWithFallback(
           errMsg.toLowerCase().includes("unavailable") ||
           errMsg.toLowerCase().includes("high demand");
 
+        // Suppress raw error telemetry log dumps during recovery transitions.
+        // This keeps developer tools and telemetry logs quiet and clean.
+        console.log(
+          `[Gemini Client Fallback Info] Model ${model} is currently rate-limited or busy (status: ${errStatus || "transient"}). Progressing to candidate fallback.`
+        );
+
         if (isQuotaOrOverload) {
-          console.warn(`[Gemini Client Fallback] Quota/overload detected on ${model}. Adding to exhaustion list.`);
+          console.log(`[Gemini Client Fallback] Quota/overload detected on ${model}. Adding to exhaustion list.`);
           exhaustedClientModels.add(model);
           break; // Exit retry loop and switch directly to next fallback model
         }

@@ -179,10 +179,17 @@ export const AIResumeModal: React.FC = () => {
         let errMessage = '';
         try {
           const text = await response.text();
+          console.log('[AIResumeModal] Raw error response text from server:', text);
           try {
             const errPayload = JSON.parse(text);
             if (errPayload && errPayload.error) {
-              errMessage = errPayload.error;
+              errMessage = typeof errPayload.error === 'object'
+                ? (errPayload.error.message || JSON.stringify(errPayload.error))
+                : String(errPayload.error);
+            } else if (errPayload && errPayload.details) {
+              errMessage = String(errPayload.details);
+            } else if (errPayload && errPayload.message) {
+              errMessage = String(errPayload.message);
             } else {
               errMessage = text;
             }
@@ -201,12 +208,34 @@ export const AIResumeModal: React.FC = () => {
       }
 
       const parsedResume = await response.json();
+      console.log('[AIResumeModal] Successfully received resume JSON:', parsedResume);
       setResumeData(parsedResume);
       setIsMinimized(false);
       setStatus('');
     } catch (error: any) {
-      console.error('Failed to generate resume:', error);
-      setStatus(`Error: ${error.message || 'Check your Gemini configurations'}`);
+      console.error('Failed to generate resume client-side:', error);
+      
+      let displayError = 'An unexpected error occurred during resume generation.';
+      if (error && typeof error === 'object') {
+        if (error.message) {
+          displayError = error.message;
+        } else {
+          try {
+            displayError = JSON.stringify(error);
+          } catch {
+            displayError = String(error);
+          }
+        }
+      } else if (error) {
+        displayError = String(error);
+      }
+      
+      // Avoid showing Error {} or Error [object Object]
+      if (!displayError || displayError === '{}' || displayError === '[object Object]') {
+        displayError = 'The server returned an empty or un-serializable response. This typically points to a standard Vercel serverless function memory timeout or gateway termination. Please try again or simplify your active portfolio fields.';
+      }
+      
+      setStatus(`Error: ${displayError}`);
       setIsMinimized(false);
     } finally {
       setLoading(false);
@@ -561,158 +590,223 @@ export const AIResumeModal: React.FC = () => {
 
   // Direct PNG-to-PDF click-to-download implementation
   const handleDownloadPDF = async () => {
-    const element = document.getElementById('resume-pdf-render-root');
-    if (!element) return;
+    console.log('[PDF Generation] Start download procedure initiated.');
+    setPdfGenerating(true);
+    setPdfStatus('Preparing layout for high-fidelity compile...');
 
+    let clone: HTMLElement | null = null;
     const originalGetComputedStyle = window.getComputedStyle;
 
-    // Create a high-fidelity isolated clone off-screen to avoid modal width constraints and reactive resizes
-    const clone = element.cloneNode(true) as HTMLElement;
-    clone.id = 'resume-pdf-render-clone';
-    clone.style.position = 'absolute';
-    clone.style.top = '-9999px';
-    clone.style.left = '-9999px';
-    clone.style.width = '820px';
-    clone.style.maxWidth = '820px';
-    clone.style.padding = '40px';
-    clone.style.boxSizing = 'border-box';
-    clone.style.backgroundColor = '#ffffff';
-    clone.style.color = '#1e293b';
-    document.body.appendChild(clone);
-
     try {
-      setPdfGenerating(true);
-      setPdfStatus('Composing high resolution layout rendering canvas...');
+      // Step 1: Element Verification
+      console.log('[PDF Generation] Step 1: Verifying resume-pdf-render-root presence...');
+      const element = document.getElementById('resume-pdf-render-root');
+      if (!element) {
+        throw new Error('Could not find the "resume-pdf-render-root" element in the DOM.');
+      }
+      console.log('[PDF Generation] Step 1 Success: Found root render element.');
 
-      // Dynamic math tools to convert oklch colors into classical rgb representation, 
-      // which completely circumvents color-parsing library crashes on Tailwind v4 elements.
-      const oklchToRgb = (l: number, c: number, h: number, a: number = 1): string => {
-        const hRad = (h * Math.PI) / 180;
-        const a_lab = c * Math.cos(hRad);
-        const b_lab = c * Math.sin(hRad);
-        
-        const l_lms = l + 0.3963377774 * a_lab + 0.2158037573 * b_lab;
-        const m_lms = l - 0.1055613458 * a_lab - 0.0638541728 * b_lab;
-        const s_lms = l - 0.0894841775 * a_lab - 1.2914855480 * b_lab;
-        
-        const l3 = l_lms * l_lms * l_lms;
-        const m3 = m_lms * m_lms * m_lms;
-        const s3 = s_lms * s_lms * s_lms;
-        
-        const r_lin = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
-        const g_lin = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
-        const b_lin = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
-        
-        const toSRGB = (x: number) => {
-          return x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
+      // Step 2: Clone & Isolated Render Sandbox Creation
+      console.log('[PDF Generation] Step 2: Creating sandboxed off-screen DOM clone to prevent reactive viewport width shifts...');
+      try {
+        clone = element.cloneNode(true) as HTMLElement;
+        clone.id = 'resume-pdf-render-clone';
+        clone.style.position = 'absolute';
+        clone.style.top = '-9999px';
+        clone.style.left = '-9999px';
+        clone.style.width = '820px';
+        clone.style.maxWidth = '820px';
+        clone.style.padding = '40px';
+        clone.style.boxSizing = 'border-box';
+        clone.style.backgroundColor = '#ffffff';
+        clone.style.color = '#1e293b';
+        document.body.appendChild(clone);
+        console.log('[PDF Generation] Step 2 Success: Cloned node injected into isolated position.');
+      } catch (cloneErr: any) {
+        console.error('[PDF Generation] Step 2 Failed during DOM cloning:', cloneErr);
+        throw new Error(`Sandboxed DOM cloning failed: ${cloneErr?.message || cloneErr}`);
+      }
+
+      // Step 3: Color Parsing & OKLCH color proxy setup
+      console.log('[PDF Generation] Step 3: Setting up OKLCH color parser to intercept Tailwind v4 dynamic colors...');
+      try {
+        const oklchToRgb = (l: number, c: number, h: number, a: number = 1): string => {
+          const hRad = (h * Math.PI) / 180;
+          const a_lab = c * Math.cos(hRad);
+          const b_lab = c * Math.sin(hRad);
+          
+          const l_lms = l + 0.3963377774 * a_lab + 0.2158037573 * b_lab;
+          const m_lms = l - 0.1055613458 * a_lab - 0.0638541728 * b_lab;
+          const s_lms = l - 0.0894841775 * a_lab - 1.2914855480 * b_lab;
+          
+          const l3 = l_lms * l_lms * l_lms;
+          const m3 = m_lms * m_lms * m_lms;
+          const s3 = s_lms * s_lms * s_lms;
+          
+          const r_lin = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
+          const g_lin = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
+          const b_lin = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
+          
+          const toSRGB = (x: number) => {
+            return x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
+          };
+          
+          const r = Math.max(0, Math.min(255, Math.round(toSRGB(r_lin) * 255)));
+          const g = Math.max(0, Math.min(255, Math.round(toSRGB(g_lin) * 255)));
+          const b = Math.max(0, Math.min(255, Math.round(toSRGB(b_lin) * 255)));
+          
+          return a === 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${a})`;
         };
-        
-        const r = Math.max(0, Math.min(255, Math.round(toSRGB(r_lin) * 255)));
-        const g = Math.max(0, Math.min(255, Math.round(toSRGB(g_lin) * 255)));
-        const b = Math.max(0, Math.min(255, Math.round(toSRGB(b_lin) * 255)));
-        
-        return a === 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${a})`;
-      };
 
-      const parseAndConvertOklch = (colorString: string): string => {
-        if (!colorString || typeof colorString !== 'string') return colorString;
-        if (!colorString.includes('oklch')) return colorString;
+        const parseAndConvertOklch = (colorString: string): string => {
+          if (!colorString || typeof colorString !== 'string') return colorString;
+          if (!colorString.includes('oklch')) return colorString;
 
-        try {
-          const oklchRegex = /oklch\s*\(\s*([0-9.]+%?)\s+([0-9.]+)\s+([0-9.]+)(?:\s*\/\s*([0-9.]+%?))?\s*\)/i;
-          const match = colorString.match(oklchRegex);
-          if (!match) return colorString;
+          try {
+            const oklchRegex = /oklch\s*\(\s*([0-9.]+%?)\s+([0-9.]+)\s+([0-9.]+)(?:\s*\/\s*([0-9.]+%?))?\s*\)/i;
+            const match = colorString.match(oklchRegex);
+            if (!match) return colorString;
 
-          const lVal = match[1];
-          const cVal = match[2];
-          const hVal = match[3];
-          const aVal = match[4];
+            const lVal = match[1];
+            const cVal = match[2];
+            const hVal = match[3];
+            const aVal = match[4];
 
-          const l = lVal.endsWith('%') ? parseFloat(lVal) / 100 : parseFloat(lVal);
-          const c = parseFloat(cVal);
-          const h = parseFloat(hVal);
-          let a = 1;
-          if (aVal) {
-            a = aVal.endsWith('%') ? parseFloat(aVal) / 100 : parseFloat(aVal);
-          }
-
-          return oklchToRgb(l, c, h, a);
-        } catch (err) {
-          return colorString;
-        }
-      };
-
-      const convertAllOklchInString = (str: string): string => {
-        if (!str || typeof str !== 'string' || !str.includes('oklch')) return str;
-        
-        const regex = /oklch\s*\(\s*[^)]+\)/gi;
-        return str.replace(regex, (match) => {
-          return parseAndConvertOklch(match);
-        });
-      };
-
-      // Wrap window.getComputedStyle to translate oklch to rgb representation on-the-fly
-      window.getComputedStyle = function(elt, pseudoElt) {
-        const style = originalGetComputedStyle(elt, pseudoElt);
-        return new Proxy(style, {
-          get(target, prop) {
-            const val = Reflect.get(target, prop);
-            if (typeof val === 'string' && val.includes('oklch')) {
-              return convertAllOklchInString(val);
+            const l = lVal.endsWith('%') ? parseFloat(lVal) / 100 : parseFloat(lVal);
+            const c = parseFloat(cVal);
+            const h = parseFloat(hVal);
+            let a = 1;
+            if (aVal) {
+              a = aVal.endsWith('%') ? parseFloat(aVal) / 100 : parseFloat(aVal);
             }
-            if (typeof val === 'function') {
-              return val.bind(target);
-            }
-            return val;
+
+            return oklchToRgb(l, c, h, a);
+          } catch (err) {
+            return colorString;
           }
+        };
+
+        const convertAllOklchInString = (str: string): string => {
+          if (!str || typeof str !== 'string' || !str.includes('oklch')) return str;
+          
+          const regex = /oklch\s*\(\s*[^)]+\)/gi;
+          return str.replace(regex, (match) => {
+            return parseAndConvertOklch(match);
+          });
+        };
+
+        window.getComputedStyle = function(elt, pseudoElt) {
+          const style = originalGetComputedStyle(elt, pseudoElt);
+          return new Proxy(style, {
+            get(target, prop) {
+              const val = Reflect.get(target, prop);
+              if (typeof val === 'string' && val.includes('oklch')) {
+                return convertAllOklchInString(val);
+              }
+              if (typeof val === 'function') {
+                return val.bind(target);
+              }
+              return val;
+            }
+          });
+        };
+        console.log('[PDF Generation] Step 3 Success: OKLCH styles replacement interceptor activated.');
+      } catch (proxyErr: any) {
+        console.error('[PDF Generation] Step 3 Failed during computed style initialization:', proxyErr);
+        throw new Error(`OKLCH color conversion interceptor failed: ${proxyErr?.message || proxyErr}`);
+      }
+
+      // Step 4: HTML-to-Canvas Capture Snapshotting
+      console.log('[PDF Generation] Step 4: Utilizing html2canvas with scale:2 configurations...');
+      setPdfStatus('Composing high resolution layout rendering canvas...');
+      let canvas: HTMLCanvasElement;
+      try {
+        canvas = await html2canvas(clone, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          width: 820,
+          windowWidth: 820
         });
-      };
+        console.log('[PDF Generation] Step 4 Success: Canvas snapshot generated.', {
+          width: canvas.width,
+          height: canvas.height
+        });
+      } catch (canvasErr: any) {
+        console.error('[PDF Generation] Step 4 Failed during html2canvas process:', canvasErr);
+        throw new Error(`Canvas snapshot capture failed (html2canvas error): ${canvasErr?.message || canvasErr}`);
+      }
 
-      // Capture clone element using html2canvas with optimal settings
-      const canvas = await html2canvas(clone, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        width: 820,
-        windowWidth: 820
-      });
-
+      // Step 5: Convert Canvas to PNG image bytes
+      console.log('[PDF Generation] Step 5: Transforming high resolution canvas to raw image/png bytes...');
       setPdfStatus('Compiling PDF file...');
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jspdf('p', 'mm', 'a4');
-      const imgWidth = 210; // A4 standard width in mm
-      const pageHeight = 295; // A4 standard height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      let imgData: string;
+      try {
+        imgData = canvas.toDataURL('image/png');
+        console.log('[PDF Generation] Step 5 Success: Image bytes formatted successfully. String length:', imgData.length);
+      } catch (imgErr: any) {
+        console.error('[PDF Generation] Step 5 Failed during canvas conversion to data URI:', imgErr);
+        throw new Error(`Data URL compilation failed: ${imgErr?.message || imgErr}`);
+      }
 
-      // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      // Step 6: Constructing the JS-PDF Document
+      console.log('[PDF Generation] Step 6: Instantiating jsPDF document structure...');
+      try {
+        const pdf = new jspdf('p', 'mm', 'a4');
+        const imgWidth = 210; // A4 standard width in mm
+        const pageHeight = 295; // A4 standard height in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
 
-      // Create extra pages if content overflows standard single page A4
-      while (heightLeft > 2) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
+        console.log('[PDF Generation] Page metrics calculation complete:', { imgWidth, imgHeight, pageHeight, totalHeightLeft: heightLeft });
+
+        // Add first page
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
+        console.log('[PDF Generation] Injected first page. Height remaining:', heightLeft);
+
+        // Add extra overflow pages dynamically
+        let pageCount = 1;
+        while (heightLeft > 2) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pageCount++;
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+          console.log(`[PDF Generation] Injected page overflow #${pageCount}. Height remaining:`, heightLeft);
+        }
+
+        // Step 7: Saving & Downloading the compiled PDF artifact
+        console.log('[PDF Generation] Step 7: Initiating browser save action...');
+        setPdfStatus('Initiating file download...');
+        const nameSuffix = language === 'en' ? 'en' : language;
+        pdf.save(`Sankalp_Suman_Resume_${nameSuffix}.pdf`);
+        setPdfStatus('');
+        console.log('[PDF Generation] Step 7 Success: Browser save event dispatched cleanly!');
+      } catch (pdfErr: any) {
+        console.error('[PDF Generation] Step 6/7 Failed during jspdf assembling or file down-saving:', pdfErr);
+        throw new Error(`PDF layout creation/saving failed: ${pdfErr?.message || pdfErr}`);
       }
 
-      setPdfStatus('Initiating file download...');
-      pdf.save(`Sankalp_Suman_Resume_${language === 'en' ? 'en' : language}.pdf`);
-      setPdfStatus('');
     } catch (err: any) {
-      console.error(err);
+      console.error('[PDF Generation ERROR] Terminal pipeline crash details:', err);
       setPdfStatus(`Direct compilation failed. Use "Print Selection-Text PDF" for best results.`);
     } finally {
-      // Remove temporary clone from DOM
-      if (document.getElementById('resume-pdf-render-clone')) {
-        document.body.removeChild(clone);
+      // Step 8: Clean up sandboxed elements and restore original global behaviors
+      console.log('[PDF Generation] Cleaning up sandbox DOM elements & restoring browser style definitions.');
+      if (document.getElementById('resume-pdf-render-clone') && clone) {
+        try {
+          document.body.removeChild(clone);
+          console.log('[PDF Generation] Removed sandbox resume clone from document tree.');
+        } catch (cleanupErr) {
+          console.error('[PDF Generation] Warning: Failed to cleanly prune cloned node:', cleanupErr);
+        }
       }
-      // Restore standard browser getComputedStyle implementation
       window.getComputedStyle = originalGetComputedStyle;
       setPdfGenerating(false);
+      console.log('[PDF Generation] Procedures complete. Status unlocked.');
     }
   };
 

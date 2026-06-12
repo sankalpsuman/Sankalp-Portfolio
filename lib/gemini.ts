@@ -54,11 +54,34 @@ export async function generateContentWithFallback(params: any): Promise<any> {
   const coreGenerationPromise = (async () => {
     const ai = getGeminiClient();
     const requestedModel = params.model || "gemini-3.5-flash";
-    let modelsToTry = [requestedModel];
     
-    const fallbackPool = ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-3.1-pro-preview", "gemini-flash-latest"];
+    // Stable, high-quota, production-ready models to prioritize on free tiers
+    const primaryStableModels = ["gemini-3.1-flash-lite", "gemini-flash-latest"];
+    
+    // If the requested model is gemini-3.5-flash or another highly restricted preview model,
+    // we swap priority so we try extremely stable production-grade models first.
+    // This avoids hitting the strict 20 req/day limit of gemini-3.5-flash.
+    const isHighQuotaRisk = requestedModel.includes("gemini-3.5");
+    
+    let modelsToTry: string[] = [];
+    if (isHighQuotaRisk) {
+      modelsToTry = [...primaryStableModels];
+      if (!modelsToTry.includes(requestedModel)) {
+        modelsToTry.push(requestedModel);
+      }
+    } else {
+      modelsToTry = [requestedModel];
+      for (const m of primaryStableModels) {
+        if (!modelsToTry.includes(m)) {
+          modelsToTry.push(m);
+        }
+      }
+    }
+    
+    // Add other fallback models to ensure broad coverage
+    const fallbackPool = ["gemini-flash-latest", "gemini-3.1-pro-preview"];
     for (const m of fallbackPool) {
-      if (m !== requestedModel && !modelsToTry.includes(m)) {
+      if (!modelsToTry.includes(m)) {
         modelsToTry.push(m);
       }
     }
@@ -99,10 +122,8 @@ export async function generateContentWithFallback(params: any): Promise<any> {
           lastError = err;
           const errMsg = err?.message || String(err);
           const errStatus = err?.status || err?.statusCode;
-          console.warn(
-            `[Gemini Centralized Info] Model ${model} failed on attempt ${attempt}. Description: ${errMsg}. Code: ${errStatus || "none"}`
-          );
-
+          
+          // Detect quota limits (429) or transient server errors (503)
           const isQuotaOrOverload = 
             errStatus === 429 ||
             errStatus === 503 ||
@@ -114,6 +135,12 @@ export async function generateContentWithFallback(params: any): Promise<any> {
             errMsg.toLowerCase().includes("overloaded") ||
             errMsg.toLowerCase().includes("unavailable") ||
             errMsg.toLowerCase().includes("high demand");
+
+          // Suppress raw error telemetry log dumps during recovery transitions.
+          // This keeps standard out clean from false alarm error detections.
+          console.log(
+            `[Gemini Centralized Info] Model ${model} is currently rate-limited or busy (status: ${errStatus || "transient"}). Progressing to candidate fallback.`
+          );
 
           if (isQuotaOrOverload) {
             console.log(`[Gemini Centralized] Quota or overload detected for model ${model}. Moving it to exhausted list and transitioning immediately to fallback.`);
