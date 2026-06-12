@@ -12,7 +12,7 @@ import { buildKnowledgeBase, retrieveRelevantContext, invalidateRAGCache } from 
 dotenv.config();
 
 const PORT = 3000;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API;
 
 // Nodemailer SMTP Transporter Setup
 function getSMTPConfig() {
@@ -680,6 +680,13 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
 
 5. VERIFICATION:
    - Validate that none of the core sections (personalInfo, experience, projects, skills, education) are missing before outputting the final JSON.
+
+6. EXTREME CONCISENESS & SPEED OPTIMIZATION:
+   - For experience bullets, limit to exactly 2-3 highly punchy, action-oriented bullet points per role and ensure they are extremely concise.
+   - For project descriptions, keep them strictly within 1-2 concise, impact-driven sentences.
+   - Limit additional sections lists to the top 3 items only.
+   - Summaries must be 2-3 sentences max.
+   - This keeps the output compact, highly digestible, and allows faster generation under serverless execution timeout limits (within 5 seconds).
 
 Raw Portfolio JSON:
 ${JSON.stringify(portfolioData, null, 2)}

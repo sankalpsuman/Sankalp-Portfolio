@@ -94,6 +94,21 @@ export const AIResumeModal: React.FC = () => {
 
       setStatus(`Synthesizing & Translating into ${currentLanguageName}...`);
 
+      // Clean up heavy properties to keep payload sizes and model inference times well beneath Vercel limits
+      const sanitizedBlogs = (blogs || []).map((b: any) => ({
+        title: b.title || '',
+        category: b.category || '',
+        publishedAt: b.publishedAt || b.date || '',
+        excerpt: b.excerpt || ''
+      }));
+
+      const sanitizedTestimonials = (testimonials || []).map((t: any) => ({
+        author: t.author || '',
+        role: t.role || '',
+        company: t.company || '',
+        text: (t.text || '').substring(0, 200) // Keep client text brief for resume generator AI
+      }));
+
       const portfolioPayload = {
         hero,
         about,
@@ -104,12 +119,12 @@ export const AIResumeModal: React.FC = () => {
         skills,
         timeline,
         certifications,
-        testimonials,
+        testimonials: sanitizedTestimonials,
         impactStories,
         qaMetrics,
         aiTools,
         now,
-        blogs,
+        blogs: sanitizedBlogs,
         portfolioUrl: window.location.origin
       };
 
