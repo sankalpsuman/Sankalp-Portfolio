@@ -48,8 +48,10 @@ const exhaustedModels = new Set<string>();
 export async function generateContentWithFallback(params: any): Promise<any> {
   const isVercel = !!process.env.VERCEL;
   
-  // Active timeout threshold of 55 seconds (safe below the configured 60-second maxDuration in vercel.json)
-  const apiTimeoutMs = 55000;
+  // Active timeout threshold. Vercel Hobby limits serverless functions to 10 seconds.
+  // We set a dynamic 8.2-second limit on Vercel so that our Promise.race rejects gracefully
+  // before Vercel terminates the container, allowing us to return a nice custom JSON error.
+  const apiTimeoutMs = isVercel ? 8200 : 55000;
   let timeoutId: any = null;
 
   const coreGenerationPromise = (async () => {
@@ -60,12 +62,12 @@ export async function generateContentWithFallback(params: any): Promise<any> {
     const primaryStableModels = ["gemini-3.1-flash-lite", "gemini-flash-latest"];
     
     // If the requested model is gemini-3.5-flash or another highly restricted preview model,
-    // we swap priority so we try extremely stable production-grade models first.
-    // This avoids hitting the strict 20 req/day limit of gemini-3.5-flash.
+    // or if we are executing within a Vercel Serverless Function, we prioritize stable,
+    // low-latency models first to guarantee execution completes within Vercel's absolute timeout.
     const isHighQuotaRisk = requestedModel.includes("gemini-3.5");
     
     let modelsToTry: string[] = [];
-    if (isHighQuotaRisk) {
+    if (isHighQuotaRisk || isVercel) {
       modelsToTry = [...primaryStableModels];
       if (!modelsToTry.includes(requestedModel)) {
         modelsToTry.push(requestedModel);
@@ -109,7 +111,8 @@ export async function generateContentWithFallback(params: any): Promise<any> {
     let lastError: any = null;
 
     for (const model of modelsToTry) {
-      const maxRetries = 2;
+      // In Vercel, minimize retries to 1 per model to avoid running out of our strict 10s timeout
+      const maxRetries = isVercel ? 1 : 2;
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           console.log(`[Gemini Centralized] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
@@ -166,7 +169,7 @@ export async function generateContentWithFallback(params: any): Promise<any> {
           }
 
           if (attempt < maxRetries) {
-            const delay = attempt * 1200;
+            const delay = isVercel ? 100 : attempt * 1200;
             await new Promise((resolve) => setTimeout(resolve, delay));
           }
         }
