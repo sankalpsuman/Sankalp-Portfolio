@@ -109,20 +109,55 @@ export const AIResumeModal: React.FC = () => {
         text: (t.text || '').substring(0, 200) // Keep client text brief for resume generator AI
       }));
 
+      const sanitizedExperience = (experience || []).slice(0, 4).map((e: any) => ({
+        role: e.role || '',
+        company: e.company || '',
+        period: e.period || '',
+        location: e.location || '',
+        bullets: Array.isArray(e.bullets) ? e.bullets.slice(0, 3) : (e.description ? [e.description.substring(0, 250)] : [])
+      }));
+
+      const sanitizedProjects = (projects || []).slice(0, 4).map((p: any) => ({
+        name: p.name || '',
+        description: (p.description || '').substring(0, 200),
+        techStack: p.techStack || p.tags || [],
+        link: p.link || p.github || '',
+        role: p.role || ''
+      }));
+
+      const sanitizedSkills = (skills || []).slice(0, 5).map((s: any) => ({
+        category: s.category || '',
+        items: Array.isArray(s.items) ? s.items.slice(0, 6) : []
+      }));
+
+      const sanitizedTimeline = (timeline || []).slice(0, 4).map((t: any) => ({
+        role: t.role || '',
+        company: t.company || '',
+        period: t.period || '',
+        milestones: Array.isArray(t.milestones) ? t.milestones.slice(0, 2) : []
+      }));
+
+      const sanitizedCertifications = (certifications || []).slice(0, 5).map((c: any) => ({
+        name: c.name || '',
+        issuer: c.issuer || '',
+        date: c.date || '',
+        link: c.link || ''
+      }));
+
       const portfolioPayload = {
         hero,
-        about,
+        about: about ? { bio: about.bio || '', title: about.title || '', summary: about.summary || '' } : null,
         settings,
-        contact,
-        experience,
-        projects,
-        skills,
-        timeline,
-        certifications,
+        contact: contact ? { email: contact.email || '', phone: contact.phone || '', location: contact.location || '', linkedin: contact.linkedin || '', github: contact.github || '' } : null,
+        experience: sanitizedExperience,
+        projects: sanitizedProjects,
+        skills: sanitizedSkills,
+        timeline: sanitizedTimeline,
+        certifications: sanitizedCertifications,
         testimonials: sanitizedTestimonials,
-        impactStories,
-        qaMetrics,
-        aiTools,
+        impactStories: (impactStories || []).slice(0, 3),
+        qaMetrics: (qaMetrics || []).slice(0, 4),
+        aiTools: (aiTools || []).slice(0, 5),
         now,
         blogs: sanitizedBlogs,
         portfolioUrl: window.location.origin

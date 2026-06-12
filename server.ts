@@ -697,6 +697,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
         model: "gemini-3.5-flash",
         contents: `${systemPrompt}\n\nGenerate and return the formatted ATS resume JSON in the target language: "${targetLanguage}".`,
         config: {
+          temperature: 0.1,
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
