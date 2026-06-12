@@ -50,6 +50,7 @@ export async function generateContentWithFallback(params: any): Promise<any> {
   
   // Active timeout threshold of 55 seconds (safe below the configured 60-second maxDuration in vercel.json)
   const apiTimeoutMs = 55000;
+  let timeoutId: any = null;
 
   const coreGenerationPromise = (async () => {
     const ai = getGeminiClient();
@@ -175,8 +176,8 @@ export async function generateContentWithFallback(params: any): Promise<any> {
     throw lastError || new Error("Failed to generate content after attempting models and retries");
   })();
 
-  const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(
       () =>
         reject(
           new Error(
@@ -184,10 +185,26 @@ export async function generateContentWithFallback(params: any): Promise<any> {
           )
         ),
       apiTimeoutMs
-    )
-  );
+    );
+  });
 
-  return Promise.race([coreGenerationPromise, timeoutPromise]);
+  // Attach a catch handler to the core promise to prevent unhandled rejection crashes if it fails after timeout
+  coreGenerationPromise.catch((err) => {
+    console.warn("[Gemini Background Guard] Silent catch triggered for a promise that lost the race:", err?.message || err);
+  });
+
+  try {
+    const result = await Promise.race([coreGenerationPromise, timeoutPromise]);
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    return result;
+  } catch (err) {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    throw err;
+  }
 }
 
 /**
