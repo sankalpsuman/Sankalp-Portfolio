@@ -1,53 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-
-async function generateContentWithFallback(aiInstance: any, params: any) {
-  const requestedModel = params.model || "gemini-3.5-flash";
-  const modelsToTry = [requestedModel];
-  if (requestedModel !== "gemini-3.1-flash-lite") {
-    modelsToTry.push("gemini-3.1-flash-lite");
-  }
-  
-  let lastError: any = null;
-
-  for (const model of modelsToTry) {
-    const maxRetries = 2;
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`[Gemini Client Helper] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
-        const response = await aiInstance.models.generateContent({
-          ...params,
-          model,
-        });
-        return response;
-      } catch (err: any) {
-        lastError = err;
-        const errMsg = err?.message || String(err);
-        const errStatus = err?.status;
-        console.log(`[Gemini Client Info] Model ${model} busy on attempt ${attempt}. Retrying dynamically...`);
-
-        const isTransient = 
-          errStatus === 503 || 
-          errStatus === 429 || 
-          errMsg.includes("503") || 
-          errMsg.includes("429") || 
-          errMsg.toLowerCase().includes("unavailable") || 
-          errMsg.toLowerCase().includes("high demand") ||
-          errMsg.toLowerCase().includes("overloaded");
-
-        if (!isTransient) {
-          break;
-        }
-
-        if (attempt < maxRetries) {
-          const delay = attempt * 1200;
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-      }
-    }
-  }
-
-  throw lastError || new Error("Failed to generate content after attempting fallbacks");
-}
+import { generateContentWithFallback } from "./geminiClientFallback";
 
 export async function generateAIResponse(prompt: string, userInput: string) {
   // 1. Try the server-side proxy first (Preferred for security)

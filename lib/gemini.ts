@@ -39,6 +39,8 @@ export function formatErrorForLog(error: any): string {
   }`;
 }
 
+const exhaustedModels = new Set<string>();
+
 /**
  * Shared fallback model sequence to ensure continuous availability even during high-traffic overload.
  * Automatically handles retry delays for common transient status codes (429, 503).
@@ -46,23 +48,44 @@ export function formatErrorForLog(error: any): string {
 export async function generateContentWithFallback(params: any): Promise<any> {
   const isVercel = !!process.env.VERCEL;
   
-  // Active timeout threshold to prevent unrecoverable 504 / FUNCTION_INVOCATION_FAILED gateway errors on Vercel
-  const apiTimeoutMs = isVercel ? 8200 : 35000;
+  // Active timeout threshold of 55 seconds (safe below the configured 60-second maxDuration in vercel.json)
+  const apiTimeoutMs = 55000;
 
   const coreGenerationPromise = (async () => {
     const ai = getGeminiClient();
     const requestedModel = params.model || "gemini-3.5-flash";
-    const modelsToTry = [requestedModel];
+    let modelsToTry = [requestedModel];
     
-    if (requestedModel !== "gemini-3.1-flash-lite") {
-      modelsToTry.push("gemini-3.1-flash-lite");
+    const fallbackPool = ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-3.1-pro-preview", "gemini-flash-latest"];
+    for (const m of fallbackPool) {
+      if (m !== requestedModel && !modelsToTry.includes(m)) {
+        modelsToTry.push(m);
+      }
     }
+
+    // Rearrange sequence so already exhausted models are demoted immediately 
+    // to bypass slow, redundant API call attempts on spent quota buckets.
+    modelsToTry = modelsToTry.filter(m => {
+      if (exhaustedModels.has(m)) {
+        console.log(`[Gemini Centralized] Skipping model ${m} as it was previously marked as exhausted or rate-limited.`);
+        return false;
+      }
+      return true;
+    });
+
+    // Just in case everything else fails, we append exhausted models at the very end.
+    for (const m of Array.from(exhaustedModels)) {
+      if (!modelsToTry.includes(m)) {
+        modelsToTry.push(m);
+      }
+    }
+
+    console.log(`[Gemini Centralized] Scheduled models fallback sequence: ${JSON.stringify(modelsToTry)}`);
 
     let lastError: any = null;
 
     for (const model of modelsToTry) {
-      // Limit retries on Vercel to preserve execution lifetime
-      const maxRetries = isVercel ? 1 : 2;
+      const maxRetries = 2;
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           console.log(`[Gemini Centralized] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
@@ -70,6 +93,7 @@ export async function generateContentWithFallback(params: any): Promise<any> {
             ...params,
             model,
           });
+          console.log(`[Gemini Centralized] SUCCESS with model: ${model} (attempt ${attempt}/${maxRetries})`);
           return response;
         } catch (err: any) {
           lastError = err;
@@ -79,19 +103,37 @@ export async function generateContentWithFallback(params: any): Promise<any> {
             `[Gemini Centralized Info] Model ${model} failed on attempt ${attempt}. Description: ${errMsg}. Code: ${errStatus || "none"}`
           );
 
-          const isTransient =
-            errStatus === 503 ||
+          const isQuotaOrOverload = 
             errStatus === 429 ||
-            errMsg.includes("503") ||
+            errStatus === 503 ||
             errMsg.includes("429") ||
+            errMsg.includes("503") ||
+            errMsg.toLowerCase().includes("quota") ||
+            errMsg.toLowerCase().includes("rate limit") ||
+            errMsg.toLowerCase().includes("resource_exhausted") ||
+            errMsg.toLowerCase().includes("overloaded") ||
+            errMsg.toLowerCase().includes("unavailable") ||
+            errMsg.toLowerCase().includes("high demand");
+
+          if (isQuotaOrOverload) {
+            console.log(`[Gemini Centralized] Quota or overload detected for model ${model}. Moving it to exhausted list and transitioning immediately to fallback.`);
+            exhaustedModels.add(model);
+            break; // Break the retry loop and try the next model
+          }
+
+          const isTransient =
+            errStatus === 429 ||
+            errStatus === 503 ||
+            errMsg.includes("429") ||
+            errMsg.includes("503") ||
             errMsg.toLowerCase().includes("unavailable") ||
             errMsg.toLowerCase().includes("high demand") ||
             errMsg.toLowerCase().includes("overloaded") ||
             errMsg.toLowerCase().includes("rate limit") ||
             errMsg.toLowerCase().includes("quota");
 
-          // Do not perform retry-delay loops under Vercel to avoid timing out the serverless function
-          if (!isTransient || isVercel) {
+          // Do not perform retry-delay loops for non-transient errors
+          if (!isTransient) {
             break;
           }
 
@@ -111,7 +153,7 @@ export async function generateContentWithFallback(params: any): Promise<any> {
       () =>
         reject(
           new Error(
-            "Gemini AI generation exceeded the serverless safety threshold (8 seconds). Please try generating again as the serverless cold-start has completed."
+            "Gemini AI generation exceeded the maximum API processing limit (55 seconds). Please try again later or optimize your raw portfolio content."
           )
         ),
       apiTimeoutMs

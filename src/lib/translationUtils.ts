@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { generateContentWithFallback } from "../services/geminiClientFallback";
 
 interface TranslatableFlat {
   [key: string]: string;
@@ -135,7 +136,7 @@ Translate the provided key-value pairs into Hindi (hi), French (fr), and German 
 Return ONLY valid JSON.
 Input: ${JSON.stringify(flatContent, null, 2)}`;
 
-    const response = await ai.models.generateContent({
+    const response = await generateContentWithFallback(ai, {
       model: "gemini-3.5-flash",
       contents: systemPrompt,
       config: {
