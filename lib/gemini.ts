@@ -48,6 +48,35 @@ const exhaustedModels = new Set<string>();
 export async function generateContentWithFallback(params: any): Promise<any> {
   const isVercel = !!process.env.VERCEL;
   
+  // Set up optimized parameters to work with Vercel's strict timeout limits
+  let optimizedParams = { ...params };
+  if (isVercel && optimizedParams.config && optimizedParams.config.responseSchema) {
+    console.log("[Gemini Centralized] Vercel environment detected. Stripping complex responseSchema to bypass slow grammar-constrained decoding latency.");
+    
+    const originalSchema = optimizedParams.config.responseSchema;
+    const configWithNoSchema = { ...optimizedParams.config };
+    delete configWithNoSchema.responseSchema;
+    optimizedParams.config = configWithNoSchema;
+    
+    const schemaInstructions = `\n\nCRITICAL OUTLINE FOR OUTPUT JSON:
+You MUST output standard JSON matching this exact key structure. Ensure NO keys are missing from the primary root properties, fields are populated cleanly without placeholder tags, and values conform to the following schema definition:
+${JSON.stringify(originalSchema, null, 2)}
+
+Respond with standard JSON matching this schema format. Return ONLY raw JSON starting with "{" and ending with "}". No markdown formatting, no comments, and no conversational prefixes or suffixes.`;
+
+    if (typeof optimizedParams.contents === "string") {
+      optimizedParams.contents = optimizedParams.contents + "\n" + schemaInstructions;
+    } else if (optimizedParams.contents && Array.isArray(optimizedParams.contents)) {
+      optimizedParams.contents = [...optimizedParams.contents, { text: schemaInstructions }];
+    } else if (optimizedParams.contents && typeof optimizedParams.contents === "object") {
+      if (optimizedParams.contents.parts && Array.isArray(optimizedParams.contents.parts)) {
+        optimizedParams.contents.parts = [...optimizedParams.contents.parts, { text: schemaInstructions }];
+      } else {
+        optimizedParams.contents = { parts: [{ text: JSON.stringify(optimizedParams.contents) }, { text: schemaInstructions }] };
+      }
+    }
+  }
+
   // Active timeout threshold. Vercel Hobby limits serverless functions to 10 seconds.
   // We set a dynamic 8.2-second limit on Vercel so that our Promise.race rejects gracefully
   // before Vercel terminates the container, allowing us to return a nice custom JSON error.
@@ -56,7 +85,7 @@ export async function generateContentWithFallback(params: any): Promise<any> {
 
   const coreGenerationPromise = (async () => {
     const ai = getGeminiClient();
-    const requestedModel = params.model || "gemini-3.5-flash";
+    const requestedModel = optimizedParams.model || "gemini-3.5-flash";
     
     // Stable, high-quota, production-ready models to prioritize on free tiers
     const primaryStableModels = ["gemini-3.1-flash-lite", "gemini-flash-latest"];
@@ -117,7 +146,7 @@ export async function generateContentWithFallback(params: any): Promise<any> {
         try {
           console.log(`[Gemini Centralized] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
           const response = await ai.models.generateContent({
-            ...params,
+            ...optimizedParams,
             model,
           });
           console.log(`[Gemini Centralized] SUCCESS with model: ${model} (attempt ${attempt}/${maxRetries})`);
