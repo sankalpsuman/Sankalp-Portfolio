@@ -2,7 +2,7 @@ import { useState, useEffect, MouseEvent } from 'react';
 import Section from './Section';
 import { motion } from 'motion/react';
 import { getCollection } from '../../services/firestoreService';
-import { ExternalLink, Github, Layers, PlayCircle, ChevronRight } from 'lucide-react';
+import { ExternalLink, Github, Layers, PlayCircle, ChevronRight, Sparkles } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import LazyImage from '../ui/LazyImage';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -48,15 +48,19 @@ const DEFAULT_PROJECTS: Project[] = [
 
 export default function Projects() {
   const [items, setItems] = useState<Project[]>([]);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [mousePosMap, setMousePosMap] = useState<Record<string, { x: number; y: number }>>({});
   const { t, resolveTranslation } = useLanguage();
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>, id: string) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
+    setMousePosMap(prev => ({
+      ...prev,
+      [id]: {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      }
+    }));
   };
 
   useEffect(() => {
@@ -92,104 +96,181 @@ export default function Projects() {
 
   return (
     <Section id="projects" title={t('projects.title')} subtitle={t('projects.subtitle')}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-        {items.map((project, idx) => (
-          <motion.div
-            key={project.id}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: idx * 0.1 }}
-            onMouseMove={(e) => handleMouseMove(e, project.id)}
-            className={cn(
-              "group relative flex flex-col",
-              idx === 0 && "md:col-span-2 lg:flex-row gap-8 lg:gap-16 items-center"
-            )}
-          >
-            {/* Image Container with 3D-like hover effect & Spotlight */}
-            <motion.div 
-              whileHover={{ y: -10 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-14">
+        {items.map((project, idx) => {
+          const isFlagship = idx === 0;
+          const pos = mousePosMap[project.id] || { x: 0, y: 0 };
+          const isHovered = hoveredId === project.id;
+
+          const handleProjectClick = () => {
+            const url = project.liveUrl || project.githubUrl;
+            if (url) {
+              window.open(url, '_blank', 'noopener,noreferrer');
+            }
+          };
+
+          return (
+            <motion.div
+              key={project.id}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, delay: isFlagship ? 0 : (idx - 1) * 0.1 }}
+              onMouseMove={(e) => handleMouseMove(e, project.id)}
+              onMouseEnter={() => setHoveredId(project.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              onClick={handleProjectClick}
               className={cn(
-                "relative rounded-3xl overflow-hidden border border-white/10 mb-6 group-hover:border-brand/30 transition-all shadow-2xl bg-[#02040a] cursor-pointer",
-                idx === 0 ? "w-full lg:w-3/5 aspect-video" : "aspect-video w-full"
+                "group relative flex flex-col bg-gradient-to-b from-[#0b0f2a] to-[#040616] border border-white/[0.06] rounded-3xl overflow-hidden transition-all duration-500 cursor-pointer shadow-lg hover:shadow-2xl hover:shadow-[#6366f1]/10",
+                isFlagship 
+                  ? "md:col-span-2 lg:flex-row gap-8 lg:gap-12 p-8 lg:p-10 border-white/[0.08] hover:border-[#6366f1]/30" 
+                  : "p-6 border-white/[0.05] hover:border-[#6366f1]/20 hover:y-[-6px]"
               )}
+              style={isFlagship ? {
+                boxShadow: isHovered ? '0 0 50px -12px rgba(99, 102, 241, 0.15)' : 'none'
+              } : undefined}
             >
-              {/* Spotlight Effect */}
+              {/* Radial background glow following cursor */}
               <div 
-                className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"
                 style={{
-                  background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(var(--brand-primary-rgb), 0.15), transparent 40%)`
+                  background: `radial-gradient(400px circle at ${pos.x}px ${pos.y}px, rgba(99, 102, 241, 0.08), transparent 80%)`
                 }}
               />
 
-              <LazyImage 
-                src={project.imageUrl || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop"} 
-                alt={getProjectTitle(project)}
-                className="grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
-                wrapperClassName="w-full h-full"
-              />
-              
-              {/* Overlay Gradient & Grain */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#050816] via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22noiseFilter%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.65%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23noiseFilter)%22%2F%3E%3C%2Fsvg%3E')] opacity-[0.03] pointer-events-none"></div>
-              
-              {/* Tech Badges (Floating interaction) */}
-              <div className="absolute top-4 left-4 flex flex-wrap gap-2 z-20">
-                {project.techStack.map((tech, i) => (
-                  <motion.span 
-                    key={tech} 
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + (i * 0.05) }}
-                    className="px-3 py-1 bg-black/50 backdrop-blur-md border border-white/10 rounded-full text-[9px] uppercase tracking-widest font-bold text-brand group-hover:border-brand/30 transition-colors"
-                  >
-                    {tech}
-                  </motion.span>
-                ))}
+              {/* Decorative side accent tag line for flagship */}
+              {isFlagship && (
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#6366f1]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              )}
+
+              {/* Image Showcase Frame with Spotlight */}
+              <div 
+                className={cn(
+                  "relative rounded-2xl overflow-hidden border border-white/[0.08] bg-[#02030d] w-full z-10 select-none group-hover:border-white/[0.15] transition-all duration-500 shadow-inner",
+                  isFlagship ? "lg:w-[55%] aspect-[16/10]" : "aspect-[16/10] mb-6"
+                )}
+              >
+                <LazyImage 
+                  src={project.imageUrl || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop"} 
+                  alt={getProjectTitle(project)}
+                  className="grayscale-[0.25] group-hover:grayscale-0 transition-all duration-700 ease-out group-hover:scale-[1.05]"
+                  wrapperClassName="w-full h-full"
+                />
+                
+                {/* Visual Glass overlays for realistic screens depth */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#02030d]/80 via-transparent to-transparent opacity-90 group-hover:opacity-50 transition-all duration-500"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_45%)]" />
+                
+                {/* Tech Badges floating beautifully in image */}
+                <div className="absolute top-4 left-4 flex flex-wrap gap-1.5 z-20">
+                  {project.techStack.slice(0, 4).map((tech, i) => (
+                    <span 
+                      key={tech} 
+                      className="px-2.5 py-1 bg-[#050616]/95 backdrop-blur-md border border-white/[0.08] rounded-lg text-[9px] uppercase tracking-wider font-semibold text-slate-300 group-hover:text-[#6366f1] group-hover:border-[#6366f1]/30 transition-all duration-300"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                  {project.techStack.length > 4 && (
+                    <span className="px-2 py-0.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-[8px] tracking-wider font-bold text-slate-400">
+                      +{project.techStack.length - 4}
+                    </span>
+                  )}
+                </div>
+
+                {/* View Case / Button overlay */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-95 group-hover:scale-100 z-20 bg-black/40 backdrop-blur-[2px]">
+                  <div className="px-5 py-2.5 bg-white text-[#040616] rounded-xl font-bold text-xs tracking-wider uppercase flex items-center gap-2 shadow-2xl transition-transform hover:scale-105 active:scale-95">
+                    <PlayCircle className="w-4 h-4 text-[#6366f1]" />
+                    {t('projects.view_case')}
+                  </div>
+                </div>
               </div>
 
-              {/* View Project Button (Revealed on Hover) */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-90 group-hover:scale-100 z-20">
-                <div className="px-6 py-3 bg-brand text-white rounded-full font-bold text-sm tracking-widest uppercase flex items-center gap-2 shadow-xl shadow-brand/20">
-                  <PlayCircle className="w-5 h-5" />
-                  {t('projects.view_case')}
+              {/* Description & Metrics Container */}
+              <div className={cn(
+                "flex flex-col justify-between space-y-4 z-10 flex-1",
+                isFlagship ? "lg:py-2" : "pt-2"
+              )}>
+                <div className="space-y-4">
+                  
+                  {/* Category Pill Indicator */}
+                  <div className="flex items-center gap-2">
+                    <div className={cn(
+                      "px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest flex items-center gap-1.5",
+                      isFlagship 
+                        ? "bg-[#6366f1]/10 text-[#6366f1] border border-[#6366f1]/20 animate-pulse" 
+                        : "bg-white/[0.04] text-slate-400 border border-white/[0.06]"
+                    )}>
+                      {isFlagship ? <Sparkles className="w-2.5 h-2.5" /> : <Layers className="w-2.5 h-2.5" />}
+                      {isFlagship ? t('projects.flagship') : t('projects.enterprise')}
+                    </div>
+                  </div>
+
+                  {/* Project Title */}
+                  <div className="flex items-start justify-between gap-4">
+                    <h3 className={cn(
+                      "font-bold text-white group-hover:text-[#6366f1] transition-colors duration-400",
+                      isFlagship ? "text-2xl md:text-4xl tracking-tight leading-tight" : "text-xl md:text-2xl leading-snug"
+                    )}>
+                      {getProjectTitle(project)}
+                    </h3>
+                  </div>
+
+                  {/* Body description */}
+                  <p className={cn(
+                    "text-slate-400 leading-relaxed font-normal",
+                    isFlagship ? "text-base md:text-lg max-w-2xl" : "text-sm max-w-xl"
+                  )}>
+                    {getProjectDescription(project)}
+                  </p>
                 </div>
+
+                {/* Footer Interaction elements with fine link items */}
+                <div className="flex items-center justify-between pt-4 border-t border-white/[0.05]">
+                  <div className="flex flex-wrap gap-2">
+                    {project.techStack.length > 0 && (
+                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest hidden group-hover:inline-block transition-all animate-fadeIn">
+                        {project.techStack.join(' • ')}
+                      </span>
+                    )}
+                    <span className="text-[10px] font-mono text-slate-500 group-hover:hidden transition-all">
+                      Click to explore case study
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {project.githubUrl && (
+                      <a 
+                        href={project.githubUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 bg-white/[0.03] hover:bg-[#6366f1]/10 border border-white/10 hover:border-[#6366f1]/30 rounded-lg text-slate-400 hover:text-white transition-all shadow-sm"
+                        title="GitHub Repository"
+                      >
+                        <Github className="w-4 h-4" />
+                      </a>
+                    )}
+                    {project.liveUrl && (
+                      <a 
+                        href={project.liveUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 bg-white/[0.03] hover:bg-[#6366f1]/10 border border-white/10 hover:border-[#6366f1]/30 rounded-lg text-slate-400 hover:text-white transition-all shadow-sm"
+                        title="Live Demo"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+
               </div>
             </motion.div>
-
-            {/* Content */}
-            <div className={cn(
-               "space-y-4 px-2 flex-1",
-               idx === 0 && "py-4 md:py-8"
-            )}>
-              <div className="flex items-center justify-between">
-                <h3 className={cn(
-                  "font-bold text-white group-hover:text-brand transition-colors",
-                  idx === 0 ? "text-3xl md:text-5xl tracking-tight" : "text-2xl"
-                )}>
-                  {getProjectTitle(project)}
-                </h3>
-                <div className="flex items-center gap-4 text-gray-500">
-                   {project.githubUrl && <a href={project.githubUrl} className="hover:text-white transition-colors"><Github className="w-5 h-5" /></a>}
-                   {project.liveUrl && <a href={project.liveUrl} className="hover:text-white transition-colors"><ExternalLink className="w-5 h-5" /></a>}
-                </div>
-              </div>
-              <p className={cn(
-                "text-gray-400 leading-relaxed",
-                idx === 0 ? "text-lg md:text-xl max-w-2xl" : "max-w-xl text-sm"
-              )}>
-                {getProjectDescription(project)}
-              </p>
-              <div className="flex items-center gap-2 pt-2">
-                 <Layers className="w-4 h-4 text-brand" />
-                 <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
-                   {idx === 0 ? t('projects.flagship') : t('projects.enterprise')}
-                 </span>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+          );
+        })}
       </div>
       
       {/* View More Call to Action */}
@@ -197,12 +278,12 @@ export default function Projects() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="mt-20 text-center"
+        className="mt-16 text-center"
       >
-         <button className="px-8 py-4 bg-white/2 hover:bg-white/5 border border-white/10 hover:border-brand/30 rounded-2xl transition-all text-sm font-bold tracking-widest uppercase inline-flex items-center gap-3 cursor-pointer">
+         <button className="px-8 py-4 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-[#6366f1]/30 rounded-xl transition-all text-xs font-bold tracking-widest uppercase inline-flex items-center gap-3 cursor-pointer group/btn shadow-inner">
             {t('projects.archive_btn')}
-            <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center">
-               <ChevronRight className="w-4 h-4 text-brand" />
+            <div className="w-7 h-7 rounded-lg bg-white/[0.05] group-hover/btn:bg-[#6366f1]/20 flex items-center justify-center transition-colors">
+               <ChevronRight className="w-4 h-4 text-slate-300 group-hover/btn:text-[#6366f1]" />
             </div>
          </button>
       </motion.div>

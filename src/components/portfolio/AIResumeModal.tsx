@@ -109,35 +109,38 @@ export const AIResumeModal: React.FC = () => {
         text: (t.text || '').substring(0, 150) // Keep client text brief for resume generator AI
       }));
 
-      const sanitizedExperience = (experience || []).slice(0, 3).map((e: any) => ({
+      const sanitizedExperience = (experience || []).slice(0, 10).map((e: any) => ({
         role: e.role || '',
         company: e.company || '',
         period: e.period || '',
         location: e.location || '',
-        bullets: Array.isArray(e.bullets) ? e.bullets.slice(0, 2) : (e.description ? [e.description.substring(0, 180)] : [])
+        bullets: Array.isArray(e.bullets) ? e.bullets.slice(0, 6) : (e.description ? [e.description.substring(0, 300)] : [])
       }));
 
-      const sanitizedProjects = (projects || []).slice(0, 3).map((p: any) => ({
-        name: p.name || '',
-        description: (p.description || '').substring(0, 150),
-        techStack: (p.techStack || p.tags || []).slice(0, 4),
-        link: p.link || p.github || '',
-        role: p.role || ''
-      }));
+      const sanitizedProjects = (projects || [])
+        .filter((p: any) => p.liveUrl || p.githubUrl || p.link || p.github)
+        .slice(0, 15)
+        .map((p: any) => ({
+          name: p.title || p.name || '',
+          description: (p.description || '').substring(0, 300),
+          techStack: (p.techStack || p.tags || []).slice(0, 10),
+          link: p.liveUrl || p.githubUrl || p.link || p.github || '',
+          role: p.role || ''
+        }));
 
-      const sanitizedSkills = (skills || []).slice(0, 4).map((s: any) => ({
+      const sanitizedSkills = (skills || []).slice(0, 12).map((s: any) => ({
         category: s.category || '',
-        items: Array.isArray(s.items) ? s.items.slice(0, 5) : []
+        items: Array.isArray(s.items) ? s.items.slice(0, 15) : []
       }));
 
-      const sanitizedTimeline = (timeline || []).slice(0, 3).map((t: any) => ({
+      const sanitizedTimeline = (timeline || []).slice(0, 10).map((t: any) => ({
         role: t.role || '',
         company: t.company || '',
         period: t.period || '',
-        milestones: Array.isArray(t.milestones) ? t.milestones.slice(0, 2) : []
+        milestones: Array.isArray(t.milestones) ? t.milestones.slice(0, 5) : []
       }));
 
-      const sanitizedCertifications = (certifications || []).slice(0, 4).map((c: any) => ({
+      const sanitizedCertifications = (certifications || []).slice(0, 15).map((c: any) => ({
         name: c.name || '',
         issuer: c.issuer || '',
         date: c.date || '',
@@ -594,7 +597,7 @@ export const AIResumeModal: React.FC = () => {
     setPdfGenerating(true);
     setPdfStatus('Preparing layout for high-fidelity compile...');
 
-    let clone: HTMLElement | null = null;
+    let measureHost: HTMLDivElement | null = null;
     const originalGetComputedStyle = window.getComputedStyle;
 
     try {
@@ -606,207 +609,183 @@ export const AIResumeModal: React.FC = () => {
       }
       console.log('[PDF Generation] Step 1 Success: Found root render element.');
 
-      // Step 2: Clone & Isolated Render Sandbox Creation
-      console.log('[PDF Generation] Step 2: Creating sandboxed off-screen DOM clone to prevent reactive viewport width shifts...');
-      try {
-        clone = element.cloneNode(true) as HTMLElement;
-        clone.id = 'resume-pdf-render-clone';
-        clone.style.position = 'absolute';
-        clone.style.top = '-9999px';
-        clone.style.left = '-9999px';
-        clone.style.width = '820px';
-        clone.style.maxWidth = '820px';
-        clone.style.padding = '40px';
-        clone.style.boxSizing = 'border-box';
-        clone.style.backgroundColor = '#ffffff';
-        clone.style.color = '#1e293b';
-        document.body.appendChild(clone);
-        console.log('[PDF Generation] Step 2 Success: Cloned node injected into isolated position.');
-      } catch (cloneErr: any) {
-        console.error('[PDF Generation] Step 2 Failed during DOM cloning:', cloneErr);
-        throw new Error(`Sandboxed DOM cloning failed: ${cloneErr?.message || cloneErr}`);
-      }
+      // Step 2: Create a sandboxed measurement container to determine perfect element heights
+      setPdfStatus('Measuring layout blocks inside 820px sandbox...');
+      measureHost = document.createElement('div');
+      measureHost.id = 'resume-pdf-measure-sandbox';
+      measureHost.style.position = 'absolute';
+      measureHost.style.top = '-9999px';
+      measureHost.style.left = '-9999px';
+      measureHost.style.width = '820px';
+      measureHost.style.padding = '40px';
+      measureHost.style.boxSizing = 'border-box';
+      measureHost.style.backgroundColor = '#ffffff';
+      measureHost.style.color = '#1e293b';
+      
+      const renderRootClone = element.cloneNode(true) as HTMLElement;
+      measureHost.appendChild(renderRootClone);
+      document.body.appendChild(measureHost);
 
-      // Step 3: Color Parsing & OKLCH color proxy setup
-      console.log('[PDF Generation] Step 3: Setting up OKLCH color parser to intercept Tailwind v4 dynamic colors...');
-      try {
-        const oklchToRgb = (l: number, c: number, h: number, a: number = 1): string => {
-          const hRad = (h * Math.PI) / 180;
-          const a_lab = c * Math.cos(hRad);
-          const b_lab = c * Math.sin(hRad);
-          
-          const l_lms = l + 0.3963377774 * a_lab + 0.2158037573 * b_lab;
-          const m_lms = l - 0.1055613458 * a_lab - 0.0638541728 * b_lab;
-          const s_lms = l - 0.0894841775 * a_lab - 1.2914855480 * b_lab;
-          
-          const l3 = l_lms * l_lms * l_lms;
-          const m3 = m_lms * m_lms * m_lms;
-          const s3 = s_lms * s_lms * s_lms;
-          
-          const r_lin = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
-          const g_lin = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
-          const b_lin = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
-          
-          const toSRGB = (x: number) => {
-            return x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
-          };
-          
-          const r = Math.max(0, Math.min(255, Math.round(toSRGB(r_lin) * 255)));
-          const g = Math.max(0, Math.min(255, Math.round(toSRGB(g_lin) * 255)));
-          const b = Math.max(0, Math.min(255, Math.round(toSRGB(b_lin) * 255)));
-          
-          return a === 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${a})`;
-        };
+      // Restore color styling overrides for OKLCH in Tailwind v4
+      const oklchToRgb = (l: number, c: number, h: number, a: number = 1): string => {
+        const hRad = (h * Math.PI) / 180;
+        const a_lab = c * Math.cos(hRad);
+        const b_lab = c * Math.sin(hRad);
+        const l_lms = l + 0.3963377774 * a_lab + 0.2158037573 * b_lab;
+        const m_lms = l - 0.1055613458 * a_lab - 0.0638541728 * b_lab;
+        const s_lms = l - 0.0894841775 * a_lab - 1.2914855480 * b_lab;
+        const l3 = l_lms * l_lms * l_lms;
+        const m3 = m_lms * m_lms * m_lms;
+        const s3 = s_lms * s_lms * s_lms;
+        const r_lin = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
+        const g_lin = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
+        const b_lin = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
+        const toSRGB = (x: number) => x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
+        const r = Math.max(0, Math.min(255, Math.round(toSRGB(r_lin) * 255)));
+        const g = Math.max(0, Math.min(255, Math.round(toSRGB(g_lin) * 255)));
+        const b = Math.max(0, Math.min(255, Math.round(toSRGB(b_lin) * 255)));
+        return a === 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${a})`;
+      };
 
-        const parseAndConvertOklch = (colorString: string): string => {
-          if (!colorString || typeof colorString !== 'string') return colorString;
-          if (!colorString.includes('oklch')) return colorString;
+      const parseAndConvertOklch = (colorString: string): string => {
+        if (!colorString || typeof colorString !== 'string' || !colorString.includes('oklch')) return colorString;
+        try {
+          const oklchRegex = /oklch\s*\(\s*([0-9.]+%?)\s+([0-9.]+)\s+([0-9.]+)(?:\s*\/\s*([0-9.]+%?))?\s*\)/i;
+          const match = colorString.match(oklchRegex);
+          if (!match) return colorString;
+          const l = match[1].endsWith('%') ? parseFloat(match[1]) / 100 : parseFloat(match[1]);
+          const c = parseFloat(match[2]);
+          const h = parseFloat(match[3]);
+          const a = match[4] ? (match[4].endsWith('%') ? parseFloat(match[4]) / 100 : parseFloat(match[4])) : 1;
+          return oklchToRgb(l, c, h, a);
+        } catch { return colorString; }
+      };
 
-          try {
-            const oklchRegex = /oklch\s*\(\s*([0-9.]+%?)\s+([0-9.]+)\s+([0-9.]+)(?:\s*\/\s*([0-9.]+%?))?\s*\)/i;
-            const match = colorString.match(oklchRegex);
-            if (!match) return colorString;
-
-            const lVal = match[1];
-            const cVal = match[2];
-            const hVal = match[3];
-            const aVal = match[4];
-
-            const l = lVal.endsWith('%') ? parseFloat(lVal) / 100 : parseFloat(lVal);
-            const c = parseFloat(cVal);
-            const h = parseFloat(hVal);
-            let a = 1;
-            if (aVal) {
-              a = aVal.endsWith('%') ? parseFloat(aVal) / 100 : parseFloat(aVal);
+      window.getComputedStyle = function(elt, pseudoElt) {
+        const style = originalGetComputedStyle(elt, pseudoElt);
+        return new Proxy(style, {
+          get(target, prop) {
+            const val = Reflect.get(target, prop);
+            if (typeof val === 'string' && val.includes('oklch')) {
+              return val.replace(/oklch\s*\(\s*[^)]+\)/gi, parseAndConvertOklch);
             }
-
-            return oklchToRgb(l, c, h, a);
-          } catch (err) {
-            return colorString;
+            return typeof val === 'function' ? val.bind(target) : val;
           }
-        };
+        });
+      };
 
-        const convertAllOklchInString = (str: string): string => {
-          if (!str || typeof str !== 'string' || !str.includes('oklch')) return str;
-          
-          const regex = /oklch\s*\(\s*[^)]+\)/gi;
-          return str.replace(regex, (match) => {
-            return parseAndConvertOklch(match);
-          });
-        };
+      // Retrieve all blocks with data-pdf-block attribute from the measured sandbox
+      const sandboxBlocks = Array.from(renderRootClone.querySelectorAll('[data-pdf-block]')) as HTMLElement[];
+      console.log(`[PDF Generation] Found ${sandboxBlocks.length} tagged layout blocks for packaging.`);
 
-        window.getComputedStyle = function(elt, pseudoElt) {
-          const style = originalGetComputedStyle(elt, pseudoElt);
-          return new Proxy(style, {
-            get(target, prop) {
-              const val = Reflect.get(target, prop);
-              if (typeof val === 'string' && val.includes('oklch')) {
-                return convertAllOklchInString(val);
-              }
-              if (typeof val === 'function') {
-                return val.bind(target);
-              }
-              return val;
-            }
-          });
-        };
-        console.log('[PDF Generation] Step 3 Success: OKLCH styles replacement interceptor activated.');
-      } catch (proxyErr: any) {
-        console.error('[PDF Generation] Step 3 Failed during computed style initialization:', proxyErr);
-        throw new Error(`OKLCH color conversion interceptor failed: ${proxyErr?.message || proxyErr}`);
+      // Step 3: Packing layout blocks into pages of safe content height budget
+      const PAGE_WIDTH_PX = 820;
+      const PAGE_HEIGHT_PX = 1160;
+      const PADDING_PX = 40;
+      const MAX_CONTENT_HEIGHT_PX = 1040;
+
+      const pages: HTMLDivElement[] = [];
+      let currentPage = document.createElement('div');
+      
+      const stylePage = (el: HTMLDivElement) => {
+        el.style.width = `${PAGE_WIDTH_PX}px`;
+        el.style.height = `${PAGE_HEIGHT_PX}px`;
+        el.style.padding = `${PADDING_PX}px`;
+        el.style.boxSizing = 'border-box';
+        el.style.backgroundColor = '#ffffff';
+        el.style.color = '#1e293b';
+        el.style.position = 'relative';
+        el.style.display = 'flex';
+        el.style.flexDirection = 'column';
+        el.className = 'bg-white text-slate-800 antialiased leading-relaxed';
+        el.style.fontFamily = 'Inter, sans-serif';
+        el.style.fontSize = '11px';
+      };
+
+      stylePage(currentPage);
+      let currentHeight = 0;
+
+      // Pack blocks into pages
+      for (const block of sandboxBlocks) {
+        const blockHeight = block.offsetHeight;
+        const style = window.getComputedStyle(block);
+        const marginBot = parseFloat(style.marginBottom || '0');
+        const totalBlockHeight = blockHeight + marginBot;
+
+        console.log(`[PDF Generation] Packaging block:`, block.tagName, `Height: ${blockHeight}px + Margin: ${marginBot}px = ${totalBlockHeight}px. Current accumulated page height: ${currentHeight}px`);
+
+        if (currentHeight + totalBlockHeight > MAX_CONTENT_HEIGHT_PX && currentHeight > 0) {
+          // Commit current completed page
+          pages.push(currentPage);
+
+          // Spawn new page
+          currentPage = document.createElement('div');
+          stylePage(currentPage);
+          currentHeight = 0;
+        }
+
+        // Clone and transfer block to current page container
+        const cloneBlock = block.cloneNode(true) as HTMLElement;
+        cloneBlock.style.marginBottom = `${marginBot}px`;
+        currentPage.appendChild(cloneBlock);
+        currentHeight += totalBlockHeight;
       }
 
-      // Step 4: HTML-to-Canvas Capture Snapshotting
-      console.log('[PDF Generation] Step 4: Utilizing html2canvas with scale:2 configurations...');
-      setPdfStatus('Composing high resolution layout rendering canvas...');
-      let canvas: HTMLCanvasElement;
-      try {
-        canvas = await html2canvas(clone, {
-          scale: 2,
+      // Commit the final page
+      if (currentPage.childNodes.length > 0) {
+        pages.push(currentPage);
+      }
+
+      console.log(`[PDF Generation] High-fidelity layout packaging complete! Produced ${pages.length} pages.`);
+
+      // Step 4: Render packed pages to canvases and build the PDF
+      const pdf = new jspdf('p', 'mm', 'a4');
+      const nameSuffix = language === 'en' ? 'en' : language;
+
+      for (let i = 0; i < pages.length; i++) {
+        setPdfStatus(`Compiling page ${i + 1} of ${pages.length}...`);
+        const pageEl = pages[i];
+
+        // Attach temporarily to document.body so html2canvas renders accurately with styles
+        document.body.appendChild(pageEl);
+
+        const canvas = await html2canvas(pageEl, {
+          scale: 2.2, // Boost quality slightly for crispy vector look
           useCORS: true,
           logging: false,
           backgroundColor: '#ffffff',
-          width: 820,
-          windowWidth: 820
+          width: PAGE_WIDTH_PX,
+          height: PAGE_HEIGHT_PX
         });
-        console.log('[PDF Generation] Step 4 Success: Canvas snapshot generated.', {
-          width: canvas.width,
-          height: canvas.height
-        });
-      } catch (canvasErr: any) {
-        console.error('[PDF Generation] Step 4 Failed during html2canvas process:', canvasErr);
-        throw new Error(`Canvas snapshot capture failed (html2canvas error): ${canvasErr?.message || canvasErr}`);
-      }
 
-      // Step 5: Convert Canvas to PNG image bytes
-      console.log('[PDF Generation] Step 5: Transforming high resolution canvas to raw image/png bytes...');
-      setPdfStatus('Compiling PDF file...');
-      let imgData: string;
-      try {
-        imgData = canvas.toDataURL('image/png');
-        console.log('[PDF Generation] Step 5 Success: Image bytes formatted successfully. String length:', imgData.length);
-      } catch (imgErr: any) {
-        console.error('[PDF Generation] Step 5 Failed during canvas conversion to data URI:', imgErr);
-        throw new Error(`Data URL compilation failed: ${imgErr?.message || imgErr}`);
-      }
+        // Tidy up DOM immediately
+        document.body.removeChild(pageEl);
 
-      // Step 6: Constructing the JS-PDF Document
-      console.log('[PDF Generation] Step 6: Instantiating jsPDF document structure...');
-      try {
-        const pdf = new jspdf('p', 'mm', 'a4');
-        const imgWidth = 210; // A4 standard width in mm
-        const pageHeight = 295; // A4 standard height in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
+        const pageImgData = canvas.toDataURL('image/png');
 
-        console.log('[PDF Generation] Page metrics calculation complete:', { imgWidth, imgHeight, pageHeight, totalHeightLeft: heightLeft });
-
-        // Add first page
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-        console.log('[PDF Generation] Injected first page. Height remaining:', heightLeft);
-
-        // Add extra overflow pages dynamically
-        let pageCount = 1;
-        while (heightLeft > 2) {
-          position = heightLeft - imgHeight;
+        if (i > 0) {
           pdf.addPage();
-          pageCount++;
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-          console.log(`[PDF Generation] Injected page overflow #${pageCount}. Height remaining:`, heightLeft);
         }
 
-        // Step 7: Saving & Downloading the compiled PDF artifact
-        console.log('[PDF Generation] Step 7: Initiating browser save action...');
-        setPdfStatus('Initiating file download...');
-        const nameSuffix = language === 'en' ? 'en' : language;
-        pdf.save(`Sankalp_Suman_Resume_${nameSuffix}.pdf`);
-        setPdfStatus('');
-        console.log('[PDF Generation] Step 7 Success: Browser save event dispatched cleanly!');
-      } catch (pdfErr: any) {
-        console.error('[PDF Generation] Step 6/7 Failed during jspdf assembling or file down-saving:', pdfErr);
-        throw new Error(`PDF layout creation/saving failed: ${pdfErr?.message || pdfErr}`);
+        pdf.addImage(pageImgData, 'PNG', 0, 0, 210, 297);
+        console.log(`[PDF Generation] Completed rendering canvas for page #${i + 1}`);
       }
+
+      setPdfStatus('Initiating file download...');
+      pdf.save(`Sankalp_Suman_Resume_${nameSuffix}.pdf`);
+      setPdfStatus('');
+      console.log('[PDF Generation] Success: Dispatch file download sequence.');
 
     } catch (err: any) {
-      console.error('[PDF Generation ERROR] Terminal pipeline crash details:', err);
+      console.error('[PDF Generation ERROR] Pipeline process exception:', err);
       setPdfStatus(`Direct compilation failed. Use "Print Selection-Text PDF" for best results.`);
     } finally {
-      // Step 8: Clean up sandboxed elements and restore original global behaviors
-      console.log('[PDF Generation] Cleaning up sandbox DOM elements & restoring browser style definitions.');
-      if (document.getElementById('resume-pdf-render-clone') && clone) {
-        try {
-          document.body.removeChild(clone);
-          console.log('[PDF Generation] Removed sandbox resume clone from document tree.');
-        } catch (cleanupErr) {
-          console.error('[PDF Generation] Warning: Failed to cleanly prune cloned node:', cleanupErr);
-        }
+      // Step 5: Clean up measured sandboxes
+      if (measureHost && document.body.contains(measureHost)) {
+        document.body.removeChild(measureHost);
       }
       window.getComputedStyle = originalGetComputedStyle;
       setPdfGenerating(false);
-      console.log('[PDF Generation] Procedures complete. Status unlocked.');
     }
   };
 
@@ -1012,11 +991,11 @@ export const AIResumeModal: React.FC = () => {
                     </div>
 
                     {/* Styled Dynamic Live Resume Document Preview Canvas - A4 Simulation */}
-                    <div className="flex-1 overflow-y-auto bg-white text-slate-800 rounded-xl p-6 md:p-8 border border-white/10 shadow-sm" style={{ maxHeight: '100%' }}>
-                      <div id="resume-pdf-render-root" className="bg-white text-slate-800 antialiased leading-relaxed max-w-[820px] mx-auto w-full" style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', minHeight: '297mm' }}>
+                    <div className="flex-1 overflow-y-auto bg-[#03050c]/85 text-slate-800 rounded-xl p-3 md:p-6 border border-white/5 shadow-2xl flex flex-col items-center" style={{ maxHeight: '100%' }}>
+                      <div id="resume-pdf-render-root" className="bg-white text-slate-800 antialiased leading-relaxed max-w-[820px] w-full shadow-2xl rounded-xl border border-slate-100 p-6 md:p-12 shrink-0 my-2 h-auto" style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', minHeight: '297mm' }}>
                         
                         {/* Header Area */}
-                        <div className="text-center pb-5 mb-5 border-b-2 border-blue-900">
+                        <div id="resume-header-block" className="text-center pb-5 mb-5 border-b-2 border-blue-900" data-pdf-block="true">
                           <h1 className="text-2xl font-black text-blue-900 tracking-tight uppercase m-0 leading-tight">
                             {resumeData.personalInfo?.name || 'Sankalp Suman'}
                           </h1>
@@ -1052,14 +1031,14 @@ export const AIResumeModal: React.FC = () => {
 
                         {/* Summary Block */}
                         {resumeData.personalInfo?.summary && (
-                          <div className="mb-5 text-justify italic text-slate-700 text-[10.5px] leading-relaxed">
+                          <div id="resume-summary-block" className="mb-5 text-justify italic text-slate-700 text-[10.5px] leading-relaxed" data-pdf-block="true">
                             {resumeData.personalInfo.summary}
                           </div>
                         )}
 
                         {/* Technical Competencies Category */}
                         {resumeData.skills && resumeData.skills.length > 0 && (
-                          <div className="mb-5">
+                          <div id="resume-skills-block" className="mb-5" data-pdf-block="true">
                             <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 mb-2 uppercase tracking-wide">
                               {language === 'en' ? 'Core Expertise' : language === 'hi' ? 'मुख्य विशेषज्ञता' : language === 'fr' ? 'Expertise' : 'Spezialgebiete'}
                             </h2>
@@ -1077,19 +1056,21 @@ export const AIResumeModal: React.FC = () => {
                         {/* Experience Timeline */}
                         {resumeData.experience && resumeData.experience.length > 0 && (
                           <div className="mb-5">
-                            <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 mb-2 uppercase tracking-wide">
-                              {language === 'en' ? 'Professional Experience' : language === 'hi' ? 'व्यावसायिक अनुभव' : language === 'fr' ? 'Expérience professionnelle' : 'Berufserfahrung'}
-                            </h2>
+                            <div className="mb-2" data-pdf-block="true">
+                              <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 uppercase tracking-wide">
+                                {language === 'en' ? 'Professional Experience' : language === 'hi' ? 'व्यावसायिक अनुभव' : language === 'fr' ? 'Expérience professionnelle' : 'Berufserfahrung'}
+                              </h2>
+                            </div>
                             <div className="space-y-4">
                               {resumeData.experience.map((exp: any, index: number) => (
-                                <div key={index} className="space-y-1">
-                                  <div className="flex justify-between font-bold text-[11px] text-slate-900">
+                                <div key={index} className="space-y-1 mb-4" data-pdf-block="true">
+                                  <div className="flex justify-between items-start gap-4 font-bold text-[11px] text-slate-900 w-full">
                                     <span>{exp.role}</span>
-                                    <span>{exp.company}</span>
+                                    <span className="text-right shrink-0">{exp.company}</span>
                                   </div>
-                                  <div className="flex justify-between text-[9.5px] text-slate-500 italic">
+                                  <div className="flex justify-between text-[9.5px] text-slate-500 italic w-full">
                                     <span>{exp.period}</span>
-                                    <span>{exp.location || ''}</span>
+                                    <span className="text-right shrink-0">{exp.location || ''}</span>
                                   </div>
                                   <div className="space-y-1 mt-1 text-[10px] text-slate-600 font-normal">
                                     {exp.bullets.map((bullet: string, bIdx: number) => {
@@ -1113,27 +1094,38 @@ export const AIResumeModal: React.FC = () => {
                         )}
 
                         {/* Highlighted Case Studies & Projects */}
-                        {resumeData.projects && resumeData.projects.length > 0 && (
+                        {resumeData.projects && resumeData.projects.filter((p: any) => p.link && p.link.trim() !== '' && p.link.trim().toLowerCase() !== 'n/a').length > 0 && (
                           <div className="mb-5">
-                            <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 mb-2 uppercase tracking-wide">
-                              {language === 'en' ? 'Projects & Showcases' : language === 'hi' ? 'प्रमुख परियोजनाएं' : language === 'fr' ? 'Projets' : 'Ausgewählte Projekte'}
-                            </h2>
+                            <div className="mb-2" data-pdf-block="true">
+                              <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 uppercase tracking-wide">
+                                {language === 'en' ? 'Projects & Showcases' : language === 'hi' ? 'प्रमुख परियोजनाएं' : language === 'fr' ? 'Projets' : 'Ausgewählte Projekte'}
+                              </h2>
+                            </div>
                             <div className="space-y-3.5">
-                              {resumeData.projects.map((proj: any, index: number) => (
-                                <div key={index} className="space-y-1">
-                                  <div className="flex justify-between font-bold text-[11px] text-slate-900">
-                                    <span>{proj.name}</span>
-                                    {proj.link && <span className="text-[10px] text-indigo-700 font-medium underline hover:text-indigo-950"><a href={proj.link} target="_blank" rel="noopener noreferrer">{proj.link.replace(/^https?:\/\/(www\.)?/, '')}</a> ↗</span>}
+                              {resumeData.projects
+                                .filter((p: any) => p.link && p.link.trim() !== '' && p.link.trim().toLowerCase() !== 'n/a')
+                                .map((proj: any, index: number) => (
+                                  <div key={index} className="space-y-1 mb-3.5" data-pdf-block="true">
+                                    <div className="flex justify-between items-start gap-4 font-bold text-[11px] text-slate-900 w-full">
+                                      <span className="shrink-0">{proj.name}</span>
+                                      {proj.link && (
+                                        <span className="text-[10px] text-indigo-700 font-medium underline hover:text-indigo-950 max-w-[55%] truncate text-right whitespace-nowrap">
+                                          <a href={proj.link} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-900">
+                                            {proj.link.replace(/^https?:\/\/(www\.)?/, '')}
+                                          </a>
+                                          <span className="ml-1 select-none">↗</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex justify-between items-start gap-4 text-[9px] text-slate-500 italic w-full">
+                                      <span>{proj.role || 'Contributor'}</span>
+                                      <span className="text-right shrink-0 max-w-[60%] truncate">{proj.techStack ? proj.techStack.join(' | ') : ''}</span>
+                                    </div>
+                                    <p className="text-[10px] m-0 text-slate-600 text-justify leading-relaxed">
+                                      {proj.description}
+                                    </p>
                                   </div>
-                                  <div className="flex justify-between text-[9px] text-slate-500 italic">
-                                    <span>{proj.role || 'Contributor'}</span>
-                                    <span>{proj.techStack ? proj.techStack.join(' | ') : ''}</span>
-                                  </div>
-                                  <p className="text-[10px] m-0 text-slate-600 text-justify leading-relaxed">
-                                    {proj.description}
-                                  </p>
-                                </div>
-                              ))}
+                                ))}
                             </div>
                           </div>
                         )}
@@ -1141,16 +1133,18 @@ export const AIResumeModal: React.FC = () => {
                         {/* Education Details */}
                         {resumeData.education && resumeData.education.length > 0 && (
                           <div className="mb-5">
-                            <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 mb-2 uppercase tracking-wide">
-                              {language === 'en' ? 'Education' : language === 'hi' ? 'शिक्षा' : language === 'fr' ? 'Éducation' : 'Ausbildung'}
-                            </h2>
+                            <div className="mb-2" data-pdf-block="true">
+                              <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 uppercase tracking-wide">
+                                {language === 'en' ? 'Education' : language === 'hi' ? 'शिक्षा' : language === 'fr' ? 'Éducation' : 'Ausbildung'}
+                              </h2>
+                            </div>
                             <div className="space-y-2.5">
                               {resumeData.education.map((edu: any, index: number) => (
-                                <div key={index} className="flex justify-between text-[10px] text-slate-750">
+                                <div key={index} className="flex justify-between items-start gap-4 text-[10px] text-slate-750 mb-2.5 w-full" data-pdf-block="true">
                                   <div>
                                     <span className="font-bold text-slate-900">{edu.degree}</span> • <span className="italic text-slate-600">{edu.institution}</span>
                                   </div>
-                                  <div className="text-right shrink-0 text-slate-500 font-mono text-[9px]">
+                                  <div className="text-right shrink-0 text-slate-500 font-mono text-[9px] pt-0.5">
                                     {edu.period} {edu.grade ? `(${edu.grade})` : ''}
                                   </div>
                                 </div>
@@ -1161,7 +1155,7 @@ export const AIResumeModal: React.FC = () => {
 
                         {/* Certifications Block */}
                         {resumeData.certifications && resumeData.certifications.length > 0 && (
-                          <div className="mb-5">
+                          <div id="resume-certifications-block" className="mb-5" data-pdf-block="true">
                             <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 mb-2 uppercase tracking-wide">
                               {language === 'en' ? 'Professional Certifications' : language === 'hi' ? 'व्यावसायिक प्रमाणपत्र' : language === 'fr' ? 'Certifications professionnelles' : 'Zertifizierungen'}
                             </h2>
@@ -1178,7 +1172,7 @@ export const AIResumeModal: React.FC = () => {
 
                         {/* Key Achievements & Impact */}
                         {resumeData.achievements && resumeData.achievements.length > 0 && (
-                          <div className="mb-5">
+                          <div id="resume-achievements-block" className="mb-5" data-pdf-block="true">
                             <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 mb-2 uppercase tracking-wide">
                               {language === 'en' ? 'Key Achievements & Impact' : language === 'hi' ? 'प्रमुख उपलब्धियां' : language === 'fr' ? 'Réalisations clés' : 'Wichtigste Erfolge'}
                             </h2>
@@ -1202,7 +1196,7 @@ export const AIResumeModal: React.FC = () => {
 
                         {/* Endorsements & Recommendations */}
                         {resumeData.testimonials && resumeData.testimonials.length > 0 && (
-                          <div className="mb-5">
+                          <div id="resume-testimonials-block" className="mb-5" data-pdf-block="true">
                             <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 mb-2 uppercase tracking-wide">
                               {language === 'en' ? 'Endorsements & Recommendations' : language === 'hi' ? 'सिफारिशें और प्रशंसापत्र' : language === 'fr' ? 'Recommandations' : 'Referenzen'}
                             </h2>
@@ -1223,7 +1217,7 @@ export const AIResumeModal: React.FC = () => {
                         {resumeData.additionalSections && resumeData.additionalSections.length > 0 && (
                           <>
                             {resumeData.additionalSections.map((sec: any, index: number) => (
-                              <div key={index} className="mb-5">
+                              <div key={index} className="mb-5" data-pdf-block="true">
                                 <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 mb-2 uppercase tracking-wide">
                                   {sec.title}
                                 </h2>

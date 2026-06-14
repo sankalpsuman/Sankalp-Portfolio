@@ -122,13 +122,22 @@ export default function ProjectsEditor() {
     }
   };
 
-  useEffect(() => {
-    async function load() {
-      const data = await getCollection<Project>('projects', 'order');
+  const load = async (bypass = false) => {
+    try {
+      const data = await getCollection<Project>('projects', 'order', undefined, bypass);
       setItems(data);
-      setLoading(false);
+    } catch (e) {
+      console.error('Error loading projects:', e);
     }
-    load();
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      setLoading(true);
+      await load(true);
+      setLoading(false);
+    };
+    init();
   }, []);
 
   const filteredItems = useMemo(() => {
@@ -154,13 +163,19 @@ export default function ProjectsEditor() {
       order: items.length
     };
     setSaving(true);
-    const id = await addCollectionDocument('projects', newItem);
-    const item = { ...newItem, id };
-    setItems([...items, item]);
-    setActiveItem(item);
-    setLocalItem(item);
-    setActiveEditorLang('en');
-    setSaving(false);
+    try {
+      const id = await addCollectionDocument('projects', newItem);
+      await load(true);
+      const response = await getCollection<Project>('projects', 'order', undefined, true);
+      const createdItem = response.find(i => i.id === id);
+      if (createdItem) {
+        handleSelect(createdItem);
+      }
+    } catch (e) {
+      alert('Failed to create project');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLocalUpdate = (updates: Partial<Project>) => {
@@ -175,9 +190,13 @@ export default function ProjectsEditor() {
     setSaving(true);
     try {
       await updateCollectionDocument('projects', activeItem.id, localItem);
-      const updatedItems = items.map(item => item.id === activeItem.id ? localItem : item);
-      setItems(updatedItems);
-      setActiveItem(localItem);
+      await load(true);
+      
+      const response = await getCollection<Project>('projects', 'order', undefined, true);
+      const updated = response.find(i => i.id === activeItem.id);
+      if (updated) {
+        handleSelect(updated);
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (error) {
@@ -197,7 +216,7 @@ export default function ProjectsEditor() {
     setSaving(true);
     try {
       await deleteCollectionDocument('projects', id);
-      setItems(items.filter(i => i.id !== id));
+      await load(true);
       if (activeItem?.id === id) {
         setActiveItem(null);
         setLocalItem(null);
