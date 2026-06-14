@@ -554,7 +554,14 @@ Expected output format:
         }
       });
 
-      const translated = JSON.parse(response.text || '{}');
+      let cleanedTranslationText = (response.text || '{}').trim();
+      if (cleanedTranslationText.startsWith("```")) {
+        cleanedTranslationText = cleanedTranslationText.replace(/^```(?:json)?\n?/, "");
+      }
+      if (cleanedTranslationText.endsWith("```")) {
+        cleanedTranslationText = cleanedTranslationText.substring(0, cleanedTranslationText.length - 3).trim();
+      }
+      const translated = JSON.parse(cleanedTranslationText);
       res.json(translated);
     } catch (error: any) {
       return handleRouteError(res, error, 'ai/translate');
@@ -563,6 +570,7 @@ Expected output format:
 
   // Dynamic AI-powered Resume Generator endpoint
   app.post('/api/ai/generate-resume', async (req, res) => {
+    const startTime = Date.now();
     try {
       const { targetLanguage, portfolioData } = req.body || {};
       
@@ -571,7 +579,7 @@ Expected output format:
       }
 
       // Lazily resolve / verify client is configured
-      getGeminiClient();
+      const ai = getGeminiClient();
 
       const systemPrompt = `You are an elite, professional ATS Resume and CV Writer.
 Your goal is to synthesize 100% of the raw portfolio data into a highly polished, clean, recruiter-ready resume/CV optimized for ATS (Applicant Tracking Systems).
@@ -636,6 +644,8 @@ Respond with ONLY the structured resume JSON matching the requested response sch
         config: {
           temperature: 0.1,
           responseMimeType: "application/json",
+          // Prompt-level schema compression bypasses slow API-side grammar constraint delays
+          stripSchema: true,
           responseSchema: {
             type: Type.OBJECT,
             properties: {
@@ -770,7 +780,70 @@ Respond with ONLY the structured resume JSON matching the requested response sch
         }
       });
 
-      const parsedResume = JSON.parse(response.text || '{}');
+      let cleanedCVParsedText = (response.text || '{}').trim();
+      if (cleanedCVParsedText.startsWith("```")) {
+        cleanedCVParsedText = cleanedCVParsedText.replace(/^```(?:json)?\n?/, "");
+      }
+      if (cleanedCVParsedText.endsWith("```")) {
+        cleanedCVParsedText = cleanedCVParsedText.substring(0, cleanedCVParsedText.length - 3).trim();
+      }
+      const parsedResume = JSON.parse(cleanedCVParsedText);
+      
+      const endTime = Date.now();
+      const latencySeconds = parseFloat(((endTime - startTime) / 1000).toFixed(2));
+      const projectsCount = Array.isArray(portfolioData?.projects) ? portfolioData.projects.length : 0;
+      const experienceCount = Array.isArray(portfolioData?.experience) ? portfolioData.experience.length : 0;
+      
+      const promptText = `${systemPrompt}\n\nGenerate and return the formatted ATS resume JSON in the target language: "${targetLanguage}".`;
+      const contextText = JSON.stringify(portfolioData || {});
+
+      const promptSizeChars = promptText.length;
+      const contextSizeChars = contextText.length;
+      
+      // Calculate token count dynamically via GoogleGenAI API countTokens if available
+      let actualTokenCount = Math.ceil((promptSizeChars + contextSizeChars) / 4);
+      try {
+        const countQuery = await ai.models.countTokens({
+          model: "gemini-3.5-flash",
+          contents: promptText + "\n\nContext:\n" + contextText
+        });
+        if (countQuery && countQuery.totalTokens) {
+          actualTokenCount = countQuery.totalTokens;
+        }
+      } catch (tokenErr) {
+        console.warn("[Gemini Measurements] Failed to fetch token count via API:", tokenErr);
+      }
+
+      // Format diagnostic payload
+      const diagnostics = {
+        promptSizeCharacters: promptSizeChars,
+        contextSizeCharacters: contextSizeChars,
+        inputTokenCount: actualTokenCount,
+        ragRetrievalSizeCharacters: 0, // Direct sanitized portfolio payload structure utilized, no RAG needed for resume data
+        numberOfProjectsIncluded: projectsCount,
+        numberOfExperienceIncluded: experienceCount,
+        overallLatencySeconds: latencySeconds,
+        timestampUtc: new Date().toISOString()
+      };
+
+      // Add a hidden _diagnostics payload field on the JSON object
+      parsedResume._diagnostics = diagnostics;
+
+      console.log(`
+===================================================
+ Gemini Resume Generation Metrics Tracker (Success)
+===================================================
+• Prompt size (instructions): ${diagnostics.promptSizeCharacters} chars
+• Context size (portfolio data): ${diagnostics.contextSizeCharacters} chars
+• Actual Input Token Count: ${diagnostics.inputTokenCount} tokens
+• RAG retrieval size: 0 (Direct portfolio context payload used)
+• Projects included: ${diagnostics.numberOfProjectsIncluded}
+• Experience positions included: ${diagnostics.numberOfExperienceIncluded}
+• Model utilized for synthesis: gemini-3.5-flash
+• Overall Execution Latency: ${diagnostics.overallLatencySeconds} seconds
+===================================================
+`);
+
       res.json(parsedResume);
     } catch (error: any) {
       return handleRouteError(res, error, 'ai/generate-resume');

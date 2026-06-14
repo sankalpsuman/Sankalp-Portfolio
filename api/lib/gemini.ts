@@ -50,12 +50,18 @@ export async function generateContentWithFallback(params: any): Promise<any> {
   
   // Set up optimized parameters to work with Vercel's strict timeout limits
   let optimizedParams = { ...params };
-  if (isVercel && optimizedParams.config && optimizedParams.config.responseSchema) {
-    console.log("[Gemini Centralized] Vercel environment detected. Stripping complex responseSchema to bypass slow grammar-constrained decoding latency.");
+  const stripSchemaParam = optimizedParams.config?.stripSchema;
+  const isComplexSchema = optimizedParams.config?.responseSchema && JSON.stringify(optimizedParams.config.responseSchema).length > 400;
+  
+  if ((isVercel || stripSchemaParam === true || isComplexSchema) && optimizedParams.config && optimizedParams.config.responseSchema) {
+    console.log(`[Gemini Centralized] Stripping complex responseSchema to bypass slow grammar-constrained decoding latency (isVercel: ${isVercel}, stripSchemaParam: ${stripSchemaParam}, isComplexSchema: ${isComplexSchema}).`);
     
     const originalSchema = optimizedParams.config.responseSchema;
     const configWithNoSchema = { ...optimizedParams.config };
     delete configWithNoSchema.responseSchema;
+    if ('stripSchema' in configWithNoSchema) {
+      delete configWithNoSchema.stripSchema;
+    }
     optimizedParams.config = configWithNoSchema;
     
     const schemaInstructions = `\n\nCRITICAL OUTLINE FOR OUTPUT JSON:
@@ -96,22 +102,21 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
     const isHighQuotaRisk = requestedModel.includes("gemini-3.5");
     
     let modelsToTry: string[] = [];
-    if (isHighQuotaRisk || isVercel) {
-      modelsToTry = [...primaryStableModels];
-      if (!modelsToTry.includes(requestedModel)) {
-        modelsToTry.push(requestedModel);
-      }
-    } else {
-      modelsToTry = [requestedModel];
-      for (const m of primaryStableModels) {
-        if (!modelsToTry.includes(m)) {
-          modelsToTry.push(m);
-        }
+    // Prioritize the requested model first to ensure lowest latency and best execution quality
+    modelsToTry.push(requestedModel);
+    
+    // Supplement with fallback options
+    for (const m of primaryStableModels) {
+      if (!modelsToTry.includes(m)) {
+        modelsToTry.push(m);
       }
     }
     
-    // Add other fallback models to ensure broad coverage
-    const fallbackPool = ["gemini-flash-latest", "gemini-3.1-pro-preview"];
+    // Add other fallback models to ensure broad coverage without violating free-tier quotas on paid-only models
+    const fallbackPool = ["gemini-flash-latest"];
+    if (requestedModel.includes("pro") || requestedModel.includes("image")) {
+      fallbackPool.push("gemini-3.1-pro-preview");
+    }
     for (const m of fallbackPool) {
       if (!modelsToTry.includes(m)) {
         modelsToTry.push(m);
@@ -143,15 +148,36 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
       // In Vercel, minimize retries to 1 per model to avoid running out of our strict 10s timeout
       const maxRetries = isVercel ? 1 : 2;
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        let attemptTimeoutId: any = null;
         try {
           console.log(`[Gemini Centralized] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
-          const response = await ai.models.generateContent({
+          
+          // Give models plenty of time on non-Vercel (e.g. Cloud Run) to complete high-workload generations (like resumes)
+          const modelTimeoutMs = isVercel ? 4000 : 35000;
+          
+          const generationPromise = ai.models.generateContent({
             ...optimizedParams,
             model,
           });
+          
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            attemptTimeoutId = setTimeout(() => {
+              reject(new Error(`Model ${model} execution timed out on attempt ${attempt} after ${modelTimeoutMs}ms`));
+            }, modelTimeoutMs);
+          });
+          
+          const response = await Promise.race([
+            generationPromise.then((res) => {
+              if (attemptTimeoutId) clearTimeout(attemptTimeoutId);
+              return res;
+            }),
+            timeoutPromise
+          ]);
+          
           console.log(`[Gemini Centralized] SUCCESS with model: ${model} (attempt ${attempt}/${maxRetries})`);
           return response;
         } catch (err: any) {
+          if (attemptTimeoutId) clearTimeout(attemptTimeoutId);
           lastError = err;
           const errMsg = err?.message || String(err);
           const errStatus = err?.status || err?.statusCode;
@@ -167,16 +193,17 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
             errMsg.toLowerCase().includes("resource_exhausted") ||
             errMsg.toLowerCase().includes("overloaded") ||
             errMsg.toLowerCase().includes("unavailable") ||
-            errMsg.toLowerCase().includes("high demand");
+            errMsg.toLowerCase().includes("high demand") ||
+            errMsg.toLowerCase().includes("timed out"); // Model timeouts captured here as quota/overload type failures to cycle candidate model immediately
 
           // Suppress raw error telemetry log dumps during recovery transitions.
           // This keeps standard out clean from false alarm error detections.
           console.log(
-            `[Gemini Centralized Info] Model ${model} is currently rate-limited or busy (status: ${errStatus || "transient"}). Progressing to candidate fallback.`
+            `[Gemini Centralized Info] Model ${model} is currently rate-limited, busy, or timed out (status: ${errStatus || "transient"}). Msg: ${errMsg}. Progressing to candidate fallback.`
           );
 
           if (isQuotaOrOverload) {
-            console.log(`[Gemini Centralized] Quota or overload detected for model ${model}. Moving it to exhausted list and transitioning immediately to fallback.`);
+            console.log(`[Gemini Centralized] Quota, overload, or timeout detected for model ${model}. Moving it to exhausted list and transitioning immediately to fallback.`);
             exhaustedModels.add(model);
             break; // Break the retry loop and try the next model
           }
@@ -190,7 +217,8 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
             errMsg.toLowerCase().includes("high demand") ||
             errMsg.toLowerCase().includes("overloaded") ||
             errMsg.toLowerCase().includes("rate limit") ||
-            errMsg.toLowerCase().includes("quota");
+            errMsg.toLowerCase().includes("quota") ||
+            errMsg.toLowerCase().includes("timed out");
 
           // Do not perform retry-delay loops for non-transient errors
           if (!isTransient) {
