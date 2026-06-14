@@ -2,13 +2,13 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import { Type } from "@google/genai";
-import { getGeminiClient, generateContentWithFallback, handleRouteError } from './lib/gemini';
+import { getGeminiClient, generateContentWithFallback, handleRouteError } from './lib/gemini.js';
 import dotenv from 'dotenv';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import NodeCache from 'node-cache';
 import nodemailer from 'nodemailer';
-import { buildKnowledgeBase, retrieveRelevantContext, invalidateRAGCache } from './ragService';
+import { buildKnowledgeBase, retrieveRelevantContext, invalidateRAGCache } from './_ragService.js';
 
 dotenv.config();
 

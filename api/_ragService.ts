@@ -1,6 +1,6 @@
 import { doc, getDoc, collection, getDocs, Firestore } from 'firebase/firestore';
 import { GoogleGenAI } from '@google/genai';
-import { getGeminiClient } from './lib/gemini';
+import { getGeminiClient } from './lib/gemini.js';
 
 export interface DocumentChunk {
   id: string;
