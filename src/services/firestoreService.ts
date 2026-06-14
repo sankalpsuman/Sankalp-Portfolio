@@ -150,7 +150,7 @@ export async function getCollection<T>(path: string, sortField?: string, limitCo
         q = query(q, limit(limitCount));
       }
       const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
+      const data = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as T));
       cache.set(cacheKey, { data, timestamp: Date.now() });
       return data;
     });
@@ -162,9 +162,12 @@ export async function getCollection<T>(path: string, sortField?: string, limitCo
 export async function addCollectionDocument<T extends object>(path: string, data: T): Promise<string> {
   if (!path) throw new Error('Path is required');
   try {
-    let finalData = data;
+    let finalData = { ...data };
+    if ('id' in finalData) {
+      delete (finalData as any).id;
+    }
     if (isTranslationEligiblePath(path)) {
-      finalData = await autoTranslateDocument(data);
+      finalData = await autoTranslateDocument(finalData);
     }
     const sanitized = sanitizeData(finalData);
     return await withRetry(async () => {
@@ -189,9 +192,12 @@ export async function addCollectionDocument<T extends object>(path: string, data
 export async function updateCollectionDocument<T extends object>(path: string, id: string, data: T): Promise<void> {
   if (!path || !id) return;
   try {
-    let finalData = data;
+    let finalData = { ...data };
+    if ('id' in finalData) {
+      delete (finalData as any).id;
+    }
     if (isTranslationEligiblePath(path)) {
-      finalData = await autoTranslateDocument(data);
+      finalData = await autoTranslateDocument(finalData);
     }
     const sanitized = sanitizeData(finalData);
     await withRetry(async () => {

@@ -843,7 +843,7 @@ export const AIResumeModal: React.FC = () => {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="w-full max-w-5xl bg-[#0a0e23] md:border md:border-white/10 rounded-none md:rounded-2xl flex flex-col h-full md:h-[90vh] max-h-screen md:max-h-[calc(100vh-2rem)] relative shadow-2xl overflow-hidden cursor-default"
+                className="w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1440px] bg-[#0a0e23] md:border md:border-white/10 rounded-none md:rounded-2xl flex flex-col h-full md:h-[90vh] max-h-screen md:max-h-[calc(100vh-2rem)] relative shadow-2xl overflow-hidden cursor-default"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="resume-modal-title"
@@ -1013,7 +1013,7 @@ export const AIResumeModal: React.FC = () => {
 
                     {/* Styled Dynamic Live Resume Document Preview Canvas - A4 Simulation */}
                     <div className="flex-1 overflow-y-auto bg-white text-slate-800 rounded-xl p-6 md:p-8 border border-white/10 shadow-sm" style={{ maxHeight: '100%' }}>
-                      <div id="resume-pdf-render-root" className="bg-white text-slate-800 antialiased leading-relaxed" style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', minHeight: '297mm' }}>
+                      <div id="resume-pdf-render-root" className="bg-white text-slate-800 antialiased leading-relaxed max-w-[820px] mx-auto w-full" style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', minHeight: '297mm' }}>
                         
                         {/* Header Area */}
                         <div className="text-center pb-5 mb-5 border-b-2 border-blue-900">
