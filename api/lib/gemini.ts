@@ -86,7 +86,7 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
   // Active timeout threshold. Vercel Hobby limits serverless functions to 10 seconds.
   // We set a dynamic 8.2-second limit on Vercel so that our Promise.race rejects gracefully
   // before Vercel terminates the container, allowing us to return a nice custom JSON error.
-  const apiTimeoutMs = isVercel ? 8200 : 55000;
+  const apiTimeoutMs = isVercel ? 55000 : 55000;
   let timeoutId: any = null;
 
   const coreGenerationPromise = (async () => {
@@ -153,7 +153,7 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
           console.log(`[Gemini Centralized] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
           
           // Give models plenty of time on non-Vercel (e.g. Cloud Run) to complete high-workload generations (like resumes)
-          const modelTimeoutMs = isVercel ? 4000 : 35000;
+          const modelTimeoutMs = isVercel ? 45000 : 45000;
           
           const generationPromise = ai.models.generateContent({
             ...optimizedParams,
