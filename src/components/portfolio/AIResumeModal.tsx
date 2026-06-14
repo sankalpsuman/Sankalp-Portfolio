@@ -118,7 +118,6 @@ export const AIResumeModal: React.FC = () => {
       }));
 
       const sanitizedProjects = (projects || [])
-        .filter((p: any) => p.liveUrl || p.githubUrl || p.link || p.github)
         .slice(0, 15)
         .map((p: any) => ({
           name: p.title || p.name || '',
@@ -617,7 +616,7 @@ export const AIResumeModal: React.FC = () => {
       measureHost.style.top = '-9999px';
       measureHost.style.left = '-9999px';
       measureHost.style.width = '820px';
-      measureHost.style.padding = '40px';
+      measureHost.style.padding = '0';
       measureHost.style.boxSizing = 'border-box';
       measureHost.style.backgroundColor = '#ffffff';
       measureHost.style.color = '#1e293b';
@@ -681,8 +680,8 @@ export const AIResumeModal: React.FC = () => {
       // Step 3: Packing layout blocks into pages of safe content height budget
       const PAGE_WIDTH_PX = 820;
       const PAGE_HEIGHT_PX = 1160;
-      const PADDING_PX = 40;
-      const MAX_CONTENT_HEIGHT_PX = 1040;
+      const PADDING_PX = 48;
+      const MAX_CONTENT_HEIGHT_PX = 1000;
 
       const pages: HTMLDivElement[] = [];
       let currentPage = document.createElement('div');
@@ -694,7 +693,11 @@ export const AIResumeModal: React.FC = () => {
         el.style.boxSizing = 'border-box';
         el.style.backgroundColor = '#ffffff';
         el.style.color = '#1e293b';
-        el.style.position = 'relative';
+        el.style.position = 'fixed';
+        el.style.top = '0';
+        el.style.left = '0';
+        el.style.zIndex = '-9999';
+        el.style.pointerEvents = 'none';
         el.style.display = 'flex';
         el.style.flexDirection = 'column';
         el.className = 'bg-white text-slate-800 antialiased leading-relaxed';
@@ -755,7 +758,11 @@ export const AIResumeModal: React.FC = () => {
           logging: false,
           backgroundColor: '#ffffff',
           width: PAGE_WIDTH_PX,
-          height: PAGE_HEIGHT_PX
+          height: PAGE_HEIGHT_PX,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: PAGE_WIDTH_PX,
+          windowHeight: PAGE_HEIGHT_PX
         });
 
         // Tidy up DOM immediately
@@ -1094,7 +1101,7 @@ export const AIResumeModal: React.FC = () => {
                         )}
 
                         {/* Highlighted Case Studies & Projects */}
-                        {resumeData.projects && resumeData.projects.filter((p: any) => p.link && p.link.trim() !== '' && p.link.trim().toLowerCase() !== 'n/a').length > 0 && (
+                        {resumeData.projects && resumeData.projects.length > 0 && (
                           <div className="mb-5">
                             <div className="mb-2" data-pdf-block="true">
                               <h2 className="text-xs font-bold text-blue-900 border-b border-slate-300 pb-0.5 uppercase tracking-wide">
@@ -1102,13 +1109,13 @@ export const AIResumeModal: React.FC = () => {
                               </h2>
                             </div>
                             <div className="space-y-3.5">
-                              {resumeData.projects
-                                .filter((p: any) => p.link && p.link.trim() !== '' && p.link.trim().toLowerCase() !== 'n/a')
-                                .map((proj: any, index: number) => (
+                              {resumeData.projects.map((proj: any, index: number) => {
+                                const hasValidLink = proj.link && proj.link.trim() !== '' && proj.link.trim().toLowerCase() !== 'n/a';
+                                return (
                                   <div key={index} className="space-y-1 mb-3.5" data-pdf-block="true">
                                     <div className="flex justify-between items-start gap-4 font-bold text-[11px] text-slate-900 w-full">
                                       <span className="shrink-0">{proj.name}</span>
-                                      {proj.link && (
+                                      {hasValidLink && (
                                         <span className="text-[10px] text-indigo-700 font-medium underline hover:text-indigo-950 max-w-[55%] truncate text-right whitespace-nowrap">
                                           <a href={proj.link} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-900">
                                             {proj.link.replace(/^https?:\/\/(www\.)?/, '')}
@@ -1125,7 +1132,8 @@ export const AIResumeModal: React.FC = () => {
                                       {proj.description}
                                     </p>
                                   </div>
-                                ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
