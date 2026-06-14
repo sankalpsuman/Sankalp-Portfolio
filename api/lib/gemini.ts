@@ -83,10 +83,36 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
     }
   }
 
-  // Active timeout threshold. Vercel Hobby limits serverless functions to 10 seconds.
-  // We set a dynamic 8.2-second limit on Vercel so that our Promise.race rejects gracefully
-  // before Vercel terminates the container, allowing us to return a nice custom JSON error.
-  const apiTimeoutMs = isVercel ? 55000 : 55000;
+  // Determine dynamic timeout based on payload/explicit parameters or context detection
+  let targetTimeoutMs = params.timeoutMs || params.config?.timeoutMs;
+  
+  // Clean up any custom parameters so they don't get passed downstream
+  if ('timeoutMs' in optimizedParams) {
+    delete optimizedParams.timeoutMs;
+  }
+  if (optimizedParams.config && 'timeoutMs' in optimizedParams.config) {
+    const newConfig = { ...optimizedParams.config };
+    delete newConfig.timeoutMs;
+    optimizedParams.config = newConfig;
+  }
+
+  if (!targetTimeoutMs) {
+    const contentsStr = JSON.stringify(params.contents || "").toLowerCase();
+    const systemInstStr = JSON.stringify(params.config?.systemInstruction || "").toLowerCase();
+    const combinedStr = contentsStr + " " + systemInstStr;
+    
+    if (combinedStr.includes("resume") || combinedStr.includes("cv writer") || combinedStr.includes("ats")) {
+      targetTimeoutMs = 45000;
+    } else if (combinedStr.includes("translate") || combinedStr.includes("translation")) {
+      targetTimeoutMs = 30000;
+    } else if (combinedStr.includes("chatbot") || combinedStr.includes("conversation") || combinedStr.includes("reply")) {
+      targetTimeoutMs = 15000;
+    } else {
+      targetTimeoutMs = 10000;
+    }
+  }
+
+  const apiTimeoutMs = targetTimeoutMs;
   let timeoutId: any = null;
 
   const coreGenerationPromise = (async () => {
@@ -145,15 +171,15 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
     let lastError: any = null;
 
     for (const model of modelsToTry) {
-      // In Vercel, minimize retries to 1 per model to avoid running out of our strict 10s timeout
+      // In Vercel, minimize retries to 1 per model to avoid running out of our strict timeout limits
       const maxRetries = isVercel ? 1 : 2;
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         let attemptTimeoutId: any = null;
         try {
           console.log(`[Gemini Centralized] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
           
-          // Give models plenty of time on non-Vercel (e.g. Cloud Run) to complete high-workload generations (like resumes)
-          const modelTimeoutMs = isVercel ? 45000 : 45000;
+          // Use the dynamic targetTimeoutMs to allow the active model the full allotted time (e.g. up to 45 seconds)
+          const modelTimeoutMs = targetTimeoutMs;
           
           const generationPromise = ai.models.generateContent({
             ...optimizedParams,
