@@ -827,12 +827,23 @@ export const AIResumeModal: React.FC = () => {
       <AnimatePresence>
         {isOpen && (
           !isMinimized ? (
-            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-[#050816]/90 backdrop-blur-sm overflow-hidden text-white no-print" key="maximized-modal">
+            <div 
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setIsOpen(false);
+                  setIsMinimized(false);
+                  setLoading(false);
+                  setStatus('');
+                }
+              }}
+              className="fixed inset-0 z-[120] flex items-center justify-center p-0 md:p-4 bg-[#050816]/90 backdrop-blur-sm overflow-y-auto text-white no-print cursor-pointer" 
+              key="maximized-modal"
+            >
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="w-full max-w-4xl bg-[#0a0e23] border border-white/10 rounded-2xl flex flex-col h-[90vh] md:h-[85vh] relative shadow-2xl overflow-hidden"
+                className="w-full max-w-5xl bg-[#0a0e23] md:border md:border-white/10 rounded-none md:rounded-2xl flex flex-col h-full md:h-[90vh] max-h-screen md:max-h-[calc(100vh-2rem)] relative shadow-2xl overflow-hidden cursor-default"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="resume-modal-title"
@@ -841,48 +852,57 @@ export const AIResumeModal: React.FC = () => {
                 <div className="absolute top-0 left-1/4 w-1/2 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
 
                 {/* Modal Header */}
-                <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between z-10 shrink-0 bg-[#0c1433]/50">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-1.5 bg-blue-600/10 border border-blue-500/20 rounded-lg text-blue-400">
+                <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-white/10 flex items-center justify-between z-10 shrink-0 bg-[#0c1433]/50">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="p-1.5 bg-blue-600/10 border border-blue-500/20 rounded-lg text-blue-400 shrink-0">
                       <FileText className="w-5 h-5" />
                     </div>
-                    <div>
-                      <h3 id="resume-modal-title" className="text-base font-bold text-white leading-tight">
+                    <div className="min-w-0">
+                      <h3 id="resume-modal-title" className="text-sm sm:text-base font-bold text-white leading-tight truncate">
                         {language === 'en' ? 'Personalized AI Resume Assistant' : language === 'hi' ? 'व्यक्तिगत एआई बायोडाटा सहायक' : language === 'fr' ? 'Assistant de CV IA personnalisé' : 'Personalisierter KI-Lebenslauf-Assistent'}
                       </h3>
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-[9px] sm:text-[10px] text-gray-400 truncate">
                         {language === 'en' ? `Formulating resume in your active locale: ${currentLanguageName}` : language === 'hi' ? `आपकी सक्रिय भाषा में जैव-डेटा: ${currentLanguageName}` : language === 'fr' ? `Formulation du CV en locale active: ${currentLanguageName}` : `Lebenslauf-Erstellung auf: ${currentLanguageName}`}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     {/* Minimize Button */}
                     <button
                       onClick={() => setIsMinimized(true)}
-                      className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-all cursor-pointer flex items-center justify-center"
+                      className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg text-gray-300 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold select-none group"
                       title={language === 'en' ? 'Minimize' : language === 'hi' ? 'छोटा करें' : 'Minimiser'}
                       aria-label="Minimize"
                     >
-                      <Minus className="w-5 h-5" />
+                      <Minus className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
+                      <span className="hidden sm:inline">
+                        {language === 'en' ? 'Minimize' : language === 'hi' ? 'छोटा करें' : 'Minimiser'}
+                      </span>
                     </button>
 
+                    {/* Close Button */}
                     <button
                       onClick={() => {
                         setIsOpen(false);
                         setIsMinimized(false);
+                        setLoading(false);
+                        setStatus('');
                       }}
-                      className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-all cursor-pointer flex items-center justify-center"
+                      className="px-2.5 py-1.5 bg-rose-600/10 hover:bg-rose-600/20 border border-rose-500/20 hover:border-rose-500/30 rounded-lg text-rose-400 hover:text-rose-300 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold select-none group"
                       aria-label="Close dialog"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-4 h-4 text-rose-400 group-hover:text-rose-300 transition-colors" />
+                      <span>
+                        {language === 'en' ? 'Close' : language === 'hi' ? 'बंद करें' : 'Fermer'}
+                      </span>
                     </button>
                   </div>
                 </div>
 
               {/* Loader / Content Splitter */}
-              <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col min-h-0 bg-[#06091c]">
-                {loading || status ? (
+              <div className="flex-1 overflow-y-auto md:overflow-hidden p-6 md:p-8 flex flex-col min-h-0 bg-[#06091c]">
+                {loading || (status && !status.startsWith('Error:')) ? (
                   <div className="flex-1 flex flex-col items-center justify-center space-y-6 py-12">
                     <div className="relative flex items-center justify-center">
                       <div className="w-16 h-16 border-4 border-blue-600/20 border-t-blue-500 rounded-full animate-spin"></div>
@@ -894,12 +914,35 @@ export const AIResumeModal: React.FC = () => {
                         Our AI processes experience timelines, certifications, and project links. We translate sections, improve readability, and organize items for ATS screening.
                       </p>
                     </div>
+                    
+                    {/* Explicit exit actions directly on the loading screen */}
+                    <div className="flex flex-wrap items-center gap-3 justify-center pt-2 select-none z-20">
+                      <button
+                        onClick={() => setIsMinimized(true)}
+                        className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md"
+                      >
+                        <Minus className="w-3.5 h-3.5 text-gray-400" />
+                        {language === 'en' ? 'Minimize Window' : language === 'hi' ? 'छोटा करें' : 'Minimiser'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsOpen(false);
+                          setIsMinimized(false);
+                          setLoading(false);
+                          setStatus('');
+                        }}
+                        className="px-4 py-2 bg-rose-600/10 hover:bg-rose-600/20 border border-rose-500/20 hover:border-rose-500/30 text-rose-400 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md"
+                      >
+                        <X className="w-3.5 h-3.5 text-rose-400" />
+                        {language === 'en' ? 'Cancel & Close' : language === 'hi' ? 'रद्द करें और बंद करें' : 'Annuler'}
+                      </button>
+                    </div>
                   </div>
                 ) : resumeData ? (
-                  <div className="flex flex-col md:flex-row gap-6 h-full min-h-0">
+                  <div className="flex flex-col md:flex-row gap-6 h-full min-h-0 overflow-y-auto md:overflow-hidden">
                     
                     {/* Lateral Controls Panel */}
-                    <div className="md:w-64 space-y-5 shrink-0 flex flex-col justify-between">
+                    <div className="md:w-64 space-y-5 shrink-0 flex flex-col md:justify-start justify-between md:overflow-y-auto md:max-h-full pr-1 md:pb-4">
                       <div className="space-y-4">
                         <div className="p-4 bg-blue-600/10 border border-blue-500/20 rounded-xl space-y-2.5">
                           <h4 className="text-xs font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1.5">
@@ -944,6 +987,18 @@ export const AIResumeModal: React.FC = () => {
                               {pdfStatus}
                             </div>
                           )}
+
+                          <button
+                            onClick={() => {
+                              setIsOpen(false);
+                              setIsMinimized(false);
+                            }}
+                            className="w-full py-2.5 px-4 bg-rose-600/10 hover:bg-rose-600/20 border border-rose-500/20 hover:border-rose-500/30 text-rose-400 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+                            aria-label="Close resume assistant"
+                          >
+                            <X className="w-4 h-4 text-rose-400" />
+                            {language === 'en' ? 'Close Assistant' : language === 'hi' ? 'सहायक बंद करें' : language === 'fr' ? 'Fermer l\'assistant' : 'Assistent schließen'}
+                          </button>
                         </div>
                       </div>
 
@@ -1197,20 +1252,39 @@ export const AIResumeModal: React.FC = () => {
 
                   </div>
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 py-12">
-                    <AlertCircle className="w-12 h-12 text-amber-500 animate-bounce" />
-                    <div className="space-y-1">
-                      <h4 className="text-sm font-bold text-white">Temporary failure during generation</h4>
-                      <p className="text-xs text-gray-400 max-w-sm">
-                        Please try clicking the button again, or ensure the Gemini API key is configured correctly in settings.
+                  <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 py-8">
+                    <AlertCircle className="w-12 h-12 text-rose-500 animate-bounce shrink-0" />
+                    <div className="space-y-2 max-w-md">
+                      <h4 className="text-sm font-bold text-white">{language === 'en' ? 'Resume Generation Failed' : 'बायोडाटा जनरेशन विफल रहा'}</h4>
+                      <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+                        <p className="text-[11px] font-mono text-rose-300 leading-relaxed text-left break-all select-all">
+                          {status ? status.replace(/^Error:\s*/i, '') : 'Unknown Server Error occurred.'}
+                        </p>
+                      </div>
+                      <p className="text-[10px] text-gray-400 leading-relaxed">
+                        {language === 'en' 
+                          ? "Vercel's Serverless Hobby tier enforces a strict 10-second limit. If you updated environment keys in your settings, click 'Redeploy' on your Vercel Dashboard to apply changes, as Vercel does not automatically inject variables into older deployments."
+                          : "वर्सेल (Vercel) के मुफ़्त टियर पर १० सेकंड की समय सीमा होती है। यदि आपने सेटिंग्स में चाबियां अपडेट की हैं, तो बदलाव लागू करने के लिए वर्सेल डैशबोर्ड पर 'Redeploy' पर क्लिक करें।"}
                       </p>
                     </div>
-                    <button
-                      onClick={handleGenerateResume}
-                      className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all select-none cursor-pointer"
-                    >
-                      Retry Generation
-                    </button>
+                    <div className="flex flex-wrap gap-3 justify-center pt-2">
+                      <button
+                        onClick={handleGenerateResume}
+                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all select-none cursor-pointer shadow-md shadow-blue-500/20"
+                      >
+                        {language === 'en' ? 'Retry Generation' : 'पुनः प्रयास करें'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsOpen(false);
+                          setIsMinimized(false);
+                          setStatus('');
+                        }}
+                        className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-gray-350 hover:text-white text-xs font-bold rounded-xl transition-all select-none cursor-pointer border border-white/10"
+                      >
+                        {language === 'en' ? 'Close Window' : 'विंडो बंद करें'}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

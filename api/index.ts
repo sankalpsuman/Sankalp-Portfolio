@@ -1,7 +1,9 @@
-import { app, initPromise } from '../server';
-
 export default async function handler(req: any, res: any) {
   try {
+    // Dynamically import the pre-bundled ESM server build to resolve all imports securely on Vercel
+    // @ts-ignore
+    const { app, initPromise } = await import('./_server.js');
+
     // Await any asynchronous server setups (e.g. Firebase, SMTP transporter config)
     if (initPromise) {
       await initPromise;

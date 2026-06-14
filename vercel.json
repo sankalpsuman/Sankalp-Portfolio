@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/index.ts": {
-      "includeFiles": "dist/**,firebase-applet-config.json",
+      "includeFiles": "dist/**,firebase-applet-config.json,api/_server.js,api/_server.js.map",
       "maxDuration": 60
     }
   },
