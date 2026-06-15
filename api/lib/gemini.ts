@@ -102,7 +102,7 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
     const combinedStr = contentsStr + " " + systemInstStr;
     
     if (combinedStr.includes("resume") || combinedStr.includes("cv writer") || combinedStr.includes("ats")) {
-      targetTimeoutMs = 45000;
+      targetTimeoutMs = 48000;
     } else if (combinedStr.includes("translate") || combinedStr.includes("translation")) {
       targetTimeoutMs = 30000;
     } else if (combinedStr.includes("chatbot") || combinedStr.includes("conversation") || combinedStr.includes("reply")) {
@@ -178,8 +178,12 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
         try {
           console.log(`[Gemini Centralized] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
           
-          // Use the dynamic targetTimeoutMs to allow the active model the full allotted time (e.g. up to 45 seconds)
-          const modelTimeoutMs = targetTimeoutMs;
+          // If there are multiple fallback models scheduled and this is the first (often slower/unstable) model,
+          // cap its individual attempt timeout to 23 seconds to guarantee we have ample runway
+          // to try the ultra-fast fallback models (e.g. gemini-3.1-flash-lite) if it hangs.
+          const modelTimeoutMs = (modelsToTry.length > 1 && model === modelsToTry[0])
+            ? Math.min(23000, targetTimeoutMs)
+            : targetTimeoutMs;
           
           const generationPromise = ai.models.generateContent({
             ...optimizedParams,

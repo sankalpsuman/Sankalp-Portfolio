@@ -599,7 +599,7 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
      * Total Years of Experience (personalInfo.yearsOfExperience, calculated or summarized from history)
      * Languages (personalInfo.languages, translated/extracted from "about" or other sections, or fallback list)
      * Work Experience (experience, with responsibilities, achievements, and quantified metrics)
-     * Projects (projects, with name, role, descriptions, technologies used, outcomes, and links)
+     * Projects: Include up to 10 projects from the source portfolio data in the "projects" section. Ensure that you do NOT limit projects to 3. If there are up to 10 projects in the input data, extract and return all of them.
      * Technical Skills / Tools & Technologies (skills, categorized domain lists containing all technical languages, frameworks, automation tools, and assistive systems)
      * Certifications (certifications)
      * Education (education)
@@ -608,7 +608,7 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
      * Publications, Blogs, or Content (as an additionalSection, or list details under "Technical Publications & Written Insight")
      * All External Links (under contact, projects, and certifications where available)
    - Under "personalInfo", the "website" field MUST be mapped to the provided "portfolioUrl" in the payload (unless there is an official custom website specified in "contact") to guarantee recruiters can access the live portfolio!
-   - For every single project in "projects", always capture and include its live/GitHub url as "link" in the response schema. Never omit the links.
+   - For every single project in "projects", always capture and include its live/GitHub url as "link" in the response schema. Never omit the links. Do NOT skip projects.
    - If there are custom user-added blocks or sections that do not map directly to standard resume headers, map them elegantly under "additionalSections" in the response schema. Never omit any custom sections, no matter how small.
 
 2. INTELLIGENT MERGING & ZERO DUPLICATION:
@@ -630,6 +630,7 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
    - Validate that none of the core sections (personalInfo, experience, projects, skills, education) are missing before outputting the final JSON.
 
 6. EXTREME CONCISENESS & SPEED OPTIMIZATION:
+   - Include up to 10 projects from the source data in the "projects" list. Do NOT cap the project count at 3.
    - For experience bullets, limit to exactly 2-3 highly punchy, action-oriented bullet points per role and ensure they are extremely concise.
    - For project descriptions, keep them strictly within 1-2 concise, impact-driven sentences.
    - Limit additional sections lists to the top 3 items only.
@@ -643,7 +644,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
 
       const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",
-        timeoutMs: 45000,
+        timeoutMs: 48000,
         contents: `${systemPrompt}\n\nGenerate and return the formatted ATS resume JSON in the target language: "${targetLanguage}".`,
         config: {
           temperature: 0.1,

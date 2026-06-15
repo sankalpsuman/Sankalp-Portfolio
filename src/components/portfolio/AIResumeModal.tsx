@@ -27,6 +27,30 @@ import { useLanguage } from '../../hooks/useLanguage';
 import jspdf from 'jspdf';
 import html2canvas from 'html2canvas';
 
+const cleanDisplayUrl = (url: string): string => {
+  if (!url) return '';
+  let clean = url.replace(/^https?:\/\/(www\.)?/, '');
+  clean = clean.split(/[?#]/)[0];
+  clean = clean.replace(/\/$/, '');
+  
+  if (clean.length > 35) {
+    try {
+      let urlObjStr = url;
+      if (!/^https?:\/\//i.test(url)) urlObjStr = 'https://' + url;
+      const parsed = new URL(urlObjStr);
+      const host = parsed.hostname.replace(/^www\./, '');
+      const pathWithDots = parsed.pathname.length > 15 
+        ? parsed.pathname.substring(0, 15) + '...'
+        : parsed.pathname;
+      const result = host + (pathWithDots !== '/' ? pathWithDots : '');
+      return result.replace(/\/$/, '');
+    } catch {
+      return clean.substring(0, 32) + '...';
+    }
+  }
+  return clean;
+};
+
 export const AIResumeModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -509,8 +533,8 @@ export const AIResumeModal: React.FC = () => {
             ${projectList.map((proj: any) => `
               <div class="item">
                 <div class="item-header">
-                  <span>${proj.name}</span>
-                  ${proj.link ? `<span><a href="${proj.link}" target="_blank">${proj.link.replace(/^https?:\/\/(www\.)?/, '')} ↗</a></span>` : ''}
+                  <span style="font-weight: 700;">${proj.name}</span>
+                  ${proj.link ? `<span style="font-size: 9px;"><a href="${proj.link}" target="_blank" style="color: #4338ca; text-decoration: underline;">${cleanDisplayUrl(proj.link)} ↗</a></span>` : ''}
                 </div>
                 <div class="item-subheader">
                   <span>${proj.role || 'Contributor'}</span>
@@ -622,6 +646,17 @@ export const AIResumeModal: React.FC = () => {
       measureHost.style.color = '#1e293b';
       
       const renderRootClone = element.cloneNode(true) as HTMLElement;
+      
+      // Force padding on renderRootClone to be exactly the same as PADDING_PX (48px) to match page rendering
+      renderRootClone.style.padding = '48px';
+      renderRootClone.style.width = '820px';
+      renderRootClone.style.maxWidth = '820px';
+      renderRootClone.style.boxSizing = 'border-box';
+      // Remove responsive template padding classes to prevent width shifts on mobile layouts
+      renderRootClone.className = renderRootClone.className
+        .replace(/\bp-\d+/g, '')
+        .replace(/\bmd:p-\d+/g, '');
+
       measureHost.appendChild(renderRootClone);
       document.body.appendChild(measureHost);
 
@@ -693,10 +728,10 @@ export const AIResumeModal: React.FC = () => {
         el.style.boxSizing = 'border-box';
         el.style.backgroundColor = '#ffffff';
         el.style.color = '#1e293b';
-        el.style.position = 'fixed';
-        el.style.top = '0';
-        el.style.left = '0';
-        el.style.zIndex = '-9999';
+        el.style.position = 'absolute';
+        el.style.top = `${window.scrollY}px`;
+        el.style.left = `${window.scrollX}px`;
+        el.style.zIndex = '-99999';
         el.style.pointerEvents = 'none';
         el.style.display = 'flex';
         el.style.flexDirection = 'column';
@@ -759,10 +794,10 @@ export const AIResumeModal: React.FC = () => {
           backgroundColor: '#ffffff',
           width: PAGE_WIDTH_PX,
           height: PAGE_HEIGHT_PX,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: PAGE_WIDTH_PX,
-          windowHeight: PAGE_HEIGHT_PX
+          scrollX: window.scrollX,
+          scrollY: window.scrollY,
+          windowWidth: document.documentElement.clientWidth || PAGE_WIDTH_PX,
+          windowHeight: document.documentElement.clientHeight || PAGE_HEIGHT_PX
         });
 
         // Tidy up DOM immediately
@@ -1113,12 +1148,12 @@ export const AIResumeModal: React.FC = () => {
                                 const hasValidLink = proj.link && proj.link.trim() !== '' && proj.link.trim().toLowerCase() !== 'n/a';
                                 return (
                                   <div key={index} className="space-y-1 mb-3.5" data-pdf-block="true">
-                                    <div className="flex justify-between items-start gap-4 font-bold text-[11px] text-slate-900 w-full">
-                                      <span className="shrink-0">{proj.name}</span>
+                                    <div className="flex justify-between items-baseline gap-4 font-bold text-[11px] text-slate-900 w-full">
+                                      <span className="text-slate-900 font-bold">{proj.name}</span>
                                       {hasValidLink && (
-                                        <span className="text-[10px] text-indigo-700 font-medium underline hover:text-indigo-950 max-w-[55%] truncate text-right whitespace-nowrap">
+                                        <span className="text-[9.5px] text-indigo-700 font-medium underline hover:text-indigo-950 shrink-0 max-w-[45%] truncate text-right whitespace-nowrap">
                                           <a href={proj.link} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-900">
-                                            {proj.link.replace(/^https?:\/\/(www\.)?/, '')}
+                                            {cleanDisplayUrl(proj.link)}
                                           </a>
                                           <span className="ml-1 select-none">↗</span>
                                         </span>
