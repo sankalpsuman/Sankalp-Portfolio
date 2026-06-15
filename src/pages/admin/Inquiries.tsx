@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getCollection, deleteCollectionDocument } from '../../services/firestoreService';
 import { Mail, User, Clock, Trash2, Loader2, MessageSquare, ExternalLink, ChevronRight, Search } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
 
 interface Inquiry {
   id: string;
@@ -16,6 +17,7 @@ export default function Inquiries() {
   const [loading, setLoading] = useState(true);
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
 
   const loadInquiries = async () => {
     setLoading(true);
@@ -28,14 +30,19 @@ export default function Inquiries() {
     loadInquiries();
   }, []);
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  const handleDeleteClick = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this inquiry?')) return;
-    
+    setDeleteModal({ isOpen: true, id });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteModal.id) return;
+    const id = deleteModal.id;
     try {
       await deleteCollectionDocument('messages', id);
       setInquiries(prev => prev.filter(item => item.id !== id));
       if (selectedInquiry?.id === id) setSelectedInquiry(null);
+      setDeleteModal({ isOpen: false, id: null });
     } catch (error) {
       alert('Failed to delete inquiry');
     }
@@ -118,7 +125,16 @@ export default function Inquiries() {
                     <p className="text-xs text-blue-400 mb-1 truncate">{inquiry.email}</p>
                     <p className="text-xs text-gray-500 line-clamp-1 italic">"{inquiry.message}"</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-gray-700 group-hover:text-white transition-colors" />
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={(e) => handleDeleteClick(inquiry.id, e)}
+                      className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:bg-red-500/10"
+                      title="Delete transmission"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <ChevronRight className="w-4 h-4 text-gray-700 group-hover:text-white transition-colors" />
+                  </div>
                 </div>
               ))}
             </div>
@@ -143,7 +159,7 @@ export default function Inquiries() {
                </button>
                <div className="text-xs font-mono text-gray-500 uppercase tracking-[0.2em]">Transmission Detail</div>
                <button 
-                 onClick={(e) => handleDelete(selectedInquiry.id, e as any)}
+                 onClick={(e) => handleDeleteClick(selectedInquiry.id, e as any)}
                  className="p-2 hover:bg-red-500/10 text-gray-600 hover:text-red-400 transition-colors rounded-lg"
                >
                  <Trash2 className="w-5 h-5" />
@@ -211,6 +227,14 @@ export default function Inquiries() {
           </div>
         )}
       </div>
+
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, id: null })}
+        onConfirm={confirmDelete}
+        title="Delete Client Inquiry"
+        message="Are you sure you want to delete this transmission permanently? This action cannot be undone."
+      />
     </div>
   );
 }

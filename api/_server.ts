@@ -308,7 +308,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
 
       const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",
-        timeoutMs: 15000,
+        timeoutMs: 35000,
         contents: `${systemPrompt}\n\nClient Conversation History:\n${conversationHistory}\n\nAssess this conversation, and respond in the required JSON format. Provide the next reply.`,
         config: {
           responseMimeType: "application/json",
@@ -469,7 +469,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
 
       const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",
-        timeoutMs: 10000,
+        timeoutMs: 35000,
         contents: `${prompt}\n\nUser Input: ${userInput}`,
         config: {
           systemInstruction: `You are Sankalp's Advanced Quality Engineering AI Agent. Use EXTREME PRECISION and MINIMALISM.
@@ -532,7 +532,7 @@ Expected output format:
 
       const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",
-        timeoutMs: 30000,
+        timeoutMs: 50000,
         contents: `${systemPrompt}\n\nPerform translations and return the JSON.`,
         config: {
           responseMimeType: "application/json",
@@ -644,7 +644,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
 
       const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",
-        timeoutMs: 48000,
+        timeoutMs: 55000,
         contents: `${systemPrompt}\n\nGenerate and return the formatted ATS resume JSON in the target language: "${targetLanguage}".`,
         config: {
           temperature: 0.1,
@@ -864,7 +864,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
 
       const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",
-        timeoutMs: 10000,
+        timeoutMs: 25000,
         contents: `Provide exactly 3 keywords separated by commas that describe a professional, high-quality technical or business-related image for this blog post.
         Title: ${title}
         Excerpt: ${excerpt}

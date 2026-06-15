@@ -53,12 +53,17 @@
         "name": { "type": "string" },
         "category": { "type": "string" },
         "level": { "type": "number" },
-        "icon": { "type": "string" }
+        "icon": { "type": "string" },
+        "proficiency": { "type": "string" },
+        "experienceYears": { "type": "number" },
+        "featured": { "type": "boolean" },
+        "badge": { "type": "string" },
+        "learningStatus": { "type": "string" }
       }
     },
     "project": {
       "title": "Project",
-      "description": "Portfolio projects.",
+      "description": "Portfolio projects and case studies.",
       "type": "object",
       "properties": {
         "title": { "type": "string" },
@@ -68,7 +73,17 @@
         "techStack": { "type": "array", "items": { "type": "string" } },
         "liveUrl": { "type": "string" },
         "githubUrl": { "type": "string" },
-        "order": { "type": "number" }
+        "order": { "type": "number" },
+        "challenge": { "type": "string" },
+        "goal": { "type": "string" },
+        "solution": { "type": "string" },
+        "testingStrategy": { "type": "string" },
+        "architecture": { "type": "string" },
+        "toolsUsed": { "type": "array", "items": { "type": "string" } },
+        "metrics": { "type": "array", "items": { "type": "string" } },
+        "businessImpact": { "type": "string" },
+        "screenshots": { "type": "array", "items": { "type": "string" } },
+        "lessonsLearned": { "type": "string" }
       }
     },
     "certification": {
@@ -298,6 +313,102 @@
         "updatedAt": { "type": "string" }
       },
       "required": ["sessionId", "messages", "createdAt"]
+    },
+    "resume": {
+      "title": "Resume",
+      "description": "Resume metadata and files.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "version": { "type": "string" },
+        "pdfUrl": { "type": "string" },
+        "previewUrl": { "type": "string" },
+        "isFeatured": { "type": "boolean" },
+        "downloadsCount": { "type": "number" },
+        "lastUpdated": { "type": "string" }
+      },
+      "required": ["title", "category", "version"]
+    },
+    "achievement": {
+      "title": "Achievement & Award",
+      "description": "Professional achievements and awards.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "organization": { "type": "string" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "badge": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "featured": { "type": "boolean" },
+        "order": { "type": "number" }
+      },
+      "required": ["title", "organization", "date"]
+    },
+    "whyHireMe": {
+      "title": "Why Hire Me",
+      "description": "Recruiter focus selling points and stats.",
+      "type": "object",
+      "properties": {
+        "headline": { "type": "string" },
+        "description": { "type": "string" },
+        "statistics": { 
+          "type": "array", 
+          "items": { 
+            "type": "object", 
+            "properties": {
+              "label": { "type": "string" },
+              "value": { "type": "string" }
+            }
+          }
+        },
+        "highlights": { "type": "array", "items": { "type": "string" } },
+        "ctaText": { "type": "string" },
+        "ctaUrl": { "type": "string" }
+      },
+      "required": ["headline", "description"]
+    },
+    "availability": {
+      "title": "Availability Status",
+      "description": "Job search availability status values.",
+      "type": "object",
+      "properties": {
+        "openToWork": { "type": "boolean" },
+        "openToRemote": { "type": "boolean" },
+        "openToGermany": { "type": "boolean" },
+        "openToUSA": { "type": "boolean" },
+        "openToContract": { "type": "boolean" },
+        "openToFreelance": { "type": "boolean" },
+        "note": { "type": "string" },
+        "lastUpdated": { "type": "string" }
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Question",
+      "description": "Standard FAQ for recruiters and visitors.",
+      "type": "object",
+      "properties": {
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+        "category": { "type": "string" },
+        "visible": { "type": "boolean" },
+        "order": { "type": "number" }
+      },
+      "required": ["question", "answer", "category"]
+    },
+    "bookMeeting": {
+      "title": "Book Meeting Settings",
+      "description": "Configuration for the Calendly and scheduling widget.",
+      "type": "object",
+      "properties": {
+        "calendlyUrl": { "type": "string" },
+        "googleCalendarUrl": { "type": "string" },
+        "ctaTitle": { "type": "string" },
+        "ctaDescription": { "type": "string" }
+      },
+      "required": ["calendlyUrl", "ctaTitle", "ctaDescription"]
     }
   },
   "firestore": {
@@ -380,6 +491,30 @@
     "now/content": {
       "schema": "now",
       "description": "Singleton for now page content."
+    },
+    "resumes": {
+      "schema": "resume",
+      "description": "Collection of CV profiles and download trackings."
+    },
+    "achievements": {
+      "schema": "achievement",
+      "description": "Collection of professional achievements and awards."
+    },
+    "settings/whyHireMe": {
+      "schema": "whyHireMe",
+      "description": "Singleton for recruiter selling pitches."
+    },
+    "settings/availability": {
+      "schema": "availability",
+      "description": "Singleton for availability search flags."
+    },
+    "settings/bookMeeting": {
+      "schema": "bookMeeting",
+      "description": "Singleton for Calendly and scheduling settings."
+    },
+    "faqs": {
+      "schema": "faq",
+      "description": "Collection of frequently asked questions."
     }
   }
 }

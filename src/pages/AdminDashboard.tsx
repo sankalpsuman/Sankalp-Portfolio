@@ -27,7 +27,12 @@ import {
   Clock,
   Bot,
   Target,
-  Loader2
+  Loader2,
+  UserCheck,
+  Trophy,
+  HelpCircle,
+  CalendarRange,
+  Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -41,37 +46,47 @@ import ExperienceEditor from './admin/ExperienceEditor';
 import SkillsEditor from './admin/SkillsEditor';
 import ProjectsEditor from './admin/ProjectsEditor';
 import SettingsEditor from './admin/SettingsEditor';
-
-// Secondary/Data-heavy modules (Remain lazy)
-const CertificationsEditor = lazy(() => import('./admin/CertificationsEditor'));
-const AIEditor = lazy(() => import('./admin/AIEditor'));
-const ContactEditor = lazy(() => import('./admin/ContactEditor'));
-const SEOEditor = lazy(() => import('./admin/SEOEditor'));
-const Inquiries = lazy(() => import('./admin/Inquiries'));
-const BlogEditor = lazy(() => import('./admin/BlogEditor'));
-const TestimonialsEditor = lazy(() => import('./admin/TestimonialsEditor'));
-const TimelineEditor = lazy(() => import('./admin/TimelineEditor'));
-const ImpactStoriesEditor = lazy(() => import('./admin/ImpactStoriesEditor'));
-const QAMetricsEditor = lazy(() => import('./admin/QAMetricsEditor'));
-const AIToolsEditor = lazy(() => import('./admin/AIToolsEditor'));
-const NowEditor = lazy(() => import('./admin/NowEditor'));
+import BookMeetingEditor from './admin/BookMeetingEditor';
+import CertificationsEditor from './admin/CertificationsEditor';
+import AIEditor from './admin/AIEditor';
+import ContactEditor from './admin/ContactEditor';
+import SEOEditor from './admin/SEOEditor';
+import Inquiries from './admin/Inquiries';
+import BlogEditor from './admin/BlogEditor';
+import TestimonialsEditor from './admin/TestimonialsEditor';
+import TimelineEditor from './admin/TimelineEditor';
+import ImpactStoriesEditor from './admin/ImpactStoriesEditor';
+import QAMetricsEditor from './admin/QAMetricsEditor';
+import AIToolsEditor from './admin/AIToolsEditor';
+import NowEditor from './admin/NowEditor';
+import ResumeCenterEditor from './admin/ResumeCenterEditor';
+import AchievementsEditor from './admin/AchievementsEditor';
+import WhyHireMeEditor from './admin/WhyHireMeEditor';
+import AvailabilityEditor from './admin/AvailabilityEditor';
+import FaqEditor from './admin/FaqEditor';
 
 const NAV_ITEMS = [
   { path: '', label: 'Overview', icon: LayoutDashboard },
   { path: 'hero', label: 'Hero Section', icon: Zap },
   { path: 'about', label: 'About Me', icon: User },
+  { path: 'why-hire-me', label: 'Why Hire Me', icon: UserCheck },
   { path: 'experience', label: 'Experience', icon: Briefcase },
-  { path: 'skills', label: 'Toolkit', icon: Code },
   { path: 'timeline', label: 'Career Journey', icon: Milestone },
+  { path: 'skills', label: 'Toolkit', icon: Code },
   { path: 'ai', label: 'AI in QA', icon: Sparkles },
   { path: 'aitools', label: 'AI Tools', icon: Bot },
   { path: 'projects', label: 'Projects', icon: Layers },
   { path: 'impact', label: 'Impact Stories', icon: Target },
   { path: 'metrics', label: 'QA Metrics', icon: BarChart3 },
+  { path: 'achievements', label: 'Achievements', icon: Trophy },
   { path: 'certifications', label: 'Certifications', icon: Award },
-  { path: 'blogs', label: 'Blog', icon: FileText },
   { path: 'testimonials', label: 'Testimonials', icon: Star },
+  { path: 'faqs', label: 'FAQ', icon: HelpCircle },
+  { path: 'blogs', label: 'Blog', icon: FileText },
   { path: 'now', label: 'Now Page', icon: Clock },
+  { path: 'resumes', label: 'Resume Center', icon: FileText },
+  { path: 'availability', label: 'Availability Status', icon: CalendarRange },
+  { path: 'book-meeting', label: 'Book a Meeting', icon: Calendar },
   { path: 'inquiries', label: 'Inquiries', icon: MessageSquare },
   { path: 'contact', label: 'Contact Settings', icon: Mail },
   { path: 'seo', label: 'SEO & Metadata', icon: Search },
@@ -282,6 +297,12 @@ export default function AdminDashboard() {
                     <Route path="/skills" element={<SkillsEditor />} />
                     <Route path="/projects" element={<ProjectsEditor />} />
                     <Route path="/certifications" element={<CertificationsEditor />} />
+                    <Route path="/achievements" element={<AchievementsEditor />} />
+                    <Route path="/why-hire-me" element={<WhyHireMeEditor />} />
+                    <Route path="/availability" element={<AvailabilityEditor />} />
+                    <Route path="/book-meeting" element={<BookMeetingEditor />} />
+                    <Route path="/faqs" element={<FaqEditor />} />
+                    <Route path="/resumes" element={<ResumeCenterEditor />} />
                     <Route path="/ai" element={<AIEditor />} />
                     <Route path="/inquiries" element={<Inquiries />} />
                     <Route path="/contact" element={<ContactEditor />} />

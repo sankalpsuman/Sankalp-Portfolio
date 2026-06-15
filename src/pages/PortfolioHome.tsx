@@ -11,6 +11,10 @@ import { lazyRetry } from '../lib/lazyRetry';
 
 // Below-the-fold Components (Lazy)
 const Experience = lazy(() => lazyRetry(() => import('../components/portfolio/Experience.tsx')));
+const WhyHireMe = lazy(() => lazyRetry(() => import('../components/portfolio/WhyHireMe.tsx')));
+const Achievements = lazy(() => lazyRetry(() => import('../components/portfolio/Achievements.tsx')));
+const FAQ = lazy(() => lazyRetry(() => import('../components/portfolio/FAQ.tsx')));
+const RecruiterLobby = lazy(() => lazyRetry(() => import('../components/portfolio/RecruiterLobby.tsx')));
 const CareerTimeline = lazy(() => lazyRetry(() => import('../components/portfolio/CareerTimeline.tsx')));
 const Skills = lazy(() => lazyRetry(() => import('../components/portfolio/Skills.tsx')));
 const AISection = lazy(() => lazyRetry(() => import('../components/portfolio/AISection.tsx')));
@@ -66,6 +70,7 @@ export default function PortfolioHome() {
       <main>
         <Hero />
         <About />
+        <LazySection id="why-hire-me"><WhyHireMe /></LazySection>
         
         <LazySection id="experience"><Experience /></LazySection>
         <LazySection id="career-journey"><CareerTimeline /></LazySection>
@@ -75,9 +80,12 @@ export default function PortfolioHome() {
         <LazySection id="qa-dashboard"><QADashboard /></LazySection>
         <LazySection id="projects"><Projects /></LazySection>
         <LazySection id="impact-stories"><ImpactStories /></LazySection>
+        <LazySection id="achievements"><Achievements /></LazySection>
         <LazySection id="certifications"><Certifications /></LazySection>
         <LazySection id="testimonials"><Testimonials /></LazySection>
         <LazySection id="blog"><BlogPreview /></LazySection>
+        <LazySection id="recruiter-lobby"><RecruiterLobby /></LazySection>
+        <LazySection id="faq"><FAQ /></LazySection>
         <LazySection id="contact"><Contact /></LazySection>
       </main>
       <LazySection><Footer /></LazySection>

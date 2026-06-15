@@ -165,6 +165,47 @@ service cloud.firestore {
              data.createdAt is string;
     }
 
+    function isValidResume(data) {
+      return data.keys().hasAll(['title', 'category', 'version']) &&
+             data.title is string && data.title.size() <= 200 &&
+             data.category is string && data.category.size() <= 100 &&
+             data.version is string && data.version.size() <= 50;
+    }
+
+    function isValidAchievement(data) {
+      return data.keys().hasAll(['title', 'organization', 'date']) &&
+             data.title is string && data.title.size() <= 250 &&
+             data.organization is string && data.organization.size() <= 250 &&
+             (!data.keys().hasAny(['description']) || (data.description is string && data.description.size() <= 2000)) &&
+             (!data.keys().hasAny(['badge']) || (data.badge is string && data.badge.size() <= 100)) &&
+             (!data.keys().hasAny(['imageUrl']) || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
+             (!data.keys().hasAny(['featured']) || (data.featured is bool)) &&
+             (!data.keys().hasAny(['order']) || (data.order is number));
+    }
+
+    function isValidWhyHireMe(data) {
+      return data.keys().hasAll(['headline', 'description']) &&
+             data.headline is string && data.headline.size() <= 500 &&
+             data.description is string && data.description.size() <= 5000;
+    }
+
+    function isValidAvailability(data) {
+      return data.keys().hasAny(['openToWork', 'openToRemote', 'openToGermany', 'openToUSA', 'openToContract', 'openToFreelance']);
+    }
+
+    function isValidBookMeeting(data) {
+      return (!data.keys().hasAny(['calendlyUrl']) || (data.calendlyUrl is string && data.calendlyUrl.size() <= 2000)) &&
+             (!data.keys().hasAny(['ctaTitle']) || (data.ctaTitle is string && data.ctaTitle.size() <= 1000)) &&
+             (!data.keys().hasAny(['ctaDescription']) || (data.ctaDescription is string && data.ctaDescription.size() <= 10000)) &&
+             (!data.keys().hasAny(['googleCalendarUrl']) || (data.googleCalendarUrl is string && data.googleCalendarUrl.size() <= 2000));
+    }
+
+    function isValidFAQ(data) {
+      return data.keys().hasAll(['question', 'answer', 'category']) &&
+             data.question is string && data.question.size() <= 1000 &&
+             data.answer is string && data.answer.size() <= 10000;
+    }
+
     // --- Collection Routes ---
 
     match /hero/{docId} {
@@ -264,7 +305,30 @@ service cloud.firestore {
 
     match /settings/{docId} {
       allow read: if true;
-      allow create, update: if isAdmin() && isValidSettings(incoming());
+      allow create, update: if isAdmin() && (
+        (docId == 'global' && isValidSettings(incoming())) ||
+        (docId == 'whyHireMe' && isValidWhyHireMe(incoming())) ||
+        (docId == 'availability' && isValidAvailability(incoming())) ||
+        (docId == 'bookMeeting' && isValidBookMeeting(incoming()))
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /resumes/{resumeId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (incoming().diff(existing()).affectedKeys().hasOnly(['downloadsCount']));
+    }
+
+    match /achievements/{achId} {
+      allow read, get, list: if true;
+      allow create, update: if isAdmin() && isValidAchievement(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /faqs/{faqId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidFAQ(incoming());
       allow delete: if isAdmin();
     }
 

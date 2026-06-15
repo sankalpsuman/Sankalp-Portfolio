@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { Milestone, Plus, Trash2, Edit2, Loader2, Save, X, Globe } from 'lucide-react';
+import { Milestone, Plus, Trash2, Edit2, Loader2, Save, X, Globe, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
@@ -140,14 +140,39 @@ export default function TimelineEditor() {
           Career Journey Management
         </h2>
         <button 
-          onClick={() => setEditing({ title: '', company: '', date: '', description: '', icon: 'Briefcase', color: '#3b82f6', order: milestones.length })}
-          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors text-sm"
+          onClick={handleStartCreate}
+          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors text-sm font-bold cursor-pointer"
         >
           <Plus className="w-4 h-4" /> Add Milestone
         </button>
       </div>
 
+      {/* Education & Career Mapping Explanation Banner */}
+      <div className="bg-gradient-to-r from-purple-950/30 to-blue-950/30 border border-purple-500/20 rounded-2xl p-5 flex items-start gap-4">
+        <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400 shrink-0">
+          <Sparkles className="w-5 h-5 animate-pulse" />
+        </div>
+        <div className="space-y-1">
+          <h4 className="text-sm font-bold text-white">How to add Education & Academic Degrees?</h4>
+          <p className="text-xs text-gray-400 leading-relaxed">
+            The resume builder and portfolio sections use this <strong>Career Journey</strong> timeline for both professional jobs and academic degrees. When adding educational items, enter your degree or study program as the <strong>Title</strong> (e.g. <em>B.S. in Computer Science</em>) and the school/university as the <strong>Institution</strong> (e.g. <em>Stanford University</em>). The AI resume system automatically parses and groups these under <strong>Education</strong> on generated documents!
+          </p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-4">
+        {milestones.length === 0 && (
+          <div className="p-8 text-center bg-[#050816] border border-white/5 rounded-xl text-gray-500 text-sm flex flex-col items-center justify-center py-12">
+            <Milestone className="w-12 h-12 text-gray-700 mb-3 opacity-35" />
+            <span className="mb-3">No career milestones added yet.</span>
+            <button
+              onClick={handleStartCreate}
+              className="text-purple-400 hover:text-purple-300 font-bold hover:underline text-xs flex items-center gap-1 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" /> Start New Milestone
+            </button>
+          </div>
+        )}
         {milestones.map((item, idx) => (
           <div key={item.id} className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center justify-between group">
             <div className="flex items-center gap-4">
@@ -159,7 +184,7 @@ export default function TimelineEditor() {
                 <p className="text-xs text-gray-400">{item.company} • {item.date}</p>
               </div>
             </div>
-            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all shrink-0">
               <button onClick={() => handleStartEdit(item)} className="p-2 hover:bg-white/10 rounded-lg"><Edit2 className="w-4 h-4" /></button>
               <button onClick={() => setDeleteModal({ isOpen: true, id: item.id! })} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg"><Trash2 className="w-4 h-4" /></button>
             </div>
@@ -235,25 +260,27 @@ export default function TimelineEditor() {
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs text-gray-500">
-                      Title {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                    <label className="text-xs text-gray-300 font-medium">
+                      Title / Degree Name (e.g. B.S. in Computer Science) {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
                     </label>
                     <input 
                       required
                       value={getEditingFieldVal('title')}
                       onChange={e => setEditingFieldVal('title', e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm text-white font-bold" 
+                      placeholder="e.g. Senior QA Lead or B.S. in Computer Science"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm text-white font-bold placeholder-gray-600" 
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs text-gray-500">
-                      Company {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
+                    <label className="text-xs text-gray-300 font-medium">
+                      Institution / Company (e.g. Stanford University) {activeEditorLang !== 'en' && `(${activeEditorLang.toUpperCase()})`}
                     </label>
                     <input 
                       required
                       value={getEditingFieldVal('company')}
                       onChange={e => setEditingFieldVal('company', e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm text-white font-semibold" 
+                      placeholder="e.g. Stanford University or Google Inc."
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all text-sm text-white font-semibold placeholder-gray-600" 
                     />
                   </div>
                 </div>
@@ -293,8 +320,21 @@ export default function TimelineEditor() {
                   />
                 </div>
 
-                <div className="pt-6 border-t border-white/5 flex justify-end gap-3">
-                  <button type="submit" disabled={saving} className="w-full py-4 bg-purple-600 hover:bg-purple-700 rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50">
+                <div className="pt-6 border-t border-white/5 flex gap-3">
+                  {editing.id && (
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setDeleteModal({ isOpen: true, id: editing.id! });
+                        setEditing(null);
+                      }}
+                      className="py-4 px-4 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 rounded-xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </button>
+                  )}
+                  <button type="submit" disabled={saving} className="flex-1 py-4 bg-purple-600 hover:bg-purple-700 rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50">
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     Save Milestone
                   </button>

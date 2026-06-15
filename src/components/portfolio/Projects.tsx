@@ -1,8 +1,8 @@
 import { useState, useEffect, MouseEvent } from 'react';
 import Section from './Section';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { getCollection } from '../../services/firestoreService';
-import { ExternalLink, Github, Layers, PlayCircle, ChevronRight, Sparkles } from 'lucide-react';
+import { ExternalLink, Github, Layers, PlayCircle, ChevronRight, Sparkles, X, Check, Award, ArrowUpRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import LazyImage from '../ui/LazyImage';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -17,6 +17,17 @@ interface Project {
   liveUrl?: string;
   githubUrl?: string;
   order: number;
+  // Dynamic extended case study fields
+  challenge?: string;
+  goal?: string;
+  solution?: string;
+  testingStrategy?: string;
+  architecture?: string;
+  toolsUsed?: string[];
+  metrics?: string[];
+  businessImpact?: string;
+  screenshots?: string[];
+  lessonsLearned?: string;
 }
 
 const DEFAULT_PROJECTS: Project[] = [
@@ -26,7 +37,16 @@ const DEFAULT_PROJECTS: Project[] = [
     description: 'Autonomous QA agent that extracts test scenarios from natural language documentation with 95% accuracy.',
     techStack: ['Python', 'Gemini API', 'Selenium', 'React'],
     order: 1,
-    imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2070&auto=format&fit=crop'
+    imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2070&auto=format&fit=crop',
+    challenge: 'Legacy testing suites were written manually, taking up to 4 Sprints to cover critical validation targets for Telecom billing apps.',
+    goal: 'Create an automatic prompt-routed exploratory model to analyze requirements and generate reliable Selenium scripts instantly.',
+    solution: 'Designed an intelligent parser utilizing the Gemini model chain to read user journeys and export automated integration flows in real-time.',
+    testingStrategy: 'Continuous boundary and regression runs scheduled via Jenkins pipelines with custom reporting structures.',
+    architecture: 'Microservices setup featuring an Express orchestration proxy, an isolated scraping VM container, and clean React control frames.',
+    toolsUsed: ['Python', 'Gemini API', 'Selenium', 'React', 'Docker'],
+    metrics: ['95% scenario coverage precision', '80% speed increase in script authoring', 'Zero critical regressions leaked'],
+    businessImpact: 'Freed up 2 engineering positions to dedicate efforts to advanced exploratory and secure load setups.',
+    lessonsLearned: 'Strict temperature tuning is required in NLP outputs to prevent duplicate locators from breaking assertion points.'
   },
   {
     id: '2',
@@ -50,6 +70,7 @@ export default function Projects() {
   const [items, setItems] = useState<Project[]>([]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [mousePosMap, setMousePosMap] = useState<Record<string, { x: number; y: number }>>({});
+  const [selectedCaseStudy, setSelectedCaseStudy] = useState<Project | null>(null);
   const { t, resolveTranslation } = useLanguage();
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>, id: string) => {
@@ -103,10 +124,7 @@ export default function Projects() {
           const isHovered = hoveredId === project.id;
 
           const handleProjectClick = () => {
-            const url = project.liveUrl || project.githubUrl;
-            if (url) {
-              window.open(url, '_blank', 'noopener,noreferrer');
-            }
+            setSelectedCaseStudy(project);
           };
 
           return (
@@ -157,13 +175,13 @@ export default function Projects() {
                   wrapperClassName="w-full h-full"
                 />
                 
-                {/* Visual Glass overlays for realistic screens depth */}
+                {/* Visual Glass overlays */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#02030d]/80 via-transparent to-transparent opacity-90 group-hover:opacity-50 transition-all duration-500"></div>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_45%)]" />
                 
                 {/* Tech Badges floating beautifully in image */}
                 <div className="absolute top-4 left-4 flex flex-wrap gap-1.5 z-20">
-                  {project.techStack.slice(0, 4).map((tech, i) => (
+                  {project.techStack.slice(0, 4).map((tech) => (
                     <span 
                       key={tech} 
                       className="px-2.5 py-1 bg-[#050616]/95 backdrop-blur-md border border-white/[0.08] rounded-lg text-[9px] uppercase tracking-wider font-semibold text-slate-300 group-hover:text-[#6366f1] group-hover:border-[#6366f1]/30 transition-all duration-300"
@@ -229,14 +247,14 @@ export default function Projects() {
                 {/* Footer Interaction elements with fine link items */}
                 <div className="flex items-center justify-between pt-4 border-t border-white/[0.05]">
                   <div className="flex flex-wrap gap-2">
+                    <span className="text-[10px] font-mono text-slate-500 group-hover:hidden transition-all">
+                      Click to explore case study
+                    </span>
                     {project.techStack.length > 0 && (
                       <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest hidden group-hover:inline-block transition-all animate-fadeIn">
                         {project.techStack.join(' • ')}
                       </span>
                     )}
-                    <span className="text-[10px] font-mono text-slate-500 group-hover:hidden transition-all">
-                      Click to explore case study
-                    </span>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -287,6 +305,150 @@ export default function Projects() {
             </div>
          </button>
       </motion.div>
+
+      {/* Case Study Modal Dialog (FEATURE 3 Integration) */}
+      <AnimatePresence>
+        {selectedCaseStudy && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 overflow-y-auto">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedCaseStudy(null)}
+              className="fixed inset-0 bg-black/85 backdrop-blur-md"
+            />
+
+            {/* Modal Body */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="relative w-full max-w-4xl bg-[#090b1c] border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl z-50 max-h-[90vh] overflow-y-auto custom-scrollbar"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedCaseStudy(null)}
+                className="absolute top-5 right-5 p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="space-y-6">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand/10 border border-brand/20 rounded-full text-xs text-brand font-semibold mb-3">
+                    <Sparkles className="w-3.5 h-3.5 animate-pulse" /> Case Study Review
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white">
+                    {getProjectTitle(selectedCaseStudy)}
+                  </h3>
+                  <p className="text-gray-400 text-sm md:text-base mt-2">
+                    {getProjectDescription(selectedCaseStudy)}
+                  </p>
+                </div>
+
+                {/* Image / Showcase Block */}
+                <div className="aspect-[16/8] w-full rounded-2xl overflow-hidden border border-white/5 shadow-inner">
+                  <img
+                    src={selectedCaseStudy.imageUrl || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop"}
+                    alt={getProjectTitle(selectedCaseStudy)}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Advanced Extended Details Grid */}
+                {selectedCaseStudy.challenge ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">
+                    {/* Column 1: Core challenge & Goals */}
+                    <div className="space-y-4">
+                      <div className="bg-white/[0.01] border border-white/5 p-4 rounded-xl">
+                        <h4 className="text-xs uppercase font-mono tracking-wider text-red-400 font-bold mb-1.5">🚨 The Challenge</h4>
+                        <p className="text-xs text-gray-300 leading-relaxed">{selectedCaseStudy.challenge}</p>
+                      </div>
+
+                      <div className="bg-white/[0.01] border border-white/5 p-4 rounded-xl">
+                        <h4 className="text-xs uppercase font-mono tracking-wider text-[#6366f1] font-bold mb-1.5">🎯 Project Goal</h4>
+                        <p className="text-xs text-gray-200 leading-relaxed">{selectedCaseStudy.goal}</p>
+                      </div>
+
+                      <div className="bg-white/[0.01] border border-white/5 p-4 rounded-xl">
+                        <h4 className="text-xs uppercase font-mono tracking-wider text-green-400 font-bold mb-1.5">💡 Implemented Solution</h4>
+                        <p className="text-xs text-gray-300 leading-relaxed">{selectedCaseStudy.solution}</p>
+                      </div>
+                    </div>
+
+                    {/* Column 2: Architecture & Results */}
+                    <div className="space-y-4">
+                      <div className="bg-white/[0.01] border border-white/5 p-4 rounded-xl">
+                        <h4 className="text-xs uppercase font-mono tracking-wider text-cyan-400 font-bold mb-1.5">🏗️ Test Architecture</h4>
+                        <p className="text-xs text-gray-300 leading-relaxed">{selectedCaseStudy.architecture}</p>
+                      </div>
+
+                      <div className="bg-white/[0.01] border border-white/5 p-4 rounded-xl">
+                        <h4 className="text-xs uppercase font-mono tracking-wider text-purple-400 font-bold mb-1.5">⚙️ Testing Strategy</h4>
+                        <p className="text-xs text-gray-300 leading-relaxed">{selectedCaseStudy.testingStrategy}</p>
+                      </div>
+
+                      <div className="bg-white/[0.01] border border-white/5 p-4 rounded-xl">
+                        <h4 className="text-xs uppercase font-mono tracking-wider text-yellow-400 font-bold mb-1.5">✍️ Lessons Learned</h4>
+                        <p className="text-xs text-gray-300 leading-relaxed">{selectedCaseStudy.lessonsLearned}</p>
+                      </div>
+                    </div>
+
+                    {/* Metrics Banner */}
+                    {selectedCaseStudy.metrics && selectedCaseStudy.metrics.length > 0 && (
+                      <div className="col-span-full bg-brand/5 border border-brand/20 p-5 rounded-xl space-y-2">
+                        <h4 className="text-xs uppercase font-mono tracking-wider text-white font-bold flex items-center gap-1.5">
+                          <Award className="w-4 h-4 text-brand animate-bounce" /> Measured Quality Success Metrics
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {selectedCaseStudy.metrics.map((metric, mIdx) => (
+                            <div key={mIdx} className="flex gap-2 items-start text-xs text-brand leading-relaxed">
+                              <Check className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" />
+                              <span>{metric}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="pt-4 border-t border-white/5">
+                    <p className="text-xs text-gray-400 leading-relaxed italic text-center py-6">
+                      Detailed telemetry case studies are only parsed for flagship items. Explore other live materials using external links below.
+                    </p>
+                  </div>
+                )}
+
+                {/* Actions Frame */}
+                <div className="flex flex-wrap gap-3 items-center justify-end pt-4 border-t border-white/5">
+                  {selectedCaseStudy.githubUrl && (
+                    <a
+                      href={selectedCaseStudy.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-semibold border border-white/10 transition-colors"
+                    >
+                      <Github className="w-4 h-4" /> GitHub Repository
+                    </a>
+                  )}
+                  {selectedCaseStudy.liveUrl && (
+                    <a
+                      href={selectedCaseStudy.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-5 py-2 bg-brand text-white rounded-xl text-xs font-semibold shadow-lg hover:bg-brand/85 transition-transform hover:scale-102"
+                    >
+                      Live Deployment Demo <ArrowUpRight className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </Section>
   );
 }

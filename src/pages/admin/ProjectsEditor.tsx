@@ -45,7 +45,7 @@ const ProjectListItem = memo(({ item, isActive, onSelect, onDelete }: {
     </div>
     <button 
       onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
-      className="p-2 -m-1 text-gray-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+      className="p-2 -m-1 text-gray-500 hover:text-red-400 transition-colors opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
       title="Delete Project"
     >
       <Trash2 className="w-4 h-4" />
@@ -351,18 +351,29 @@ export default function ProjectsEditor() {
           <div className="bg-[#050816] border border-white/5 rounded-2xl p-6 lg:p-8 space-y-8 sticky top-24">
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
                <h3 className="text-xl font-bold">Edit Project</h3>
-               <button 
-                 onClick={handleSave} 
-                 disabled={saving}
-                 className={cn(
-                   "flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all text-sm font-bold",
-                   saved ? "bg-emerald-600 hover:bg-emerald-700" : "bg-blue-600 hover:bg-blue-700",
-                   saving && "opacity-50"
-                 )}
-               >
-                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                 {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
-               </button>
+               <div className="flex items-center gap-2">
+                 <button
+                   onClick={() => handleDelete(activeItem.id)}
+                   disabled={saving}
+                   className="flex items-center gap-1.5 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 active:bg-red-500/30 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                   type="button"
+                 >
+                   <Trash2 className="w-3.5 h-3.5" />
+                   Delete Project
+                 </button>
+                 <button 
+                   onClick={handleSave} 
+                   disabled={saving}
+                   className={cn(
+                     "flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all text-sm font-bold",
+                     saved ? "bg-emerald-600 hover:bg-emerald-700" : "bg-blue-600 hover:bg-blue-700",
+                     saving && "opacity-50"
+                   )}
+                 >
+                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                   {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+                 </button>
+               </div>
                <div className="flex gap-2">
                   {localItem.liveUrl && <a href={localItem.liveUrl} target="_blank" className="p-2 bg-white/5 rounded-lg hover:text-blue-400"><ExternalLink className="w-4 h-4" /></a>}
                   {localItem.githubUrl && <a href={localItem.githubUrl} target="_blank" className="p-2 bg-white/5 rounded-lg hover:text-blue-400"><Github className="w-4 h-4" /></a>}
@@ -533,9 +544,17 @@ export default function ProjectsEditor() {
             </div>
           </div>
         ) : (
-          <div className="h-96 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-gray-500 italic">
-            <Layers className="w-12 h-12 mb-4 opacity-20" />
-            Select a project to manifest its properties
+          <div className="border border-dashed border-white/10 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[350px]">
+            <Layers className="w-12 h-12 mb-4 opacity-20 text-gray-500 animate-pulse" />
+            <p className="text-gray-400 mb-4 max-w-xs text-sm">Select a project to manifest its properties, or start listing a brand new product instantly.</p>
+            <button
+              onClick={handleCreate}
+              disabled={saving}
+              className="flex items-center gap-2 px-5 py-3 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold rounded-xl text-xs transition-all shadow-lg shadow-blue-500/20 active:scale-95 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              Add New Project
+            </button>
           </div>
         )}
       </div>

@@ -179,10 +179,10 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
           console.log(`[Gemini Centralized] Calling generateContent with model: ${model} (attempt ${attempt}/${maxRetries})`);
           
           // If there are multiple fallback models scheduled and this is the first (often slower/unstable) model,
-          // cap its individual attempt timeout to 23 seconds to guarantee we have ample runway
-          // to try the ultra-fast fallback models (e.g. gemini-3.1-flash-lite) if it hangs.
+          // cap its individual attempt timeout to 55% of the total target timeout (up to 23s maximum)
+          // to guarantee we have ample runway to try the ultra-fast fallback models (e.g. gemini-3.1-flash-lite) if it hangs.
           const modelTimeoutMs = (modelsToTry.length > 1 && model === modelsToTry[0])
-            ? Math.min(23000, targetTimeoutMs)
+            ? Math.min(23000, Math.floor(targetTimeoutMs * 0.55))
             : targetTimeoutMs;
           
           const generationPromise = ai.models.generateContent({
@@ -271,7 +271,7 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
       () =>
         reject(
           new Error(
-            "Gemini AI generation exceeded the maximum API processing limit (55 seconds). Please try again later or optimize your raw portfolio content."
+            `Gemini AI generation exceeded the maximum API processing limit (${Math.round(apiTimeoutMs / 1000)} seconds). Please try again later or optimize your raw portfolio content.`
           )
         ),
       apiTimeoutMs

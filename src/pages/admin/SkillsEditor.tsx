@@ -265,8 +265,14 @@ export default function SkillsEditor() {
             <input
               value={newSkill.name}
               onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none transition-all"
-              placeholder="Skill Name (e.g. Selenium)"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddSkill();
+                }
+              }}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-blue-500 outline-none transition-all text-white text-sm"
+              placeholder="Skill Name (e.g. Selenium) or comma-separated list..."
             />
           </div>
           <div>
@@ -331,10 +337,10 @@ export default function SkillsEditor() {
                     </div>
                     <button
                       onClick={() => handleDeleteSkill(skill.id)}
-                      className="p-3 -m-1 text-gray-500 hover:text-red-400 transition-colors"
+                      className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all rounded-lg shrink-0 cursor-pointer"
                       title="Delete Skill"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-4.5 h-4.5" />
                     </button>
                   </div>
                 ))}
