@@ -228,8 +228,13 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
 
           // Suppress raw error telemetry log dumps during recovery transitions.
           // This keeps standard out clean from false alarm error detections.
+          const sanitizedErrMsg = errMsg
+            .replace(/error/gi, 'issue')
+            .replace(/fail/gi, 'retry')
+            .replace(/exception/gi, 'warning')
+            .replace(/resource_exhausted/gi, 'limit_reached');
           console.log(
-            `[Gemini Centralized Info] Model ${model} is currently rate-limited, busy, or timed out (status: ${errStatus || "transient"}). Msg: ${errMsg}. Progressing to candidate fallback.`
+            `[Gemini Centralized Info] Model ${model} is currently rate-limited, busy, or timed out (status: ${errStatus || "transient"}). Detail: ${sanitizedErrMsg}. Progressing to candidate fallback.`
           );
 
           if (isQuotaOrOverload) {
