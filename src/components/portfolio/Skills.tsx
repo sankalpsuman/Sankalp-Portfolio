@@ -111,13 +111,16 @@ export default function Skills() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: catIdx * 0.1 }}
-              className="p-8 bg-white/2 border border-white/5 rounded-3xl hover:border-brand/20 transition-all group hover:bg-white/5"
+              className="p-8 bg-white/[0.01] backdrop-blur-md border border-white/5 rounded-3xl hover:border-brand/35 hover:bg-white/[0.03] transition-all group relative overflow-hidden shadow-lg"
             >
-              <div className="flex items-center gap-4 mb-8">
-                <div className="p-3 rounded-2xl bg-white/5 text-brand border border-white/10 group-hover:scale-110 transition-transform">
+              {/* Visual Glass Reflection Glare */}
+              <div className="absolute top-0 -left-1/2 w-1/4 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-25 group-hover:left-[150%] transition-all duration-[1000ms] ease-out pointer-events-none" />
+
+              <div className="flex items-center gap-4 mb-8 relative z-10">
+                <div className="p-3 rounded-2xl bg-white/5 text-brand border border-white/10 group-hover:scale-110 group-hover:border-brand/40 group-hover:bg-brand/10 transition-all duration-300">
                   <cat.icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-white">{getCategoryName(cat.name)}</h3>
+                <h3 className="text-xl font-bold text-white group-hover:text-brand transition-colors duration-300">{getCategoryName(cat.name)}</h3>
               </div>
 
               <div className="space-y-6">

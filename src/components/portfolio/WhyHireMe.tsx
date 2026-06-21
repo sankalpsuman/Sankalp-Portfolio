@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Section from './Section';
 import { motion } from 'motion/react';
 import { getDocument } from '../../services/firestoreService';
@@ -17,6 +17,64 @@ interface WhyHireMeData {
   ctaText?: string;
   ctaUrl?: string;
 }
+
+// Interactive achievement counter for WhyHireMe metrics
+const AnimatedCounter: React.FC<{ value: string }> = ({ value }) => {
+  const [count, setCount] = useState(0);
+  const elementRef = useRef<HTMLSpanElement>(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  const numericStr = value.replace(/[^0-9]/g, '');
+  const suffix = value.replace(/[0-9]/g, '');
+  const target = parseInt(numericStr, 10);
+
+  useEffect(() => {
+    if (isNaN(target)) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+          let startTimestamp: number | null = null;
+          const duration = 1500;
+
+          const animate = (timestamp: number) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const easeOutQuad = progress * (2 - progress);
+            setCount(Math.floor(easeOutQuad * target));
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              setCount(target);
+            }
+          };
+          requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [target, hasAnimated]);
+
+  if (isNaN(target)) {
+    return <span>{value}</span>;
+  }
+
+  return (
+    <span ref={elementRef}>
+      {count}
+      {suffix}
+    </span>
+  );
+};
 
 export default function WhyHireMe() {
   const [data, setData] = useState<WhyHireMeData>({
@@ -123,10 +181,13 @@ export default function WhyHireMe() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
-              className="p-6 bg-gradient-to-r from-brand/5 to-purple-500/5 border border-white/5 rounded-2xl hover:border-brand/20 transition-all text-center md:text-left flex flex-col justify-center"
+              className="p-6 bg-white/[0.01] backdrop-blur-md border border-white/5 rounded-2xl hover:border-brand/35 hover:bg-white/[0.03] transition-all text-center md:text-left flex flex-col justify-center relative overflow-hidden group shadow-lg select-none"
             >
-              <div className="text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand to-purple-400 mb-1">
-                {stat.value}
+              {/* Visual Glass Reflection Glare */}
+              <div className="absolute top-0 -left-1/2 w-1/4 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-25 group-hover:left-[150%] transition-all duration-[1000ms] ease-out pointer-events-none" />
+
+              <div className="text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand to-purple-400 mb-1 font-display">
+                <AnimatedCounter value={stat.value} />
               </div>
               <div className="text-xs uppercase tracking-widest font-mono text-gray-400">
                 {stat.label}

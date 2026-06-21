@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
 import { Activity, Shield, AlertTriangle, Zap, BarChart3, TrendingUp, Filter } from 'lucide-react';
@@ -29,6 +29,77 @@ const TREND_DATA = [
   { name: 'Sprint 6', value: 88 },
 ];
 
+const DEFAULT_METRICS: QAMetric[] = [
+  { id: '1', label: 'Automation Coverage', value: '98%', trend: '+3.2%', type: 'percentage' },
+  { id: '2', label: 'Regression Pass Rate', value: '99.4%', trend: '+0.4%', type: 'health' },
+  { id: '3', label: 'Automated Test Cases', value: '4500+', trend: '+120 new', type: 'counter' },
+];
+
+// Interactive achievement counter for QADashboard metrics
+const AnimatedCounter: React.FC<{ value: string }> = ({ value }) => {
+  const [count, setCount] = useState(0);
+  const elementRef = useRef<HTMLSpanElement>(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  const numericStr = value.replace(/[^0-9]/g, '');
+  const suffix = value.replace(/[0-9]/g, '');
+  const target = parseFloat(numericStr);
+
+  useEffect(() => {
+    if (isNaN(target)) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+          let startTimestamp: number | null = null;
+          const duration = 1500;
+
+          const animate = (timestamp: number) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const easeOutQuad = progress * (2 - progress);
+            
+            // Check if it's a decimal to present with correct precision
+            if (numericStr.includes('.')) {
+              const decimals = numericStr.split('.')[1].length;
+              setCount(parseFloat((easeOutQuad * target).toFixed(decimals)));
+            } else {
+              setCount(Math.floor(easeOutQuad * target));
+            }
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              setCount(target);
+            }
+          };
+          requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [target, hasAnimated, numericStr]);
+
+  if (isNaN(target)) {
+    return <span>{value}</span>;
+  }
+
+  return (
+    <span ref={elementRef}>
+      {count}
+      {suffix}
+    </span>
+  );
+};
+
 export default function QADashboard() {
   const [metrics, setMetrics] = useState<QAMetric[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,8 +107,17 @@ export default function QADashboard() {
 
   useEffect(() => {
     async function load() {
-      const data = await getCollection<QAMetric>('qaMetrics', 'order');
-      setMetrics(data);
+      try {
+        const data = await getCollection<QAMetric>('qaMetrics', 'order');
+        if (data && data.length > 0) {
+          setMetrics(data);
+        } else {
+          setMetrics(DEFAULT_METRICS);
+        }
+      } catch (err) {
+        console.warn("QA metrics load failed, using fallbacks:", err);
+        setMetrics(DEFAULT_METRICS);
+      }
       setLoading(false);
     }
     load();
@@ -212,17 +292,22 @@ This is an automated audit report generated from the Live Quality Dashboard.
                       key={metric.id}
                       initial={{ opacity: 0, x: 20 }}
                       whileInView={{ opacity: 1, x: 0 }}
-                      className="p-6 bg-[#050816] border border-white/5 rounded-2xl flex items-center gap-6 group hover:border-cyan-500/30 transition-all cursor-default"
+                      className="p-6 bg-white/[0.01] backdrop-blur-md border border-white/5 rounded-2xl flex items-center gap-6 group hover:border-[#22d3ee]/35 hover:bg-white/[0.03] transition-all cursor-default relative overflow-hidden shadow-lg select-none"
                     >
-                       <div className="p-4 rounded-xl bg-white/5 group-hover:scale-110 transition-transform">
+                       {/* Visual Glass Reflection Glare */}
+                       <div className="absolute top-0 -left-1/2 w-1/4 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-25 group-hover:left-[150%] transition-all duration-[1000ms] ease-out pointer-events-none" />
+
+                       <div className="p-4 rounded-xl bg-white/5 border border-white/10 group-hover:scale-110 group-hover:border-[#22d3ee]/40 group-hover:bg-[#22d3ee]/10 transition-all duration-300">
                           {getMetricIcon(metric.type)}
                        </div>
-                       <div className="flex-1">
-                          <div className="flex items-baseline gap-2">
-                             <span className="text-2xl font-bold font-mono tracking-tighter">{metric.value}</span>
-                             <span className="text-[10px] text-emerald-400 font-bold">{resolvedTrend}</span>
+                       <div className="flex-1 relative z-10">
+                          <div className="flex items-baseline gap-2 font-display">
+                             <span className="text-2xl font-black text-white tracking-tighter">
+                                <AnimatedCounter value={metric.value} />
+                             </span>
+                             <span className="text-[10px] text-emerald-400 font-bold font-mono">{resolvedTrend}</span>
                           </div>
-                          <div className="text-xs text-gray-500 font-medium">{resolvedLabel}</div>
+                          <div className="text-xs text-gray-400 font-semibold">{resolvedLabel}</div>
                        </div>
                     </motion.div>
                   );

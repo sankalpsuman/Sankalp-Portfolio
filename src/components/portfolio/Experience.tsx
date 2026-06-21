@@ -129,6 +129,9 @@ export default function Experience() {
             {/* Content Side */}
              <div className={`w-full lg:w-1/2 pl-12 lg:pl-0 ${idx % 2 === 0 ? 'lg:pr-16' : 'lg:pl-16'}`}>
               <div className={`p-8 bg-[#050816]/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] hover:border-brand/30 transition-all duration-500 flex flex-col items-start hover:bg-white/[0.04] relative overflow-hidden shadow-2xl`}>
+                {/* Visual Glass Reflection Glare */}
+                <div className="absolute top-0 -left-1/2 w-1/4 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-25 group-hover:left-[150%] transition-all duration-[1000ms] ease-out pointer-events-none" />
+
                 {/* Visual Polish: Background Glow */}
                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand/10 blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                 
