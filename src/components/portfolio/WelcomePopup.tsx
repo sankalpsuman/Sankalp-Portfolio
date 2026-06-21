@@ -159,7 +159,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
       // Stop any other active spoken elements immediately
       window.speechSynthesis.cancel();
       
-      const text = "Hello, I’m Sankalp Suman. QA Specialist, Scrum Master, AI Enthusiast. Welcome to my portfolio.";
+      const text = "Welcome. I’m Sankalp Suman. Thanks for visiting my portfolio.";
       const utterance = new SpeechSynthesisUtterance(text);
       
       const voices = window.speechSynthesis.getVoices();
