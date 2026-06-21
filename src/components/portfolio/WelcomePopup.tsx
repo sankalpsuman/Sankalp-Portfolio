@@ -112,7 +112,11 @@ const playSynthSound = (type: 'startup' | 'click' | 'hover' | 'dismiss') => {
   }
 };
 
-export const WelcomePopup: React.FC = () => {
+interface WelcomePopupProps {
+  onLaunch?: () => void;
+}
+
+export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [activeLogIndex, setActiveLogIndex] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -255,6 +259,9 @@ export const WelcomePopup: React.FC = () => {
       speakWelcomeMessage();
     } catch (e) {}
     setIsVisible(false);
+    if (onLaunch) {
+      onLaunch();
+    }
   };
 
   return (
@@ -264,14 +271,17 @@ export const WelcomePopup: React.FC = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#050816]/92 backdrop-blur-md"
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          style={{ willChange: "opacity", transform: "translate3d(0,0,0)" }}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#050816]/92 backdrop-blur-md transform-gpu"
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 30 }}
+            initial={{ scale: 0.96, opacity: 0, y: 15 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.85, opacity: 0, y: 30 }}
-            transition={{ type: "spring", damping: 24, stiffness: 220 }}
-            className="w-full max-w-lg bg-[#0a0e23] border border-brand/35 rounded-[2.5rem] p-6 sm:p-8 relative overflow-hidden shadow-[0_0_60px_rgba(59,130,246,0.3)]"
+            exit={{ scale: 0.94, opacity: 0, y: 15 }}
+            transition={{ type: "spring", damping: 32, stiffness: 450, mass: 0.6 }}
+            style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
+            className="w-full max-w-lg bg-[#0a0e23] border border-brand/35 rounded-[2.5rem] p-6 sm:p-8 relative overflow-hidden shadow-[0_0_60px_rgba(59,130,246,0.3)] transform-gpu"
           >
             {/* Absolute Rotating cyber grid target loops (GIF replacement design) */}
             <div className="absolute -top-12 -right-12 w-44 h-44 bg-brand/10 rounded-full border-2 border-dashed border-brand/20 animate-spin" style={{ animationDuration: '30s' }}></div>

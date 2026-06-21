@@ -84,7 +84,7 @@ const DEFAULT_METRICS = [
   { label: 'QA Acceleration', value: '40%' }
 ];
 
-export default function About() {
+export default function About({ active = true }: { active?: boolean }) {
   const [data, setData] = useState<AboutData | null>(null);
   const { t, language } = useLanguage();
 
@@ -176,7 +176,7 @@ export default function About() {
            className="relative"
         >
           <div className="rounded-3xl overflow-hidden border border-white/10 group bg-[#02040a] shadow-2xl h-full">
-            {data?.videoUrl ? (
+            {data?.videoUrl && active ? (
               <video 
                 src={data.videoUrl} 
                 autoPlay 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, useSpring, useMotionValue } from 'motion/react';
 
-export const BackgroundEffects: React.FC = () => {
+export const BackgroundEffects: React.FC<{ active?: boolean }> = ({ active = true }) => {
   const [isMobile, setIsMobile] = useState(true);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number; delay: number; duration: number }>>([]);
   
@@ -14,6 +14,11 @@ export const BackgroundEffects: React.FC = () => {
   const smoothY = useSpring(mouseY, springConfig);
 
   useEffect(() => {
+    if (!active) {
+      setParticles([]);
+      return;
+    }
+
     // Detect mobile
     const checkMobile = () => {
       const mobile = window.innerWidth < 768;
@@ -49,7 +54,9 @@ export const BackgroundEffects: React.FC = () => {
       window.removeEventListener('resize', checkMobile);
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, []);
+  }, [active]);
+
+  if (!active) return null;
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
@@ -62,8 +69,10 @@ export const BackgroundEffects: React.FC = () => {
             y: smoothY,
             width: '300px',
             height: '300px',
+            willChange: 'transform',
+            transform: 'translate3d(0,0,0)'
           }}
-          className="fixed top-0 left-0 rounded-full bg-gradient-to-tr from-brand/8 via-purple-500/3 to-cyan-500/6 blur-[110px] pointer-events-none z-10 opacity-70"
+          className="fixed top-0 left-0 rounded-full bg-gradient-to-tr from-brand/8 via-purple-500/3 to-cyan-500/6 blur-[110px] pointer-events-none z-10 opacity-70 transform-gpu"
         />
       )}
 
@@ -95,8 +104,10 @@ export const BackgroundEffects: React.FC = () => {
             style={{
               width: `${particle.size}px`,
               height: `${particle.size}px`,
+              willChange: "transform, opacity",
+              transform: "translate3d(0,0,0)"
             }}
-            className="absolute rounded-full bg-cyan-400/40 shadow-[0_0_6px_#22d3ee]"
+            className="absolute rounded-full bg-cyan-400/40 shadow-[0_0_6px_#22d3ee] transform-gpu"
           />
         ))}
       </div>

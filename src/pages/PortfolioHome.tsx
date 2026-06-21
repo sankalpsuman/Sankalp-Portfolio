@@ -30,6 +30,8 @@ const Contact = lazy(() => lazyRetry(() => import('../components/portfolio/Conta
 const Footer = lazy(() => lazyRetry(() => import('../components/portfolio/Footer.tsx')));
 
 export default function PortfolioHome() {
+  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+
   // Handle initial page load hash URL deep-linking with lazy loaded elements
   useEffect(() => {
     const handleInitialHash = () => {
@@ -65,13 +67,13 @@ export default function PortfolioHome() {
 
   return (
     <div id="portfolio-home" className="bg-[#050816] selection:bg-brand/30 selection:text-white overflow-hidden relative">
-      <BackgroundEffects />
-      <WelcomePopup />
+      <BackgroundEffects active={welcomeDismissed} />
+      <WelcomePopup onLaunch={() => setWelcomeDismissed(true)} />
       <SEO />
       <Navbar />
       <main>
         <Hero />
-        <About />
+        <About active={welcomeDismissed} />
         <LazySection id="why-hire-me"><WhyHireMe /></LazySection>
         
         <LazySection id="experience"><Experience /></LazySection>
