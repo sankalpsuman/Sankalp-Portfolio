@@ -32,7 +32,8 @@ import {
   Trophy,
   HelpCircle,
   CalendarRange,
-  Calendar
+  Calendar,
+  ShieldCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -153,23 +154,35 @@ export default function AdminDashboard() {
   }, [location.pathname]);
 
   const LoadingFallback = () => (
-    <div className="flex-1 flex items-center justify-center bg-[#02040a]">
+    <div className="flex-1 flex flex-col items-center justify-center bg-[#02040a] p-6 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(34,211,238,0.02),transparent)] pointer-events-none" />
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="flex flex-col items-center gap-6"
+        className="flex flex-col items-center gap-6 max-w-sm text-center relative z-10"
       >
         <div className="relative">
-          <div className="absolute inset-0 bg-brand/20 blur-xl rounded-full animate-pulse"></div>
-          <Loader2 className="w-10 h-10 text-brand animate-spin relative z-10" />
+          {/* Animated verification scan ring */}
+          <div className="absolute -inset-3 border border-dashed border-[#22d3ee]/20 rounded-full animate-[spin_10s_linear_infinite]" />
+          <div className="p-4 bg-gradient-to-br from-brand/10 to-cyan-400/5 border border-white/5 rounded-2xl relative shadow-lg shadow-brand/5">
+            <ShieldCheck className="w-8 h-8 text-cyan-400" />
+          </div>
         </div>
-        <div className="flex flex-col items-center gap-1">
-          <p className="text-sm font-bold text-white tracking-widest uppercase">Propelling Interface</p>
-          <div className="w-32 h-1 bg-white/5 rounded-full overflow-hidden">
+        <div className="flex flex-col items-center gap-2">
+          <div className="space-y-0.5">
+            <p className="text-xs font-mono font-bold tracking-widest text-cyan-400 uppercase flex items-center justify-center gap-1">
+              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping"></span>
+              VERIFYING ARTIFACTS
+            </p>
+            <p className="text-[10px] text-gray-500 font-mono tracking-normal leading-none uppercase">
+              RESTORING CONSOLE OVERVIEW...
+            </p>
+          </div>
+          <div className="w-36 h-1 bg-white/5 rounded-full overflow-hidden border border-white/10 relative">
             <motion.div 
-              className="h-full bg-brand"
-              animate={{ x: [-128, 128] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+              className="h-full bg-gradient-to-r from-cyan-400 via-brand to-purple-500"
+              animate={{ x: [-144, 144] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
             />
           </div>
         </div>
