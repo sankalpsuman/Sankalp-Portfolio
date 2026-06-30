@@ -308,35 +308,36 @@ export const AIResumeModal: React.FC = () => {
               font-family: 'Inter', system-ui, -apple-system, sans-serif;
               color: #1e293b;
               background-color: #ffffff;
-              margin: 0;
-              padding: 40px;
+              margin: 0 auto;
+              max-width: 850px;
+              padding: 40px 50px;
               font-size: 11px;
-              line-height: 1.5;
+              line-height: 1.6;
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
             }
             
             .header {
               text-align: center;
-              margin-bottom: 22px;
-              padding-bottom: 14px;
-              border-bottom: 2.5px solid #1e3a8a;
+              margin-bottom: 24px;
+              padding-bottom: 16px;
+              border-bottom: 2px solid #1e3a8a;
             }
             
             .name {
-              font-size: 26px;
+              font-size: 28px;
               font-weight: 800;
-              color: #1e3a8a;
-              margin: 0 0 4px 0;
-              letter-spacing: -0.025em;
+              color: #0f172a;
+              margin: 0 0 6px 0;
+              letter-spacing: -0.02em;
               text-transform: uppercase;
             }
             
             .headline {
-              font-size: 13.5px;
+              font-size: 14px;
               font-weight: 600;
-              color: #475569;
-              margin: 0 0 10px 0;
+              color: #1e3a8a;
+              margin: 0 0 12px 0;
               letter-spacing: 0.05em;
               text-transform: uppercase;
             }
@@ -346,8 +347,8 @@ export const AIResumeModal: React.FC = () => {
               flex-wrap: wrap;
               justify-content: center;
               gap: 16px;
-              font-size: 9.5px;
-              color: #4f46e5;
+              font-size: 10px;
+              color: #475569;
               font-weight: 500;
             }
             
@@ -358,36 +359,37 @@ export const AIResumeModal: React.FC = () => {
             }
             
             .contact-item a {
-              color: #4f46e5;
+              color: #1e3a8a;
               text-decoration: none;
+              font-weight: 600;
             }
             
             .summary {
-              font-size: 11px;
+              font-size: 11.5px;
               color: #334155;
               text-align: justify;
-              margin-bottom: 20px;
+              margin-bottom: 24px;
               line-height: 1.6;
             }
             
             .section {
-              margin-bottom: 20px;
+              margin-bottom: 22px;
               page-break-inside: avoid;
             }
             
             .section-title {
-              font-size: 12.5px;
+              font-size: 13px;
               font-weight: 700;
               color: #1e3a8a;
               text-transform: uppercase;
               border-bottom: 1.5px solid #cbd5e1;
-              padding-bottom: 3px;
-              margin: 0 0 10px 0;
-              letter-spacing: 0.04em;
+              padding-bottom: 4px;
+              margin: 0 0 12px 0;
+              letter-spacing: 0.05em;
             }
             
             .item {
-              margin-bottom: 12px;
+              margin-bottom: 16px;
               page-break-inside: avoid;
             }
             
@@ -395,7 +397,7 @@ export const AIResumeModal: React.FC = () => {
               display: flex;
               justify-content: space-between;
               font-weight: 700;
-              font-size: 11.5px;
+              font-size: 12px;
               color: #0f172a;
               margin-bottom: 2px;
             }
@@ -403,20 +405,20 @@ export const AIResumeModal: React.FC = () => {
             .item-subheader {
               display: flex;
               justify-content: space-between;
-              font-size: 10px;
+              font-size: 10.5px;
               color: #475569;
-              margin-bottom: 5px;
+              margin-bottom: 6px;
               font-style: italic;
             }
             
             .bullets {
               margin: 0;
-              padding-left: 16px;
+              padding-left: 18px;
               list-style-type: disc;
             }
             
             .bullets li {
-              margin-bottom: 3.5px;
+              margin-bottom: 4px;
               color: #334155;
               text-align: justify;
             }
@@ -428,7 +430,7 @@ export const AIResumeModal: React.FC = () => {
             .skills-grid {
               display: grid;
               grid-template-columns: 1fr;
-              gap: 6px;
+              gap: 8px;
             }
             
             @media (min-width: 600px) {
@@ -446,33 +448,28 @@ export const AIResumeModal: React.FC = () => {
               color: #334155;
             }
             
-            .badges {
-              display: flex;
-              flex-wrap: wrap;
-              gap: 5px;
-              margin-top: 5px;
-            }
-            
-            .badge {
-              background-color: #f1f5f9;
-              border: 1px solid #e2e8f0;
-              border-radius: 4px;
-              padding: 2px 6px;
-              font-size: 9.5px;
-              font-weight: 500;
-              color: #334155;
-            }
-            
             @media print {
+              @page {
+                margin: 0.5in;
+                size: letter portrait;
+              }
               body {
-                padding: 10px 20px;
-                font-size: 10px;
+                padding: 0;
+                max-width: 100%;
+                font-size: 11px;
+                background-color: transparent;
               }
-              .section {
+              .section, .item {
                 page-break-inside: avoid;
               }
-              .item {
-                page-break-inside: avoid;
+              h2.section-title {
+                page-break-after: avoid;
+              }
+              .item-header {
+                page-break-after: avoid;
+              }
+              .item-subheader {
+                page-break-after: avoid;
               }
             }
           </style>
@@ -540,7 +537,12 @@ export const AIResumeModal: React.FC = () => {
                   <span>${proj.role || 'Contributor'}</span>
                   <span>${proj.techStack ? proj.techStack.join(' | ') : ''}</span>
                 </div>
-                <p style="margin: 4px 0 0 0; color: #334155; text-align: justify;">${proj.description}</p>
+                ${proj.description.includes('\n') || proj.description.includes('•') ? 
+                  `<ul class="bullets">
+                    ${proj.description.split('\n').filter((l: string) => l.trim().length > 0).map(formatBullet).join('')}
+                   </ul>` : 
+                  `<p style="margin: 4px 0 0 0; color: #334155; text-align: justify;">${proj.description}</p>`
+                }
               </div>
             `).join('')}
           </div>
@@ -1163,9 +1165,28 @@ export const AIResumeModal: React.FC = () => {
                                       <span>{proj.role || 'Contributor'}</span>
                                       <span className="text-right shrink-0 max-w-[60%] truncate">{proj.techStack ? proj.techStack.join(' | ') : ''}</span>
                                     </div>
-                                    <p className="text-[10px] m-0 text-slate-600 text-justify leading-relaxed">
-                                      {proj.description}
-                                    </p>
+                                      <div className="space-y-1 mt-1 text-[10px] text-slate-600 font-normal">
+                                        {proj.description.split('\n').map((line: string, lIdx: number) => {
+                                          const cleaned = line.replace(/^[\s*•-]+\s*/, '').trim();
+                                          if (!cleaned) return null;
+                                          // If original text wasn't bulleted and is just a single paragraph, don't force a bullet unless it had one
+                                          const isBulleted = proj.description.includes('•') || proj.description.includes('- ') || proj.description.split('\n').length > 1;
+                                          return isBulleted ? (
+                                            <table key={lIdx} className="w-full border-collapse border-none m-0 p-0 table-fixed" style={{ borderCollapse: 'collapse', border: 'none' }}>
+                                              <tbody>
+                                                <tr style={{ verticalAlign: 'top', border: 'none' }}>
+                                                  <td style={{ width: '12px', verticalAlign: 'top', padding: '1px 2px 0 0', margin: 0 }} className="text-blue-900 font-bold shrink-0 select-none text-[11px] leading-tight">•</td>
+                                                  <td style={{ verticalAlign: 'top', padding: 0, margin: 0 }} className="leading-normal text-justify text-slate-600 text-[10px]">{cleaned}</td>
+                                                </tr>
+                                              </tbody>
+                                            </table>
+                                          ) : (
+                                            <p key={lIdx} className="text-[10px] m-0 text-slate-600 text-justify leading-relaxed">
+                                              {cleaned}
+                                            </p>
+                                          );
+                                        })}
+                                      </div>
                                   </div>
                                 );
                               })}

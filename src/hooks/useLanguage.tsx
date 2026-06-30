@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import en from '../locales/en.json';
 import hi from '../locales/hi.json';
 import fr from '../locales/fr.json';
 import de from '../locales/de.json';
+import { getCachedTranslationSync, registerTranslationCallback, translateText } from '../services/translationService';
 
 export type Language = 'en' | 'hi' | 'fr' | 'de';
 
@@ -24,6 +26,18 @@ const translations: Record<Language, any> = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [revision, setRevision] = useState(0);
+
+  useEffect(() => {
+    // Automatically trigger re-renders of the language context when dynamic translations complete
+    const unsubscribe = registerTranslationCallback(() => {
+      setRevision(prev => prev + 1);
+    });
+    return unsubscribe;
+  }, []);
+
   const getBrowserLanguage = (): Language => {
     const defaultLanguage: Language = 'en';
     if (typeof window !== 'undefined' && window.navigator) {
@@ -48,9 +62,53 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return detected;
   });
 
+  // Keep language state in sync with URL prefix on route change
+  useEffect(() => {
+    const pathParts = location.pathname.split('/').filter(Boolean);
+    const firstPart = pathParts[0];
+    const isAdminPath = location.pathname.startsWith('/admin');
+
+    if (!isAdminPath) {
+      if (firstPart === 'hi' || firstPart === 'fr' || firstPart === 'de') {
+        if (language !== firstPart) {
+          setLanguageState(firstPart as Language);
+          localStorage.setItem('portfolio-language', firstPart);
+        }
+      } else if (firstPart === 'en') {
+        if (language !== 'en') {
+          setLanguageState('en');
+          localStorage.setItem('portfolio-language', 'en');
+        }
+      } else {
+        // If there's no language prefix, but we have a non-English language state,
+        // redirect to prefix to keep URLs consistent.
+        if (language !== 'en') {
+          const remainingPath = location.pathname;
+          navigate(`/${language}${remainingPath === '/' ? '' : remainingPath}`, { replace: true });
+        }
+      }
+    }
+  }, [location.pathname]);
+
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('portfolio-language', lang);
+
+    const isAdminPath = location.pathname.startsWith('/admin');
+    if (!isAdminPath) {
+      const pathParts = location.pathname.split('/').filter(Boolean);
+      const firstPart = pathParts[0];
+      const isLangPrefix = firstPart === 'hi' || firstPart === 'fr' || firstPart === 'de' || firstPart === 'en';
+      
+      let remainingPath = isLangPrefix ? '/' + pathParts.slice(1).join('/') : '/' + pathParts.join('/');
+      if (remainingPath === '//') remainingPath = '/';
+      
+      if (lang === 'en') {
+        navigate(remainingPath);
+      } else {
+        navigate(`/${lang}${remainingPath === '/' ? '' : remainingPath}`);
+      }
+    }
   };
 
   const t = (path: string, defaultOrReplacers?: string | Record<string, string | number>): string => {
@@ -115,9 +173,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const resolveTranslation = <T,>(obj: T | null | undefined, field: keyof T): any => {
     if (!obj) return '';
-    if (language === 'en') {
-      return obj[field] ?? '';
+    const englishValue = obj[field];
+    if (language === 'en' || typeof englishValue !== 'string') {
+      return englishValue ?? '';
     }
+
+    // 1. Check if the object has hardcoded or pre-translated field
     const translationsField = (obj as any).translations;
     if (
       translationsField &&
@@ -128,7 +189,22 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     ) {
       return translationsField[language][field as string];
     }
-    return obj[field] ?? '';
+
+    // 2. Try to get it from TranslationService caches synchronously
+    const trimmed = englishValue.trim();
+    if (!trimmed) return englishValue;
+
+    const cached = getCachedTranslationSync(trimmed, language);
+    if (cached !== null) {
+      return cached;
+    }
+
+    // 3. Trigger dynamic translation in the background and return original English text while loading
+    translateText(trimmed, language as any).catch((err) => {
+      console.warn('[resolveTranslation] Background auto-translation failed:', err);
+    });
+
+    return englishValue;
   };
 
   return (

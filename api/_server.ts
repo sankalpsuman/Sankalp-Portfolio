@@ -530,9 +530,19 @@ Expected output format:
   }
 }`;
 
+      // Dynamically build properties schema for Type.OBJECT translations to guarantee output matches input keys perfectly
+      const propertiesSchema: Record<string, any> = {};
+      const keys = Object.keys(content);
+      for (const key of keys) {
+        propertiesSchema[key] = {
+          type: Type.STRING,
+          description: `Translation of the value for "${key}"`
+        };
+      }
+
       const response = await generateContentWithFallback({
-        model: "gemini-3.5-flash",
-        timeoutMs: 50000,
+        model: "gemini-3.1-flash-lite",
+        timeoutMs: 30000,
         contents: `${systemPrompt}\n\nPerform translations and return the JSON.`,
         config: {
           responseMimeType: "application/json",
@@ -541,14 +551,20 @@ Expected output format:
             properties: {
               hi: {
                 type: Type.OBJECT,
+                properties: propertiesSchema,
+                required: keys,
                 description: "Map of translated key-value pairs in Hindi"
               },
               fr: {
                 type: Type.OBJECT,
+                properties: propertiesSchema,
+                required: keys,
                 description: "Map of translated key-value pairs in French"
               },
               de: {
                 type: Type.OBJECT,
+                properties: propertiesSchema,
+                required: keys,
                 description: "Map of translated key-value pairs in German"
               }
             },
@@ -630,12 +646,33 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
    - Validate that none of the core sections (personalInfo, experience, projects, skills, education) are missing before outputting the final JSON.
 
 6. EXTREME CONCISENESS & SPEED OPTIMIZATION:
-   - Include up to 10 projects from the source data in the "projects" list. Do NOT cap the project count at 3.
-   - For experience bullets, limit to exactly 2-3 highly punchy, action-oriented bullet points per role and ensure they are extremely concise.
-   - For project descriptions, keep them strictly within 1-2 concise, impact-driven sentences.
+   - Include up to 10 projects from the source data in the "projects" list. Do NOT cap the project count at 3. Provide enough high-quality content to fill a clean, professional two or three-page layout.
+   - For experience bullets, limit to exactly 3-5 highly punchy, action-oriented bullet points per role.
+   - For project descriptions, generate 4-6 strong, detailed resume bullets focusing on the business problem solved, role/responsibilities, testing contribution, features implemented/tested, and impact/learnings. Use bullet points separated by newlines (e.g., "• Point 1\\n• Point 2").
    - Limit additional sections lists to the top 3 items only.
-   - Summaries must be 2-3 sentences max.
+   - Summaries must be 3-4 sentences max.
    - This keeps the output compact, highly digestible, and allows faster generation under serverless execution timeout limits (within 5 seconds).
+
+ROLE TARGETING & LAYOUT:
+   - Target the resume content and tone specifically for: Software Test Engineer, Senior Software Test Engineer, QA Lead, AI Test Engineer, Product Owner, Technical Project Manager, and AI Engineer roles.
+   - Ensure the generated content is easy to scan, ATS-optimized, and recruiter-friendly.
+
+PROJECT-SPECIFIC OVERRIDES:
+   - For the "ResumeMorph AI" or similar portfolio/AI project: completely rewrite it to emphasize that it was built using Vibe Coding with Google AI Studio and Gemini models. Emphasize owning the product vision, QA, testing, prompting, feature design, and validation. Detail learning product thinking (feature prioritization, user-centric design, requirement analysis, prompt engineering, AI workflow design, iteration, release planning, end-to-end QA of AI outputs). Do NOT claim manual coding of large amounts of production code. Mention capabilities like ATS Resume Generation, Resume Morphing, AI Resume Optimization, Cover Letter Generation, Portfolio Generator, PDF Export, Authentication, Firebase backend, Responsive UI, AI Prompt Engineering, and Gemini integration.
+   - For "ActixOne": expand significantly to include Telecom Network Optimization platform, HTML Portal, Desktop Client, Survey Module, Reports, KPI, GIS/Maps, Database/API validation, Functional/Regression/Smoke/Sprint testing, Release validation, Agile collaboration, Defect management, and Cross-team coordination.
+   - For "Adobe": detail responsibilities around Acrobat Reader, Liquid Mode, Functional/Regression testing, Mobile/Desktop/Web, AI-assisted document rendering validation, Cross-platform compatibility, Defect analysis, and User experience validation.
+   - For "Opkey": expand around ERP/SaaS testing, Manual/Regression/Integration/Functional testing, Test case validation, and Agile delivery.
+
+TECHNOLOGY & SKILL CONSTRAINTS:
+   - Under Programming Languages: ONLY include "Python". DO NOT include Java, JavaScript, C#, C++, or any other programming language.
+   - Under Technical Skills: ONLY include tools explicitly used (e.g., Jira, Confluence, Postman, SQL, Jenkins, Docker, Git, GitHub, BrowserStack, Charles Proxy, Firebase, Google AI Studio, Gemini, ChatGPT, Claude, GitHub Copilot). Do not infer coding expertise.
+   - Under AI Skills: strengthen by including Prompt Engineering, AI-assisted Software Testing, Generative AI, AI Workflow Design, LLM Evaluation, AI Output Validation, AI Product Testing, AI-assisted Requirement Analysis, AI-assisted Test Design, and Vibe Coding.
+
+IMPORTANT RULES:
+   - Do not fabricate experience.
+   - Do not exaggerate programming skills (Keep Python as the ONLY programming language).
+   - Improve content depth while remaining truthful.
+   - Preserve ATS optimization and maintain the existing JSON layout and formatting. Ensure every claim is defensible during interviews.
 
 Raw Portfolio JSON:
 ${JSON.stringify(portfolioData, null, 2)}

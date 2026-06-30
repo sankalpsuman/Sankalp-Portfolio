@@ -210,16 +210,37 @@ export default function App() {
 
   return (
     <HelmetProvider>
-      <LanguageProvider>
-        <Toaster position="bottom-right" />
-        <Router>
+      <Router>
+        <LanguageProvider>
+          <Toaster position="bottom-right" />
           <ErrorBoundary>
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
+                {/* English / Default Base Routes */}
                 <Route path="/" element={<PortfolioHome />} />
                 <Route path="/blog" element={<BlogList />} />
                 <Route path="/blog/:slug" element={<BlogDetail />} />
                 <Route path="/now" element={<NowPage />} />
+
+                {/* Hindi Prefixed Routes */}
+                <Route path="/hi" element={<PortfolioHome />} />
+                <Route path="/hi/blog" element={<BlogList />} />
+                <Route path="/hi/blog/:slug" element={<BlogDetail />} />
+                <Route path="/hi/now" element={<NowPage />} />
+
+                {/* French Prefixed Routes */}
+                <Route path="/fr" element={<PortfolioHome />} />
+                <Route path="/fr/blog" element={<BlogList />} />
+                <Route path="/fr/blog/:slug" element={<BlogDetail />} />
+                <Route path="/fr/now" element={<NowPage />} />
+
+                {/* German Prefixed Routes */}
+                <Route path="/de" element={<PortfolioHome />} />
+                <Route path="/de/blog" element={<BlogList />} />
+                <Route path="/de/blog/:slug" element={<BlogDetail />} />
+                <Route path="/de/now" element={<NowPage />} />
+
+                {/* Admin Management System (Non-prefixed) */}
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route 
                   path="/admin/*" 
@@ -234,8 +255,8 @@ export default function App() {
             </Suspense>
           </ErrorBoundary>
           <AIChatbot />
-        </Router>
-      </LanguageProvider>
+        </LanguageProvider>
+      </Router>
     </HelmetProvider>
   );
 }

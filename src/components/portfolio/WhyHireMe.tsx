@@ -3,6 +3,7 @@ import Section from './Section';
 import { motion } from 'motion/react';
 import { getDocument } from '../../services/firestoreService';
 import { HelpCircle, ThumbsUp, Sparkles, Trophy, CalendarRange } from 'lucide-react';
+import { AutoTranslate } from './TranslationComponents';
 
 interface Statistic {
   label: string;
@@ -124,7 +125,7 @@ export default function WhyHireMe() {
             viewport={{ once: true }}
             className="text-2xl lg:text-3xl font-extrabold text-white leading-tight"
           >
-            {data.headline}
+            <AutoTranslate text={data.headline} />
           </motion.h3>
           
           <motion.p 
@@ -133,7 +134,7 @@ export default function WhyHireMe() {
             viewport={{ once: true }}
             className="text-gray-400 text-base lg:text-lg leading-relaxed"
           >
-            {data.description}
+            <AutoTranslate text={data.description} />
           </motion.p>
 
           <div className="space-y-3 pt-2">
@@ -149,7 +150,9 @@ export default function WhyHireMe() {
                 <span className="w-6 h-6 rounded-lg bg-brand/10 text-brand flex items-center justify-center text-xs">
                   ✓
                 </span>
-                <span className="text-sm font-medium text-gray-200">{highlight}</span>
+                <span className="text-sm font-medium text-gray-200">
+                  <AutoTranslate text={highlight} />
+                </span>
               </motion.div>
             ))}
           </div>
@@ -166,7 +169,7 @@ export default function WhyHireMe() {
                 className="inline-flex items-center gap-2 px-6 py-3 bg-brand text-white font-semibold rounded-xl text-sm hover:scale-105 active:scale-95 transition-all shadow-lg hover:shadow-brand/25"
               >
                 <Sparkles className="w-4 h-4 animate-pulse" />
-                {data.ctaText}
+                <AutoTranslate text={data.ctaText} />
               </a>
             </motion.div>
           )}
@@ -190,13 +193,13 @@ export default function WhyHireMe() {
                 <AnimatedCounter value={stat.value} />
               </div>
               <div className="text-xs uppercase tracking-widest font-mono text-gray-400">
-                {stat.label}
+                <AutoTranslate text={stat.label} />
               </div>
             </motion.div>
           ))}
           {data.statistics.length === 0 && (
             <div className="text-center p-8 border border-white/5 rounded-2xl text-gray-500">
-              Set up Why Hire Me stats in CMS dashboard.
+              <AutoTranslate text="Set up Why Hire Me stats in CMS dashboard." />
             </div>
           )}
         </div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Terminal, Volume2, VolumeX, Cpu, Play, LogIn, Command } from 'lucide-react';
+import { AutoTranslate } from './TranslationComponents';
 
 const playSynthSound = (type: 'startup' | 'click' | 'hover' | 'dismiss') => {
   try {
@@ -325,7 +326,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
                 </h2>
                 
                 <p className="text-gray-400 text-xs tracking-wider max-w-sm mx-auto font-mono uppercase text-cyan-300/80">
-                  R&D Software Test Specialist & Scrum Master
+                  <AutoTranslate text="R&D Software Test Specialist & Scrum Master" />
                 </p>
               </div>
 
@@ -339,15 +340,15 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
                   <div className="text-gray-500 text-[10px]">&gt; system_audit_agent logs:</div>
                   <AnimatePresence mode="wait">
                     <motion.div
-                      key={activeLogIndex}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      transition={{ duration: 0.3 }}
-                      className="text-cyan-400 font-semibold flex items-center gap-1.5"
+                       key={activeLogIndex}
+                       initial={{ opacity: 0, x: -10 }}
+                       animate={{ opacity: 1, x: 0 }}
+                       exit={{ opacity: 0, x: 10 }}
+                       transition={{ duration: 0.3 }}
+                       className="text-cyan-400 font-semibold flex items-center gap-1.5"
                     >
                       <span className="text-purple-400">⚡</span>
-                      {testLogs[activeLogIndex]}
+                      <AutoTranslate text={testLogs[activeLogIndex]} />
                     </motion.div>
                   </AnimatePresence>
                 </div>
@@ -357,10 +358,10 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
               <div className="w-full bg-[#0d1433]/50 border border-brand/20 rounded-2xl p-4 text-left relative overflow-hidden backdrop-blur-xs">
                 <h3 className="text-white text-xs font-bold flex items-center gap-1.5 mb-1 font-display">
                   <Sparkles className="w-3.5 h-3.5 text-yellow-400 text-brand" />
-                  Interactive Representative Mode Active
+                  <AutoTranslate text="Interactive Representative Mode Active" />
                 </h3>
                 <p className="text-gray-300 text-[11px] leading-relaxed">
-                  Connect live with an automated virtual presentation representing my QA testing competencies, test suites, and project metrics.
+                  <AutoTranslate text="Connect live with an automated virtual presentation representing my QA testing competencies, test suites, and project metrics." />
                 </p>
               </div>
 
@@ -378,12 +379,12 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
                   
                   <div className="absolute inset-x-0 bottom-0 h-1/3 bg-white/10 rounded-b-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                   <Play className="w-4 h-4 text-cyan-400 group-hover:translate-x-1 transition-transform" />
-                  <span>CONTINUE</span>
+                  <span><AutoTranslate text="CONTINUE" /></span>
                 </button>
               </div>
 
               <div className="text-[9px] font-mono text-gray-500 tracking-widest pt-1 uppercase flex items-center gap-1">
-                <Command className="w-3 h-3 text-cyan-600" /> SECURE WEB HOSTING ACTIVE
+                <Command className="w-3 h-3 text-cyan-600" /> <AutoTranslate text="SECURE WEB HOSTING ACTIVE" />
               </div>
             </div>
           </motion.div>

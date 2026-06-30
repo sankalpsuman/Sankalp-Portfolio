@@ -3,6 +3,8 @@ import Section from './Section';
 import { getCollection } from '../../services/firestoreService';
 import { ChevronDown, HelpCircle, Search, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLanguage } from '../../hooks/useLanguage';
+import { AutoTranslate, useAutoTranslate } from './TranslationComponents';
 
 interface FAQ {
   id: string;
@@ -14,6 +16,8 @@ interface FAQ {
 }
 
 export default function FAQ() {
+  const { resolveTranslation, t } = useLanguage();
+  const { translated: translatedPlaceholder } = useAutoTranslate("Search questions or answer definitions...");
   const [items, setItems] = useState<FAQ[]>([]);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('All');
@@ -88,7 +92,7 @@ export default function FAQ() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search questions or answer definitions..."
+            placeholder={translatedPlaceholder}
             className="w-full bg-white/[0.03] border border-white/5 hover:border-brand/20 rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white focus:outline-none focus:border-brand transition-all"
           />
         </div>
@@ -105,7 +109,7 @@ export default function FAQ() {
                     : 'bg-white/[0.01] border-white/5 text-gray-400 hover:text-white hover:border-white/10'
                 }`}
               >
-                {cat}
+                <AutoTranslate text={cat} />
               </button>
             ))}
           </div>
@@ -135,7 +139,9 @@ export default function FAQ() {
               >
                 <div className="flex items-center gap-3">
                   <HelpCircle className={`w-5 h-5 flex-shrink-0 ${isOpen ? 'text-brand' : 'text-gray-500'}`} />
-                  <span className="font-bold text-sm sm:text-base leading-snug">{item.question}</span>
+                  <span className="font-bold text-sm sm:text-base leading-snug">
+                    {resolveTranslation(item, 'question')}
+                  </span>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-brand' : ''}`} />
               </button>
@@ -149,7 +155,9 @@ export default function FAQ() {
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                   >
                     <div className="px-6 pb-6 text-sm text-gray-300 leading-relaxed pt-2 border-t border-white/5">
-                      <p className="whitespace-pre-line">{item.answer}</p>
+                      <p className="whitespace-pre-line">
+                        {resolveTranslation(item, 'answer')}
+                      </p>
                     </div>
                   </motion.div>
                 )}
@@ -160,7 +168,7 @@ export default function FAQ() {
 
         {filteredItems.length === 0 && (
           <div className="text-center py-12 text-gray-500 text-sm bg-white/[0.01] border border-white/5 rounded-2xl">
-            🔍 No matching FAQs found. Modify your search.
+            🔍 <AutoTranslate text="No matching FAQs found. Modify your search." />
           </div>
         )}
       </div>

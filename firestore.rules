@@ -206,6 +206,15 @@ service cloud.firestore {
              data.answer is string && data.answer.size() <= 10000;
     }
 
+    function isValidTranslation(data) {
+      return data.keys().hasAll(['originalText', 'language', 'translatedText', 'createdAt']) &&
+             data.keys().size() == 4 &&
+             data.originalText is string && data.originalText.size() <= 50000 &&
+             data.language is string && data.language.size() <= 10 &&
+             data.translatedText is string && data.translatedText.size() <= 50000 &&
+             data.createdAt is string;
+    }
+
     // --- Collection Routes ---
 
     match /hero/{docId} {
@@ -349,6 +358,12 @@ service cloud.firestore {
       allow update: if (isValidChatSession(incoming()) && sessionId == incoming().sessionId && existing().sessionId == sessionId && isValidId(sessionId)) || isAdmin();
       allow get: if (sessionId == existing().sessionId) || isAdmin();
       allow list, delete: if isAdmin();
+    }
+
+    match /translations/{transId} {
+      allow read, get, list: if true;
+      allow create: if isValidTranslation(incoming()) && isValidId(transId);
+      allow update, delete: if isAdmin();
     }
   }
 }

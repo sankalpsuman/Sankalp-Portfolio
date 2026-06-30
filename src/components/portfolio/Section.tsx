@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { Cpu, Terminal, Shield, Workflow } from 'lucide-react';
+import { AutoTranslate } from './TranslationComponents';
 
 interface SectionProps {
   children: ReactNode;
@@ -105,7 +106,7 @@ export default function Section({
                 transition={{ duration: 0.5 }}
                 className="text-brand font-mono text-xs tracking-widest uppercase block font-semibold will-change-[transform,opacity]"
               >
-                {subtitle}
+                <AutoTranslate text={subtitle} />
               </motion.span>
             )}
             
@@ -118,7 +119,7 @@ export default function Section({
                   transition={{ delay: 0.1, duration: 0.5 }}
                   className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white font-display will-change-[transform,opacity]"
                 >
-                  {title}
+                  <AutoTranslate text={title} />
                 </motion.h2>
                 
                 {/* Visual Accent Glow bar beneath core headers */}
