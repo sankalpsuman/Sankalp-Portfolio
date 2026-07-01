@@ -14,8 +14,8 @@ interface Certification {
 }
 
 const DEFAULT_CERTS: Certification[] = [
-  { id: '1', name: 'ISTQB Certified Tester', issuer: 'ISTQB', date: '2019' },
-  { id: '2', name: 'Scrum Master Certified', issuer: 'Scrum Alliance', date: '2021' },
+  { id: '1', name: 'ISTQB Foundation Level (Certified Tester)', issuer: 'ISTQB', date: '2019' },
+  { id: '2', name: 'Design and Analysis of Algorithms', issuer: 'NPTEL', date: '2018' },
 ];
 
 export default function Certifications() {

@@ -21,7 +21,7 @@ const DEFAULT_EXPERIENCE: Experience[] = [
     company: 'AMDOCS',
     role: 'Software Test Specialist & Scrum Master',
     period: 'Dec 2021 – Present',
-    description: 'Leading QA delivery for enterprise-scale telecom platforms. Implementing AI-assisted testing workflows and managing Agile sprints as Scrum Master.',
+    description: '• Lead analysis and testing delivery across large-scale platform projects, ensuring high-quality releases and ownership of delivery KPIs.\n• Expertly manage multiple functional areas, conducting requirements gathering, defining user stories, and establishing BDD acceptance criteria.\n• Reduced regression effort using AI-assisted test case generation and optimization via ChatGPT, Copilot, Gemini, and Claude.\n• Execute complex test strategies and planning encompassing System, SIT, and Regression testing cycles.\n• Perform API and ETL validation for data-intensive systems, including data mapping and ETL workflow design for migrations.\n• Act as Scrum Master handling sprint planning, workshops, walkthroughs, and stakeholder communication with Solution Consultants, PMs, and clients.\n• Drive defect management, triage, and Root Cause Analysis (RCA) using Jira to ensure continuous process improvement.\n• Mentor team of 3 QA engineers, focusing on capability building and adherence to regulatory and compliance awareness.',
     order: 1
   },
   {
@@ -29,7 +29,7 @@ const DEFAULT_EXPERIENCE: Experience[] = [
     company: 'HEXAVIEW (Adobe Client)',
     role: 'Senior Quality Engineer',
     period: 'Jun 2019 – Dec 2021',
-    description: 'Focused on complex software validation for Adobe products. Built automation frameworks and optimized regression suites.',
+    description: '• Tested Adobe Acrobat (Liquid Mode) with AI-based document processing features, validating AI output accuracy and performance.\n• Designed comprehensive test scenarios covering edge cases, real-world data inputs, and platform-specific functional areas.\n• Improved defect detection through structured analysis and rigorous SIT/Regression testing phases.\n• Collaborated with cross-functional developers and PMs to resolve critical defects discovered during exploratory testing.',
     order: 2
   },
   {
@@ -37,7 +37,7 @@ const DEFAULT_EXPERIENCE: Experience[] = [
     company: 'OPKEY',
     role: 'Quality Engineer',
     period: 'Aug 2018 – May 2019',
-    description: 'Manual and automated testing for cloud platforms. Contributed to early-stage test case generation logic.',
+    description: '• Tested SaaS automation platform across web and mobile environments using cross-browser testing methodologies.\n• Performed root cause analysis and defect tracking to ensure platform stability during rapid release cycles.',
     order: 3
   }
 ];

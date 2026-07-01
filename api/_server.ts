@@ -657,32 +657,54 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
    - This keeps the output compact, highly digestible, and allows faster generation under serverless execution timeout limits (within 5 seconds).
 
 6. TONE, STYLE & LOCALIZATION:
-   - STYLE: Write in a natural, professional Indian professional style (e.g., standard business English as used in Indian tech hubs like Bangalore, Gurgaon, Pune).
-   - ANTI-AI LANGUAGE: Avoid typical "AI-generated" cliches, overly flowery adjectives, and robotic sentence structures. Use human-centric, clear, and direct phrasing.
-   - REPHRASING: Rephrase all content to sound like it was written by a senior human professional. Ensure the flow is logical and the language is authoritative yet humble.
-   - NO FAKE DETAILS: Strictly adhere to provided facts. Do not add any certifications, degrees, or skills not present in the source data.
-   - BULLET POINTS: Use clearly structured bullet points for all projects, roles, and responsibilities to maximize readability.
-   - COMPREHENSIVE INCLUSION: Include all relevant technical details from the Skills section and EVERY other area of the portfolio (Impact Stories, Metrics, Now, etc.) without duplication.
+   - STYLE: Write in a natural, professional Indian professional style (e.g., standard business English as used in Indian tech hubs). Use varied sentence lengths and avoid repetitive grammar patterns.
+   - ANTI-AI LANGUAGE: Strictly avoid typical AI buzzwords like: Spearheaded, Leveraged, Optimized, Implemented, Drove, Validated, Utilized, AI-powered, AI-assisted, Generative AI. Mention AI ONLY where it genuinely adds value, without overusing terms.
+   - HUMAN WRITING STYLE: Rephrase all content to sound like it was written by a senior human professional, NOT ChatGPT. Ensure the flow is logical, authentic, and the language is authoritative yet humble.
+   - PROFESSIONAL SUMMARY: Create a summary that feels personal. Avoid generic templates like "Results-driven professional with 8+ years...". Instead highlight years of experience, domains, product ownership, QA expertise (manual, API, Agile, Python, AI-assisted testing) organically.
+   - NO FAKE DETAILS: Do not exaggerate. Never invent certifications, skills, tools, metrics, awards, leadership experience, automation frameworks, or cloud expertise. Only use information already present. Maintain truthfulness and authenticity.
+   - BULLET POINTS: Use clearly structured bullet points for all projects, roles, and responsibilities. Reduce unnecessary bullets; every line must earn its place.
+
+7. EXPERIENCE SECTION:
+   - For each company include: Company Name, Designation, Employment Duration, Location, and 4-6 achievement-focused bullets.
+   - Focus on achievements rather than job descriptions. Bullets should cover: Responsibilities, Business impact, Tools used, Technologies, Leadership, Collaboration, and Measurable outcomes (only if factual).
+   - Avoid repeating the same testing responsibilities across companies. Each role should showcase unique contributions.
+   - Each bullet should answer: What problem existed? What exactly did I do? Which tools did I use? What was the outcome? Avoid generic responsibilities.
+   - IRRELEVANT INFORMATION: Remove all generic fluff, filler text, or unrequested metadata. Only include high-impact, professional details strictly relevant to a QA/Testing/Scrum Master role.
+   - METRICS: DO NOT add or invent numbers like 30%, 40%, 90%, 95%, 98%. Since there is no proof of these percentages, remove them completely. Use qualitative impact statements instead of fabricated percentages.
+
+8. PROJECTS SECTION:
+   - Projects must NOT repeat Experience.
+   - For each project include: Project Name, Client/Product, Role, Technologies Used, Project Overview, Responsibilities, Key Achievements, Business Impact.
+   - Explain: Why the project exists, your role, key contributions, technologies used, and business impact.
+
+9. SKILLS & ATS OPTIMIZATION:
+   - Balance all skill columns. Avoid sections with only one skill.
+   - Group skills logically into these specific categories: Programming Languages, Automation Testing, Manual Testing, API Testing, Database, Testing Tools, AI & Productivity Tools, DevOps / CI-CD, Agile & Project Management, Collaboration Tools.
+   - Naturally include keywords: SDLC, STLC, Test Planning, Test Strategy, Requirement Analysis, Defect Lifecycle, Risk Assessment, Root Cause Analysis, UAT, SIT, Smoke Testing, Regression Testing, Functional Testing, Cross-browser Testing, API Testing, SQL, Agile, Scrum, CI/CD, Jira, Confluence, Jenkins, Git, Docker (ONLY if applicable based on portfolio data).
+   - PERCENTAGES: Do NOT include ANY percentage values, progress bars, or proficiency levels (like 80%, 90%, 95%) in the skill names or descriptions. Strip them out completely. Output ONLY the raw skill names.
+
+10. ACHIEVEMENTS & AWARDS:
+    - Include only genuine: Performance Awards, Spot Awards, Customer Appreciation, Team Recognition, Promotions, Major Project Achievements, Leadership Achievements, Process Improvements, Productivity Improvements, Cost/Time Savings, Quality Improvements.
+    - If no official awards exist, use Key Achievements instead.
 
 ROLE TARGETING & LAYOUT:
-   - Target the resume content and tone specifically for: Software Test Engineer, Senior Software Test Engineer, QA Lead, AI Test Engineer, Product Owner, Technical Project Manager, and AI Engineer roles.
-   - Ensure the generated content is easy to scan, ATS-optimized, and recruiter-friendly.
+   - Target the resume specifically for Software Test Engineer, QA Lead, AI Test Engineer, Product Owner, Scrum Master, and Technical Project Manager.
+   - Ensure the generated content is clean, modern, ATS-friendly, and easy to scan in under 10 seconds. Maintain ATS compatible formatting with professional typography and proper white space.
 
 PROJECT-SPECIFIC OVERRIDES:
-   - For the "ResumeMorph AI" or similar portfolio/AI project: completely rewrite it to emphasize that it was built using Vibe Coding with Google AI Studio and Gemini models. Emphasize owning the product vision, QA, testing, prompting, feature design, and validation. Detail learning product thinking (feature prioritization, user-centric design, requirement analysis, prompt engineering, AI workflow design, iteration, release planning, end-to-end QA of AI outputs). Do NOT claim manual coding of large amounts of production code. Mention capabilities like ATS Resume Generation, Resume Morphing, AI Resume Optimization, Cover Letter Generation, Portfolio Generator, PDF Export, Authentication, Firebase backend, Responsive UI, AI Prompt Engineering, and Gemini integration.
+   - For "ResumeMorph AI" or similar portfolio/AI project: emphasize that it was built using Vibe Coding with Google AI Studio and Gemini models. Detail learning product thinking (feature prioritization, user-centric design, requirement analysis, prompt engineering, AI workflow design). Mention capabilities like ATS Resume Generation, Firebase backend, Responsive UI, and Gemini integration. Do NOT claim manual coding of large amounts of production code.
    - For "ActixOne": expand significantly to include Telecom Network Optimization platform, HTML Portal, Desktop Client, Survey Module, Reports, KPI, GIS/Maps, Database/API validation, Functional/Regression/Smoke/Sprint testing, Release validation, Agile collaboration, Defect management, and Cross-team coordination.
    - For "Adobe": detail responsibilities around Acrobat Reader, Liquid Mode, Functional/Regression testing, Mobile/Desktop/Web, AI-assisted document rendering validation, Cross-platform compatibility, Defect analysis, and User experience validation.
    - For "Opkey": expand around ERP/SaaS testing, Manual/Regression/Integration/Functional testing, Test case validation, and Agile delivery.
 
 TECHNOLOGY & SKILL CONSTRAINTS:
    - Under Programming Languages: Prioritize "Python". If other languages like Java or JavaScript appear in the data, include them only if they are critical to the projects or experience listed.
-   - Under Technical Skills: Include all tools and technologies explicitly listed in the source data (e.g., Jira, Confluence, Postman, SQL, Jenkins, Docker, Git, GitHub, BrowserStack, Charles Proxy, Firebase, Google AI Studio, Gemini, ChatGPT, Claude, GitHub Copilot).
-   - Under AI & Data Skills: Ensure skills from "API & Data" and "AI in QA" categories are prominently featured, including API Validation (REST/SOAP), SQL & Database Testing, ETL Testing, Prompt Engineering, AI-driven Testing, etc.
+   - Under Technical Skills: Include all tools and technologies explicitly listed in the source data.
+   - Under AI & Data Skills: Ensure skills from "API & Data" and "AI in QA" categories are prominently featured (e.g., API Validation (REST/SOAP), SQL & Database Testing, Prompt Engineering).
 
 IMPORTANT RULES:
-   - Do not fabricate experience.
+   - Do not fabricate experience, tools, or leadership.
    - Do not exaggerate skills; stay truthful to the provided data.
-   - Improve content depth while remaining truthful.
    - Preserve ATS optimization and maintain the existing JSON layout and formatting. Ensure every claim is defensible during interviews.
 
 Raw Portfolio JSON:

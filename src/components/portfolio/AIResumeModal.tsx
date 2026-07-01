@@ -92,6 +92,7 @@ export const AIResumeModal: React.FC = () => {
         skills,
         timeline,
         certifications,
+        achievements,
         testimonials,
         impactStories,
         qaMetrics,
@@ -108,6 +109,7 @@ export const AIResumeModal: React.FC = () => {
         getCollection<any>('skills').catch(() => []),
         getCollection<any>('timeline', 'order').catch(() => []),
         getCollection<any>('certifications', 'order').catch(() => []),
+        getCollection<any>('achievements', 'order').catch(() => []),
         getCollection<any>('testimonials', 'order').catch(() => []),
         getCollection<any>('impactStories', 'order').catch(() => []),
         getCollection<any>('qaMetrics', 'order').catch(() => []),
@@ -178,6 +180,13 @@ export const AIResumeModal: React.FC = () => {
         link: c.link || ''
       }));
 
+      const sanitizedAchievements = (achievements || []).slice(0, 15).map((a: any) => ({
+        title: a.title || '',
+        organization: a.organization || '',
+        date: a.date || '',
+        description: a.description || ''
+      }));
+
       const portfolioPayload = {
         hero,
         about: about ? { bio: about.bio || '', title: about.title || '', summary: about.summary || '' } : null,
@@ -188,6 +197,7 @@ export const AIResumeModal: React.FC = () => {
         skills: sanitizedSkills,
         timeline: sanitizedTimeline,
         certifications: sanitizedCertifications,
+        achievements: sanitizedAchievements,
         testimonials: sanitizedTestimonials,
         impactStories: (impactStories || []).slice(0, 10),
         qaMetrics: (qaMetrics || []).slice(0, 15),

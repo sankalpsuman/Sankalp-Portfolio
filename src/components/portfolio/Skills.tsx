@@ -20,14 +20,37 @@ interface Skill {
 }
 
 const DEFAULT_SKILLS: Skill[] = [
-  { id: 'ai_testing', name: 'AI-Driven Testing', category: 'AI in QA', level: 95 },
-  { id: 'prompt_heavy', name: 'Prompt Engineering', category: 'AI in QA', level: 90 },
-  { id: 'api_validation', name: 'API Validation (REST/SOAP)', category: 'API & Data', level: 92 },
-  { id: 'selenium_playwright', name: 'Selenium / Playwright', category: 'Testing', level: 88 },
-  { id: 'sql_db', name: 'SQL & Database Testing', category: 'API & Data', level: 85 },
-  { id: 'scrum_lead', name: 'Scrum Leadership', category: 'Leadership', level: 90 },
-  { id: 'cicd_pipeline', name: 'CI/CD Pipelines (Jenkins/GitHub Actions)', category: 'Automation & DevOps', level: 82 },
-  { id: 'etl_testing', name: 'ETL Testing', category: 'API & Data', level: 85 },
+  // Testing
+  { id: 'functional', name: 'Functional Testing', category: 'Testing', level: 95 },
+  { id: 'regression', name: 'Regression & Smoke', category: 'Testing', level: 95 },
+  { id: 'sit_uat', name: 'System/SIT & UAT', category: 'Testing', level: 90 },
+  { id: 'bdd', name: 'BDD Acceptance Criteria', category: 'Testing', level: 88 },
+  { id: 'exploratory', name: 'Exploratory & Sanity', category: 'Testing', level: 90 },
+
+  // API & Data
+  { id: 'postman', name: 'Postman & REST API', category: 'API & Data', level: 92 },
+  { id: 'sql_db', name: 'SQL & Database Testing', category: 'API & Data', level: 88 },
+  { id: 'etl_testing', name: 'ETL Validation & Mapping', category: 'API & Data', level: 85 },
+
+  // AI in QA
+  { id: 'ai_tools', name: 'ChatGPT, Copilot, Gemini', category: 'AI in QA', level: 95 },
+  { id: 'prompt_eng', name: 'Prompt Engineering', category: 'AI in QA', level: 90 },
+  { id: 'ai_gen', name: 'AI Test Case Generation', category: 'AI in QA', level: 92 },
+  { id: 'ai_debug', name: 'AI Debugging', category: 'AI in QA', level: 85 },
+
+  // Automation & DevOps
+  { id: 'cicd', name: 'Jenkins & CI/CD', category: 'Automation & DevOps', level: 85 },
+  { id: 'docker_linux', name: 'Docker & Linux', category: 'Automation & DevOps', level: 80 },
+  { id: 'opkey', name: 'OpKey', category: 'Automation & DevOps', level: 82 },
+
+  // Tools
+  { id: 'jira_confluence', name: 'JIRA & Confluence', category: 'Tools', level: 95 },
+  { id: 'alm_zephyr', name: 'Zephyr, Octane, ALM', category: 'Tools', level: 90 },
+
+  // Leadership / Process
+  { id: 'scrum_agile', name: 'Agile & Scrum Master', category: 'Leadership', level: 95 },
+  { id: 'rca', name: 'Defect Triage & RCA', category: 'Leadership', level: 92 },
+  { id: 'release', name: 'Release Management', category: 'Leadership', level: 88 },
 ];
 
 const CATEGORIES = [
@@ -136,12 +159,6 @@ export default function Skills() {
                     <span className="text-[10px] font-medium text-gray-400 group-hover/skill:text-gray-200 transition-colors truncate pr-1">
                       {getSkillName(skill)}
                     </span>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <div className="w-6 h-0.5 bg-white/5 rounded-full overflow-hidden hidden xs:block">
-                        <div className="h-full bg-brand/40" style={{ width: `${skill.level}%` }} />
-                      </div>
-                      <span className="text-[8.5px] font-mono text-brand/50 tabular-nums">{skill.level}%</span>
-                    </div>
                   </div>
                 ))}
               </div>

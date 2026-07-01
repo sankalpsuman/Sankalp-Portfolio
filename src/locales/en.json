@@ -34,7 +34,7 @@
     "heading_mid": "Software Engineering",
     "heading_and": "and",
     "heading_end": "AI Intelligence.",
-    "content": "Results-driven QA Lead with 7+ years of experience in end-to-end testing across web, mobile, desktop, and API systems.\n\nCurrently working as Software Test Specialist and Scrum Master at Amdocs, leading QA delivery for enterprise-scale telecom platforms.\n\nSpecialized in AI-powered testing, prompt engineering, API validation, ETL testing, automation acceleration, and Agile delivery methodologies.",
+    "content": "Results-driven QA Lead with 7+ years of experience in end-to-end testing across web, mobile, desktop, and API systems.\n\nCurrently working as Software Test Specialist and Scrum Master at Amdocs, leading QA delivery for enterprise-scale telecom platforms.\n\nSpecialized in AI-powered testing, prompt engineering, API validation, ETL testing, automation acceleration, and Agile delivery methodologies.\n\nEducation:\nB.Tech in Computer Science & Engineering – ITS Engineering College (Greater Noida, India)",
     "metric_years": "Years Experience",
     "metric_projects": "Projects Delivered",
     "metric_teams": "Teams Led",
@@ -56,14 +56,26 @@
       "leadership": "Leadership"
     },
     "list": {
-      "ai_testing": "AI-Driven Testing",
-      "prompt_heavy": "Prompt Engineering",
-      "api_validation": "API Validation (REST/SOAP)",
-      "selenium_playwright": "Selenium / Playwright",
+      "functional": "Functional Testing",
+      "regression": "Regression & Smoke",
+      "sit_uat": "System/SIT & UAT",
+      "bdd": "BDD Acceptance Criteria",
+      "exploratory": "Exploratory & Sanity",
+      "postman": "Postman & REST API",
       "sql_db": "SQL & Database Testing",
-      "scrum_lead": "Scrum Leadership",
-      "cicd_pipeline": "CI/CD Pipelines (Jenkins/GitHub Actions)",
-      "etl_testing": "ETL Testing"
+      "etl_testing": "ETL Validation & Mapping",
+      "ai_tools": "ChatGPT, Copilot, Gemini",
+      "prompt_eng": "Prompt Engineering",
+      "ai_gen": "AI Test Case Generation",
+      "ai_debug": "AI Debugging",
+      "cicd": "Jenkins & CI/CD",
+      "docker_linux": "Docker & Linux",
+      "opkey": "OpKey",
+      "jira_confluence": "JIRA & Confluence",
+      "alm_zephyr": "Zephyr, Octane, ALM",
+      "scrum_agile": "Agile & Scrum Master",
+      "rca": "Defect Triage & RCA",
+      "release": "Release Management"
     }
   },
   "projects": {
@@ -87,15 +99,15 @@
     "exp1_company": "AMDOCS",
     "exp1_role": "Software Test Specialist & Scrum Master",
     "exp1_period": "Dec 2021 – Present",
-    "exp1_desc": "Leading QA delivery for enterprise-scale telecom platforms. Implementing AI-assisted testing workflows and managing Agile sprints as Scrum Master.",
+    "exp1_desc": "• Lead analysis and testing delivery across large-scale platform projects, ensuring high-quality releases and ownership of delivery KPIs.\n• Expertly manage multiple functional areas, conducting requirements gathering, defining user stories, and establishing BDD acceptance criteria.\n• Reduced regression effort using AI-assisted test case generation and optimization via ChatGPT, Copilot, Gemini, and Claude.\n• Execute complex test strategies and planning encompassing System, SIT, and Regression testing cycles.\n• Perform API and ETL validation for data-intensive systems, including data mapping and ETL workflow design for migrations.\n• Act as Scrum Master handling sprint planning, workshops, walkthroughs, and stakeholder communication with Solution Consultants, PMs, and clients.\n• Drive defect management, triage, and Root Cause Analysis (RCA) using Jira to ensure continuous process improvement.\n• Mentor team of 3 QA engineers, focusing on capability building and adherence to regulatory and compliance awareness.",
     "exp2_company": "HEXAVIEW (Adobe Client)",
     "exp2_role": "Senior Quality Engineer",
     "exp2_period": "Jun 2019 – Dec 2021",
-    "exp2_desc": "Focused on complex software validation for Adobe products. Built automation frameworks and optimized regression suites.",
+    "exp2_desc": "• Tested Adobe Acrobat (Liquid Mode) with AI-based document processing features, validating AI output accuracy and performance.\n• Designed comprehensive test scenarios covering edge cases, real-world data inputs, and platform-specific functional areas.\n• Improved defect detection through structured analysis and rigorous SIT/Regression testing phases.\n• Collaborated with cross-functional developers and PMs to resolve critical defects discovered during exploratory testing.",
     "exp3_company": "OPKEY",
     "exp3_role": "Quality Engineer",
     "exp3_period": "Aug 2018 – May 2019",
-    "exp3_desc": "Manual and automated testing for cloud platforms. Contributed to early-stage test case generation logic."
+    "exp3_desc": "• Tested SaaS automation platform across web and mobile environments using cross-browser testing methodologies.\n• Performed root cause analysis and defect tracking to ensure platform stability during rapid release cycles."
   },
   "contact": {
     "title": "Start a Conversation",
