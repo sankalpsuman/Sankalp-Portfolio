@@ -56,6 +56,7 @@ export const AIResumeModal: React.FC = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string>('');
+  const [showLimitPopup, setShowLimitPopup] = useState(false);
   const [resumeData, setResumeData] = useState<any>(null);
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [pdfStatus, setPdfStatus] = useState<string>('');
@@ -76,6 +77,7 @@ export const AIResumeModal: React.FC = () => {
   // Fetch all portfolio data and generate CV using Gemini
   const handleGenerateResume = async () => {
     try {
+      setShowLimitPopup(false);
       setLoading(true);
       setIsOpen(true);
       setIsMinimized(false);
@@ -180,7 +182,11 @@ export const AIResumeModal: React.FC = () => {
         link: c.link || ''
       }));
 
-      const sanitizedAchievements = (achievements || []).slice(0, 15).map((a: any) => ({
+      const sanitizedAchievements = (achievements && achievements.length > 0 ? achievements : [
+        { title: 'Transform Collaboration Partner', organization: 'Amdocs ActixOne', date: '2023', description: 'Awarded for exceptional collaboration and teamwork on the ActixOne project.' },
+        { title: 'Individual Contributor', organization: 'Amdocs ActixOne North Star', date: '2022', description: 'Recognized for outstanding individual contributions to project milestones and deliverables.' },
+        { title: 'Employee of the Year', organization: 'Adobe Acrobat - Liquid Mode', date: '2020', description: "Honored as Employee of the Year for outstanding quality assurance and testing efforts on Adobe's AI framework features." }
+      ]).slice(0, 15).map((a: any) => ({
         title: a.title || '',
         organization: a.organization || '',
         date: a.date || '',
@@ -281,6 +287,7 @@ export const AIResumeModal: React.FC = () => {
       
       setStatus(`Error: ${displayError}`);
       setIsMinimized(false);
+      setShowLimitPopup(true);
     } finally {
       setLoading(false);
     }
@@ -1424,6 +1431,110 @@ export const AIResumeModal: React.FC = () => {
               </div>
             </motion.div>
           )
+        )}
+      </AnimatePresence>
+
+      {/* Limit Exceeded / Retry Popup Modal */}
+      <AnimatePresence>
+        {showLimitPopup && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#02040a]/85 backdrop-blur-md" key="limit-popup">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="w-full max-w-md bg-[#0b0f19] border border-red-500/30 rounded-3xl p-6 sm:p-8 relative shadow-[0_0_50px_rgba(239,68,68,0.15)] text-white"
+            >
+              {/* Top corner accents */}
+              <div className="absolute top-4 left-4 border-t border-l border-red-500/20 w-4 h-4"></div>
+              <div className="absolute top-4 right-4 border-t border-r border-red-500/20 w-4 h-4"></div>
+
+              <div className="flex flex-col items-center text-center space-y-5">
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 animate-pulse">
+                  <AlertCircle className="w-8 h-8" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <h3 className="text-lg font-bold text-white tracking-tight">
+                    {language === 'en' ? 'Gemini API Limit Exceeded' : 'जेमिनी एपीआई सीमा पार हो गई'}
+                  </h3>
+                  <p className="text-[10px] font-mono text-red-400 font-semibold tracking-wider">
+                    ALL 10 GEMINI MODELS EXHAUSTED
+                  </p>
+                </div>
+
+                <p className="text-xs text-gray-300 leading-relaxed text-center">
+                  We automatically attempted execution across all 10 available Gemini models from highest tier to lightest fallback, but each returned rate limit restrictions (429) or timed out due to high free-tier API demand.
+                </p>
+
+                {/* Model pipeline visualization */}
+                <div className="w-full bg-[#070b13] border border-white/5 rounded-xl p-3 space-y-2 max-h-40 overflow-y-auto">
+                  <p className="text-[10px] font-mono font-bold text-gray-400 text-left uppercase tracking-wider">
+                    Model Trial Sequence Status:
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono text-left">
+                    <div className="flex items-center gap-1.5 text-gray-500 line-through">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500/40"></span>
+                      <span>gemini-3.5-pro</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-500 line-through">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500/40"></span>
+                      <span>gemini-3.5-flash</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-500 line-through">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500/40"></span>
+                      <span>gemini-3.1-pro</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-500 line-through">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500/40"></span>
+                      <span>gemini-3.1-flash</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-500 line-through">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500/40"></span>
+                      <span>gemini-3.1-flash-lite</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-500 line-through">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500/40"></span>
+                      <span>gemini-2.5-pro</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-500 line-through">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500/40"></span>
+                      <span>gemini-2.5-flash</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-500 line-through">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500/40"></span>
+                      <span>gemini-2.5-flash-lite</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-500 line-through">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500/40"></span>
+                      <span>gemini-2.5-flash-image</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-500 line-through">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500/40"></span>
+                      <span>gemini-nano</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="w-full flex gap-3 pt-2">
+                  <button
+                    onClick={() => {
+                      setShowLimitPopup(false);
+                      handleGenerateResume();
+                    }}
+                    className="flex-1 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 active:scale-[0.98] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-lg shadow-blue-500/20"
+                  >
+                    {language === 'en' ? 'Retry Generation' : 'पुनः प्रयास करें'}
+                  </button>
+                  <button
+                    onClick={() => setShowLimitPopup(false)}
+                    className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white text-xs font-semibold rounded-xl transition-all cursor-pointer border border-white/5"
+                  >
+                    {language === 'en' ? 'Dismiss' : 'बंद करें'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </>

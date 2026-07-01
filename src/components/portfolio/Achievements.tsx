@@ -18,6 +18,12 @@ interface Achievement {
   order: number;
 }
 
+const DEFAULT_ACHIEVEMENTS: Achievement[] = [
+  { id: '1', title: 'Transform Collaboration Partner', organization: 'Amdocs ActixOne', date: '2023', description: 'Awarded for exceptional collaboration and teamwork on the ActixOne project.', featured: true, order: 1 },
+  { id: '2', title: 'Individual Contributor', organization: 'Amdocs ActixOne North Star', date: '2022', description: 'Recognized for outstanding individual contributions to project milestones and deliverables.', featured: true, order: 2 },
+  { id: '3', title: 'Employee of the Year', organization: 'Adobe Acrobat - Liquid Mode', date: '2020', description: 'Honored as Employee of the Year for outstanding quality assurance and testing efforts on Adobe\'s AI framework features.', featured: true, order: 3 },
+];
+
 export default function Achievements() {
   const [items, setItems] = useState<Achievement[]>([]);
   const { resolveTranslation } = useLanguage();
@@ -26,9 +32,14 @@ export default function Achievements() {
     async function load() {
       try {
         const data = await getCollection<Achievement>('achievements', 'order');
-        setItems(data);
+        if (data && data.length > 0) {
+          setItems(data);
+        } else {
+          setItems(DEFAULT_ACHIEVEMENTS);
+        }
       } catch (e) {
         console.warn('Achievements collection lookup failed. Fallbacks loaded.');
+        setItems(DEFAULT_ACHIEVEMENTS);
       }
     }
     load();

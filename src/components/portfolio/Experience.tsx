@@ -19,9 +19,9 @@ const DEFAULT_EXPERIENCE: Experience[] = [
   {
     id: '1',
     company: 'AMDOCS',
-    role: 'Software Test Specialist & Scrum Master',
+    role: 'Senior Software Test Engineer & Scrum Master',
     period: 'Dec 2021 – Present',
-    description: '• Lead analysis and testing delivery across large-scale platform projects, ensuring high-quality releases and ownership of delivery KPIs.\n• Expertly manage multiple functional areas, conducting requirements gathering, defining user stories, and establishing BDD acceptance criteria.\n• Reduced regression effort using AI-assisted test case generation and optimization via ChatGPT, Copilot, Gemini, and Claude.\n• Execute complex test strategies and planning encompassing System, SIT, and Regression testing cycles.\n• Perform API and ETL validation for data-intensive systems, including data mapping and ETL workflow design for migrations.\n• Act as Scrum Master handling sprint planning, workshops, walkthroughs, and stakeholder communication with Solution Consultants, PMs, and clients.\n• Drive defect management, triage, and Root Cause Analysis (RCA) using Jira to ensure continuous process improvement.\n• Mentor team of 3 QA engineers, focusing on capability building and adherence to regulatory and compliance awareness.',
+    description: '• Leading testing efforts for ActixOne HTML Portal and Desktop applications.\n• Serving as Scrum Master and mentoring junior QA engineers across Agile teams.\n• Managing deployments using Jenkins, Docker, and Linux environments.\n• Performing patch testing, regression testing, and system validation.\n• Coordinating closely with Dev and Product teams for faster defect resolution.\n• Involved in DB and ETL deployment and test data validation.\n• Created user guides, installation manuals, and conducted cross-team demos.\n• Received two employee awards for project excellence and individual contribution.',
     order: 1
   },
   {
@@ -29,7 +29,7 @@ const DEFAULT_EXPERIENCE: Experience[] = [
     company: 'HEXAVIEW (Adobe Client)',
     role: 'Senior Quality Engineer',
     period: 'Jun 2019 – Dec 2021',
-    description: '• Tested Adobe Acrobat (Liquid Mode) with AI-based document processing features, validating AI output accuracy and performance.\n• Designed comprehensive test scenarios covering edge cases, real-world data inputs, and platform-specific functional areas.\n• Improved defect detection through structured analysis and rigorous SIT/Regression testing phases.\n• Collaborated with cross-functional developers and PMs to resolve critical defects discovered during exploratory testing.',
+    description: '• Tested modules of Adobe Acrobat Android - Liquid Mode (Adobe\'s AI framework) and JS-based features.\n• Designed and executed functional, UI, regression, and smoke tests.\n• Managed defect tracking, analysis, and reporting via JIRA.\n• Collaborated with developers and BAs to ensure feature readiness before release.\n• Provided regular QA status reports and participated in release planning.',
     order: 2
   },
   {
@@ -37,8 +37,16 @@ const DEFAULT_EXPERIENCE: Experience[] = [
     company: 'OPKEY',
     role: 'Quality Engineer',
     period: 'Aug 2018 – May 2019',
-    description: '• Tested SaaS automation platform across web and mobile environments using cross-browser testing methodologies.\n• Performed root cause analysis and defect tracking to ensure platform stability during rapid release cycles.',
+    description: '• Tested a SaaS-based automation platform on web and mobile.\n• Developed and executed test cases for multiple modules and platforms.\n• Performed root cause analysis, cross-browser testing, and client-side validation.\n• Supported product deployments and provided customer support when needed.',
     order: 3
+  },
+  {
+    id: '4',
+    company: 'STRATOSPHERE IT SERVICES (Client: Magic EdTech)',
+    role: 'Testing Trainee',
+    period: 'May 2018 – Aug 2018',
+    description: '• Conducted content validation and functionality testing for ePub-based digital books.',
+    order: 4
   }
 ];
 

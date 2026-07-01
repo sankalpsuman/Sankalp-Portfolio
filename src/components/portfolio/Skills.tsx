@@ -44,8 +44,10 @@ const DEFAULT_SKILLS: Skill[] = [
   { id: 'opkey', name: 'OpKey', category: 'Automation & DevOps', level: 82 },
 
   // Tools
-  { id: 'jira_confluence', name: 'JIRA & Confluence', category: 'Tools', level: 95 },
-  { id: 'alm_zephyr', name: 'Zephyr, Octane, ALM', category: 'Tools', level: 90 },
+  { id: 'jira_confluence', name: 'Jira & Confluence', category: 'Tools', level: 95 },
+  { id: 'alm_zephyr', name: 'Zephyr, Octane, ALM, QC', category: 'Tools', level: 90 },
+  { id: 'mobile_tools', name: 'Putty & ADB Logcat', category: 'Tools', level: 85 },
+  { id: 'python', name: 'Python (Basics)', category: 'Tools', level: 80 },
 
   // Leadership / Process
   { id: 'scrum_agile', name: 'Agile & Scrum Master', category: 'Leadership', level: 95 },

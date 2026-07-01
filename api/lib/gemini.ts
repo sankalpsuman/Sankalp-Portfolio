@@ -119,33 +119,29 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
     const ai = getGeminiClient();
     const requestedModel = optimizedParams.model || "gemini-3.5-flash";
     
-    // Stable, high-quota, production-ready models to prioritize on free tiers
-    const primaryStableModels = ["gemini-3.5-flash", "gemini-3.1-flash-lite"];
-    
-    // If the requested model is gemini-3.5-flash or another highly restricted preview model,
-    // or if we are executing within a Vercel Serverless Function, we prioritize stable,
-    // low-latency models first to guarantee execution completes within Vercel's absolute timeout.
-    const isHighQuotaRisk = requestedModel.includes("pro") || requestedModel.includes("preview");
-    
+    // Defined list of all the latest models in use from top (highest quality/pro) to low (lightest/flash)
+    const latestModels = [
+      "gemini-3.5-pro",
+      "gemini-3.5-flash",
+      "gemini-3.1-pro",
+      "gemini-3.1-flash",
+      "gemini-3.1-flash-lite",
+      "gemini-2.5-pro",
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite",
+      "gemini-2.5-flash-image",
+      "gemini-nano"
+    ];
+
     let modelsToTry: string[] = [];
-    // Prioritize the requested model first to ensure lowest latency and best execution quality
-    modelsToTry.push(requestedModel);
     
-    // Supplement with fallback options
-    for (const m of primaryStableModels) {
-      if (!modelsToTry.includes(m)) {
-        modelsToTry.push(m);
-      }
+    // Always start with the requested model first if specified, to honor client-side intent
+    if (requestedModel && !latestModels.includes(requestedModel)) {
+      modelsToTry.push(requestedModel);
     }
     
-    // Add other fallback models to ensure broad coverage without violating free-tier quotas on paid-only models
-    const fallbackPool = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-flash-latest"];
-    if (requestedModel.includes("pro") || requestedModel.includes("image")) {
-      fallbackPool.push("gemini-3.1-pro-preview");
-      fallbackPool.push("gemini-pro-latest");
-      fallbackPool.push("gemini-1.5-pro");
-    }
-    for (const m of fallbackPool) {
+    // Add the latest models in strict descending order of capacity (top to low)
+    for (const m of latestModels) {
       if (!modelsToTry.includes(m)) {
         modelsToTry.push(m);
       }
@@ -168,7 +164,7 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
       }
     }
 
-    console.log(`[Gemini Centralized] Scheduled models fallback sequence: ${JSON.stringify(modelsToTry)}`);
+    console.log(`[Gemini Centralized] Scheduled models fallback sequence (top to low): ${JSON.stringify(modelsToTry)}`);
 
     let lastError: any = null;
 

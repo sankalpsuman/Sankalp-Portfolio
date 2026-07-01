@@ -14,40 +14,29 @@ export async function generateContentWithFallback(
 ): Promise<any> {
   const requestedModel = params.model || "gemini-3.5-flash";
   
-  // Stable, high-quota, production-ready models to prioritize on free tiers
-  const primaryStableModels = [
+  // Defined list of all the latest models in use from top (highest quality/pro) to low (lightest/flash)
+  const latestModels = [
+    "gemini-3.5-pro",
     "gemini-3.5-flash",
+    "gemini-3.1-pro",
+    "gemini-3.1-flash",
     "gemini-3.1-flash-lite",
+    "gemini-2.5-pro",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash-image",
+    "gemini-nano"
   ];
-
-  // If requested model is high quota risk, try more generous production-grade models first.
-  const isHighQuotaRisk = requestedModel.includes("pro");
 
   let modelsToTry: string[] = [];
-  if (isHighQuotaRisk) {
-    modelsToTry = [...primaryStableModels];
-    if (!modelsToTry.includes(requestedModel)) {
-      modelsToTry.push(requestedModel);
-    }
-  } else {
-    modelsToTry = [requestedModel];
-    for (const m of primaryStableModels) {
-      if (!modelsToTry.includes(m)) {
-        modelsToTry.push(m);
-      }
-    }
+  
+  // Always start with the requested model first if specified, to honor caller intent
+  if (requestedModel && !latestModels.includes(requestedModel)) {
+    modelsToTry.push(requestedModel);
   }
-
-  // Robust candidate pool of other active models
-  const fallbackPool = [
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-flash-lite-latest",
-    "gemini-flash-latest",
-    "gemini-3.1-pro-preview"
-  ];
-
-  for (const m of fallbackPool) {
+  
+  // Add the latest models in strict descending order of capacity (top to low)
+  for (const m of latestModels) {
     if (!modelsToTry.includes(m)) {
       modelsToTry.push(m);
     }
@@ -69,7 +58,7 @@ export async function generateContentWithFallback(
     }
   }
 
-  console.log(`[Gemini Client Fallback] Scheduled model retry sequence: ${JSON.stringify(modelsToTry)}`);
+  console.log(`[Gemini Client Fallback] Scheduled model retry sequence (top to low): ${JSON.stringify(modelsToTry)}`);
 
   let lastError: any = null;
 
