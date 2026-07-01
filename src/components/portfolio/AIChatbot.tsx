@@ -111,7 +111,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
 }`;
 
   const response = await generateContentWithFallback(ai, {
-    model: "gemini-1.5-flash",
+    model: "gemini-3.5-flash",
     contents: `${systemPrompt}\n\nClient Conversation History:\n${conversationHistory}\n\nAssess this conversation, and respond in the required JSON format. Provide the next reply.`,
     config: {
       responseMimeType: "application/json",

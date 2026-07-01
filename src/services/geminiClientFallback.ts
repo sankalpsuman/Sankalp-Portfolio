@@ -12,12 +12,12 @@ export async function generateContentWithFallback(
   aiInstance: GoogleGenAI,
   params: any
 ): Promise<any> {
-  const requestedModel = params.model || "gemini-1.5-flash";
+  const requestedModel = params.model || "gemini-3.5-flash";
   
   // Stable, high-quota, production-ready models to prioritize on free tiers
   const primaryStableModels = [
-    "gemini-1.5-flash-8b",
-    "gemini-1.5-flash",
+    "gemini-3.5-flash",
+    "gemini-3.1-flash-lite",
   ];
 
   // If requested model is high quota risk, try more generous production-grade models first.
@@ -40,8 +40,11 @@ export async function generateContentWithFallback(
 
   // Robust candidate pool of other active models
   const fallbackPool = [
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
     "gemini-flash-lite-latest",
     "gemini-flash-latest",
+    "gemini-3.1-pro-preview"
   ];
 
   for (const m of fallbackPool) {

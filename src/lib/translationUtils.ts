@@ -137,7 +137,7 @@ Return ONLY valid JSON.
 Input: ${JSON.stringify(flatContent, null, 2)}`;
 
     const response = await generateContentWithFallback(ai, {
-      model: "gemini-1.5-flash",
+      model: "gemini-3.5-flash",
       contents: systemPrompt,
       config: {
         responseMimeType: "application/json",

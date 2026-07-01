@@ -307,7 +307,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
 }`;
 
       const response = await generateContentWithFallback({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.5-flash",
         timeoutMs: 35000,
         contents: `${systemPrompt}\n\nClient Conversation History:\n${conversationHistory}\n\nAssess this conversation, and respond in the required JSON format. Provide the next reply.`,
         config: {
@@ -468,7 +468,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
       getGeminiClient();
 
       const response = await generateContentWithFallback({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.5-flash",
         timeoutMs: 35000,
         contents: `${prompt}\n\nUser Input: ${userInput}`,
         config: {
@@ -541,7 +541,7 @@ Expected output format:
       }
 
       const response = await generateContentWithFallback({
-        model: "gemini-1.5-flash-8b",
+        model: "gemini-3.5-flash",
         timeoutMs: 30000,
         contents: `${systemPrompt}\n\nPerform translations and return the JSON.`,
         config: {
@@ -620,6 +620,9 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
      * Certifications (certifications)
      * Education (education)
      * Awards & Achievements (achievements, combining major recognitions and metrics)
+     * Impact Stories & Qualitative Breakthroughs (impactStories)
+     * QA Metrics & Quantitative Impact (qaMetrics)
+     * AI Playground Tools & Specialized LLM Stack (aiTools)
      * Career Timeline / Career Journey (integrated dynamically or added under achievements/additionalSections)
      * Publications, Blogs, or Content (as an additionalSection, or list details under "Technical Publications & Written Insight")
      * All External Links (under contact, projects, and certifications where available)
@@ -653,6 +656,14 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
    - Summaries must be 3-4 sentences max.
    - This keeps the output compact, highly digestible, and allows faster generation under serverless execution timeout limits (within 5 seconds).
 
+6. TONE, STYLE & LOCALIZATION:
+   - STYLE: Write in a natural, professional Indian professional style (e.g., standard business English as used in Indian tech hubs like Bangalore, Gurgaon, Pune).
+   - ANTI-AI LANGUAGE: Avoid typical "AI-generated" cliches, overly flowery adjectives, and robotic sentence structures. Use human-centric, clear, and direct phrasing.
+   - REPHRASING: Rephrase all content to sound like it was written by a senior human professional. Ensure the flow is logical and the language is authoritative yet humble.
+   - NO FAKE DETAILS: Strictly adhere to provided facts. Do not add any certifications, degrees, or skills not present in the source data.
+   - BULLET POINTS: Use clearly structured bullet points for all projects, roles, and responsibilities to maximize readability.
+   - COMPREHENSIVE INCLUSION: Include all relevant technical details from the Skills section and EVERY other area of the portfolio (Impact Stories, Metrics, Now, etc.) without duplication.
+
 ROLE TARGETING & LAYOUT:
    - Target the resume content and tone specifically for: Software Test Engineer, Senior Software Test Engineer, QA Lead, AI Test Engineer, Product Owner, Technical Project Manager, and AI Engineer roles.
    - Ensure the generated content is easy to scan, ATS-optimized, and recruiter-friendly.
@@ -664,13 +675,13 @@ PROJECT-SPECIFIC OVERRIDES:
    - For "Opkey": expand around ERP/SaaS testing, Manual/Regression/Integration/Functional testing, Test case validation, and Agile delivery.
 
 TECHNOLOGY & SKILL CONSTRAINTS:
-   - Under Programming Languages: ONLY include "Python". DO NOT include Java, JavaScript, C#, C++, or any other programming language.
-   - Under Technical Skills: ONLY include tools explicitly used (e.g., Jira, Confluence, Postman, SQL, Jenkins, Docker, Git, GitHub, BrowserStack, Charles Proxy, Firebase, Google AI Studio, Gemini, ChatGPT, Claude, GitHub Copilot). Do not infer coding expertise.
-   - Under AI Skills: strengthen by including Prompt Engineering, AI-assisted Software Testing, Generative AI, AI Workflow Design, LLM Evaluation, AI Output Validation, AI Product Testing, AI-assisted Requirement Analysis, AI-assisted Test Design, and Vibe Coding.
+   - Under Programming Languages: Prioritize "Python". If other languages like Java or JavaScript appear in the data, include them only if they are critical to the projects or experience listed.
+   - Under Technical Skills: Include all tools and technologies explicitly listed in the source data (e.g., Jira, Confluence, Postman, SQL, Jenkins, Docker, Git, GitHub, BrowserStack, Charles Proxy, Firebase, Google AI Studio, Gemini, ChatGPT, Claude, GitHub Copilot).
+   - Under AI & Data Skills: Ensure skills from "API & Data" and "AI in QA" categories are prominently featured, including API Validation (REST/SOAP), SQL & Database Testing, ETL Testing, Prompt Engineering, AI-driven Testing, etc.
 
 IMPORTANT RULES:
    - Do not fabricate experience.
-   - Do not exaggerate programming skills (Keep Python as the ONLY programming language).
+   - Do not exaggerate skills; stay truthful to the provided data.
    - Improve content depth while remaining truthful.
    - Preserve ATS optimization and maintain the existing JSON layout and formatting. Ensure every claim is defensible during interviews.
 
@@ -680,8 +691,8 @@ ${JSON.stringify(portfolioData, null, 2)}
 Respond with ONLY the structured resume JSON matching the requested response schema.`;
 
       const response = await generateContentWithFallback({
-        model: "gemini-1.5-flash",
-        timeoutMs: 55000,
+        model: "gemini-3.5-flash",
+        timeoutMs: 59000,
         contents: `${systemPrompt}\n\nGenerate and return the formatted ATS resume JSON in the target language: "${targetLanguage}".`,
         config: {
           temperature: 0.1,
@@ -846,7 +857,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
       let actualTokenCount = Math.ceil((promptSizeChars + contextSizeChars) / 4);
       try {
         const countQuery = await ai.models.countTokens({
-          model: "gemini-1.5-flash",
+          model: "gemini-3.5-flash",
           contents: promptText + "\n\nContext:\n" + contextText
         });
         if (countQuery && countQuery.totalTokens) {
@@ -881,7 +892,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
 • RAG retrieval size: 0 (Direct portfolio context payload used)
 • Projects included: ${diagnostics.numberOfProjectsIncluded}
 • Experience positions included: ${diagnostics.numberOfExperienceIncluded}
-• Model utilized for synthesis: gemini-1.5-flash
+• Model utilized for synthesis: gemini-3.5-flash
 • Overall Execution Latency: ${diagnostics.overallLatencySeconds} seconds
 ===================================================
 `);
@@ -900,7 +911,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
       getGeminiClient();
 
       const response = await generateContentWithFallback({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.5-flash",
         timeoutMs: 25000,
         contents: `Provide exactly 3 keywords separated by commas that describe a professional, high-quality technical or business-related image for this blog post.
         Title: ${title}

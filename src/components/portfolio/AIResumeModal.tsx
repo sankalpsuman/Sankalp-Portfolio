@@ -133,37 +133,45 @@ export const AIResumeModal: React.FC = () => {
         text: (t.text || '').substring(0, 150) // Keep client text brief for resume generator AI
       }));
 
-      const sanitizedExperience = (experience || []).slice(0, 10).map((e: any) => ({
+      const sanitizedExperience = (experience || []).slice(0, 15).map((e: any) => ({
         role: e.role || '',
         company: e.company || '',
         period: e.period || '',
         location: e.location || '',
-        bullets: Array.isArray(e.bullets) ? e.bullets.slice(0, 6) : (e.description ? [e.description.substring(0, 300)] : [])
+        bullets: Array.isArray(e.bullets) ? e.bullets.slice(0, 10) : (e.description ? [e.description.substring(0, 500)] : [])
       }));
 
       const sanitizedProjects = (projects || [])
-        .slice(0, 15)
+        .slice(0, 25)
         .map((p: any) => ({
           name: p.title || p.name || '',
-          description: (p.description || '').substring(0, 300),
-          techStack: (p.techStack || p.tags || []).slice(0, 10),
+          description: (p.description || '').substring(0, 500),
+          techStack: (p.techStack || p.tags || []).slice(0, 15),
           link: p.liveUrl || p.githubUrl || p.link || p.github || '',
           role: p.role || ''
         }));
 
-      const sanitizedSkills = (skills || []).slice(0, 12).map((s: any) => ({
-        category: s.category || '',
-        items: Array.isArray(s.items) ? s.items.slice(0, 15) : []
-      }));
+      // Group skills by category properly since Firestore collection is flat
+      const groupedSkillsMap: Record<string, string[]> = {};
+      (skills || []).forEach((s: any) => {
+        const cat = s.category || 'Other';
+        if (!groupedSkillsMap[cat]) groupedSkillsMap[cat] = [];
+        groupedSkillsMap[cat].push(s.name);
+      });
 
-      const sanitizedTimeline = (timeline || []).slice(0, 10).map((t: any) => ({
+      const sanitizedSkills = Object.entries(groupedSkillsMap).map(([category, items]) => ({
+        category,
+        items: items.slice(0, 30)
+      })).slice(0, 15);
+
+      const sanitizedTimeline = (timeline || []).slice(0, 15).map((t: any) => ({
         role: t.role || '',
         company: t.company || '',
         period: t.period || '',
-        milestones: Array.isArray(t.milestones) ? t.milestones.slice(0, 5) : []
+        milestones: Array.isArray(t.milestones) ? t.milestones.slice(0, 10) : []
       }));
 
-      const sanitizedCertifications = (certifications || []).slice(0, 15).map((c: any) => ({
+      const sanitizedCertifications = (certifications || []).slice(0, 20).map((c: any) => ({
         name: c.name || '',
         issuer: c.issuer || '',
         date: c.date || '',
@@ -181,9 +189,9 @@ export const AIResumeModal: React.FC = () => {
         timeline: sanitizedTimeline,
         certifications: sanitizedCertifications,
         testimonials: sanitizedTestimonials,
-        impactStories: (impactStories || []).slice(0, 3),
-        qaMetrics: (qaMetrics || []).slice(0, 4),
-        aiTools: (aiTools || []).slice(0, 5),
+        impactStories: (impactStories || []).slice(0, 10),
+        qaMetrics: (qaMetrics || []).slice(0, 15),
+        aiTools: (aiTools || []).slice(0, 15),
         now,
         blogs: sanitizedBlogs,
         portfolioUrl: window.location.origin
