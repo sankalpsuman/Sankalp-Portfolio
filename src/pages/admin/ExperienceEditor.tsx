@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { getCollection, addCollectionDocument, updateCollectionDocument, deleteCollectionDocument } from '../../services/firestoreService';
-import { Save, Plus, Trash2, Loader2, Briefcase, Calendar, ChevronUp, ChevronDown, Globe } from 'lucide-react';
+import { Save, Plus, Trash2, Loader2, Briefcase, Calendar, ChevronUp, ChevronDown, Globe, Layers } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
-import { autoTranslateDocument } from '../../lib/translationUtils';
+import { autoTranslateDocument, bulkAutoTranslateDocuments } from '../../lib/translationUtils';
 
 interface Experience {
   id: string;
@@ -69,6 +69,21 @@ export default function ExperienceEditor() {
     } catch (error) {
       console.error(error);
       alert('Translation failed.');
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  const handleAutoTranslateAll = async () => {
+    if (items.length === 0) return;
+    setTranslating(true);
+    try {
+      const updated = await bulkAutoTranslateDocuments(items);
+      setItems(updated);
+      alert('All experience entries auto-translated successfully! Don’t forget to save individual changes if needed.');
+    } catch (e) {
+      console.error(e);
+      alert('Bulk translation failed. Quota may be exhausted.');
     } finally {
       setTranslating(false);
     }
@@ -273,19 +288,36 @@ export default function ExperienceEditor() {
                   ))}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleActiveAutoTranslate}
-                  disabled={translating || !localItem.company}
-                  className="flex items-center gap-1.5 px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20 cursor-pointer"
-                >
-                  {translating ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : (
-                    <Globe className="w-3 h-3" />
-                  )}
-                  <span>Auto-Translate</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleActiveAutoTranslate}
+                    disabled={translating || !localItem.company}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 disabled:opacity-50 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20 cursor-pointer"
+                  >
+                    {translating ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Globe className="w-3 h-3" />
+                    )}
+                    <span>Auto-Translate</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleAutoTranslateAll}
+                    disabled={translating || items.length === 0}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-white/10 disabled:opacity-50 text-gray-300 rounded-lg text-xs font-bold transition-all border border-white/10 cursor-pointer"
+                    title="Translate ALL experience entries in one go"
+                  >
+                    {translating ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Layers className="w-3 h-3" />
+                    )}
+                    <span>Bulk All</span>
+                  </button>
+                </div>
               </div>
             </div>
 

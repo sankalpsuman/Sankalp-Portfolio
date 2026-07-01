@@ -3,7 +3,7 @@ import { getCollection, addCollectionDocument, updateCollectionDocument, deleteC
 import { Save, Plus, Trash2, Loader2, Globe } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
-import { autoTranslateDocument } from '../../lib/translationUtils';
+import { autoTranslateDocument, bulkAutoTranslateDocuments } from '../../lib/translationUtils';
 
 interface Skill {
   id: string;
@@ -29,7 +29,7 @@ export default function SkillsEditor() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [newSkill, setNewSkill] = useState({ name: '', category: 'Testing', level: 80 });
-  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null; type: 'skill' | 'category' }>({ isOpen: false, id: null, type: 'skill' });
   const [activeEditorLang, setActiveEditorLang] = useState<'en' | 'hi' | 'fr' | 'de'>('en');
   const [translating, setTranslating] = useState(false);
 
@@ -56,26 +56,21 @@ export default function SkillsEditor() {
     }));
   };
 
+  const handleCategoryChange = (id: string, category: string) => {
+    setLocalSkills(localSkills.map(s => s.id === id ? { ...s, category } : s));
+  };
+
   const handleAutoTranslateAll = async () => {
     if (localSkills.length === 0) return;
     setTranslating(true);
     try {
-      const updated = await Promise.all(localSkills.map(async (skill) => {
-        if (!skill.name) return skill;
-        const res = await autoTranslateDocument({ name: skill.name });
-        return {
-          ...skill,
-          translations: {
-            ...((skill as any).translations || {}),
-            ...res.translations
-          }
-        };
-      }));
+      // Use efficient bulk translation to avoid quota exhaustion (429 errors)
+      const updated = await bulkAutoTranslateDocuments(localSkills);
       setLocalSkills(updated);
       alert('All skills auto-translated successfully! Don’t forget to click "Save All Changes".');
     } catch (e) {
       console.error(e);
-      alert('Skills auto-translation failed.');
+      alert('Skills auto-translation failed. Quota may be exhausted, please try again in a few minutes.');
     } finally {
       setTranslating(false);
     }
@@ -124,7 +119,11 @@ export default function SkillsEditor() {
   };
 
   const handleDeleteSkill = (id: string) => {
-    setDeleteModal({ isOpen: true, id });
+    setDeleteModal({ isOpen: true, id, type: 'skill' });
+  };
+
+  const handleDeleteCategory = (category: string) => {
+    setDeleteModal({ isOpen: true, id: category, type: 'category' });
   };
 
   const confirmDelete = async () => {
@@ -132,14 +131,22 @@ export default function SkillsEditor() {
     const id = deleteModal.id;
     setSaving(true);
     try {
-      await deleteCollectionDocument('skills', id);
-      setSkills(skills.filter(s => s.id !== id));
-      setLocalSkills(localSkills.filter(s => s.id !== id));
+      if (deleteModal.type === 'skill') {
+        await deleteCollectionDocument('skills', id);
+        setSkills(skills.filter(s => s.id !== id));
+        setLocalSkills(localSkills.filter(s => s.id !== id));
+      } else {
+        // Delete category and its skills
+        const skillsToDelete = skills.filter(s => s.category === id);
+        await Promise.all(skillsToDelete.map(s => deleteCollectionDocument('skills', s.id)));
+        setSkills(skills.filter(s => s.category !== id));
+        setLocalSkills(localSkills.filter(s => s.category !== id));
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-      setDeleteModal({ isOpen: false, id: null });
+      setDeleteModal({ isOpen: false, id: null, type: 'skill' });
     } catch (error) {
-      alert('Failed to delete skill');
+      alert(`Failed to delete ${deleteModal.type}`);
     } finally {
       setSaving(false);
     }
@@ -190,11 +197,13 @@ export default function SkillsEditor() {
     <div className="max-w-5xl space-y-8 animate-in fade-in duration-300">
       <DeleteConfirmModal 
         isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, id: null })}
+        onClose={() => setDeleteModal({ isOpen: false, id: null, type: 'skill' })}
         onConfirm={confirmDelete}
         isLoading={saving}
-        title="Delete Skill"
-        message="Are you sure you want to delete this skill? This will remove it from all categories."
+        title={deleteModal.type === 'skill' ? "Delete Skill" : "Delete Category"}
+        message={deleteModal.type === 'skill' 
+          ? "Are you sure you want to delete this skill? This will remove it from all categories." 
+          : `Are you sure you want to delete the "${deleteModal.id}" category and ALL its related skills? This action cannot be undone.`}
       />
       
       {/* Top localization bar */}
@@ -302,45 +311,64 @@ export default function SkillsEditor() {
           if (catSkills.length === 0) return null;
 
           return (
-            <div key={category} className="space-y-4">
-              <h4 className="text-sm font-mono text-gray-500 uppercase tracking-widest pl-2">{category}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div key={category} className="space-y-3">
+              <div className="flex items-center justify-between pl-1">
+                <h4 className="text-[11px] font-mono text-gray-500 uppercase tracking-widest">{category}</h4>
+                <button
+                  onClick={() => handleDeleteCategory(category)}
+                  className="flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold text-red-400/70 hover:text-red-400 hover:bg-red-500/10 rounded transition-all cursor-pointer border border-red-500/10"
+                  title={`Delete entire ${category} category`}
+                >
+                  <Trash2 className="w-2.5 h-2.5" />
+                  <span>Delete Category</span>
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {catSkills.map(skill => (
-                  <div key={skill.id} className="p-4 bg-white/2 border border-white/5 rounded-xl flex items-center justify-between group hover:bg-white/5 transition-all">
-                    <div className="flex-1 mr-4">
-                      <div className="flex justify-between items-center mb-2">
+                  <div key={skill.id} className="p-3 bg-white/2 border border-white/5 rounded-lg flex items-center justify-between group hover:bg-white/5 transition-all">
+                    <div className="flex-1 mr-3 min-w-0">
+                      <div className="flex justify-between items-center mb-1.5">
                         {activeEditorLang === 'en' ? (
                           <input 
                             value={skill.name}
                             onChange={(e) => setSkillName(skill.id, e.target.value)}
-                            className="bg-transparent border-b border-transparent focus:border-blue-500/50 outline-none font-medium text-white p-0.5 text-sm"
+                            className="bg-transparent border-b border-transparent focus:border-blue-500/50 outline-none font-medium text-white p-0.5 text-xs w-full truncate"
                             placeholder="Skill Name"
                           />
                         ) : (
                           <input 
                             value={(skill as any).translations?.[activeEditorLang]?.name || ''}
                             onChange={(e) => setSkillName(skill.id, e.target.value)}
-                            className="bg-transparent border-b border-white/10 focus:border-blue-500 outline-none font-medium text-sm text-blue-400 p-0.5"
-                            placeholder={`Provide ${activeEditorLang.toUpperCase()} translation...`}
+                            className="bg-transparent border-b border-white/10 focus:border-blue-500 outline-none font-medium text-xs text-blue-400 p-0.5 w-full truncate"
+                            placeholder={`${activeEditorLang.toUpperCase()}...`}
                           />
                         )}
-                        <span className="text-xs text-blue-400 font-mono">{skill.level}%</span>
+                        <span className="text-[10px] text-blue-400 font-mono ml-1 shrink-0">{skill.level}%</span>
                       </div>
+                      <div className="flex items-center gap-3">
                         <input
                           type="range"
                           min="0"
                           max="100"
                           value={skill.level}
                           onChange={(e) => handleLevelChange(skill.id, parseInt(e.target.value))}
-                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                          className="flex-1 h-0.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500"
                         />
+                        <select
+                          value={skill.category}
+                          onChange={(e) => handleCategoryChange(skill.id, e.target.value)}
+                          className="bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-[9px] text-gray-500 focus:text-white outline-none appearance-none cursor-pointer"
+                        >
+                          {CATEGORIES.map(cat => <option key={cat} value={cat} className="bg-[#050816]">{cat}</option>)}
+                        </select>
+                      </div>
                     </div>
                     <button
                       onClick={() => handleDeleteSkill(skill.id)}
-                      className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all rounded-lg shrink-0 cursor-pointer"
+                      className="p-1.5 text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-all rounded cursor-pointer shrink-0"
                       title="Delete Skill"
                     >
-                      <Trash2 className="w-4.5 h-4.5" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}

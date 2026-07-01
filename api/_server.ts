@@ -307,7 +307,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
 }`;
 
       const response = await generateContentWithFallback({
-        model: "gemini-3.5-flash",
+        model: "gemini-1.5-flash",
         timeoutMs: 35000,
         contents: `${systemPrompt}\n\nClient Conversation History:\n${conversationHistory}\n\nAssess this conversation, and respond in the required JSON format. Provide the next reply.`,
         config: {
@@ -468,7 +468,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
       getGeminiClient();
 
       const response = await generateContentWithFallback({
-        model: "gemini-3.5-flash",
+        model: "gemini-1.5-flash",
         timeoutMs: 35000,
         contents: `${prompt}\n\nUser Input: ${userInput}`,
         config: {
@@ -541,7 +541,7 @@ Expected output format:
       }
 
       const response = await generateContentWithFallback({
-        model: "gemini-3.1-flash-lite",
+        model: "gemini-1.5-flash-8b",
         timeoutMs: 30000,
         contents: `${systemPrompt}\n\nPerform translations and return the JSON.`,
         config: {
@@ -680,7 +680,7 @@ ${JSON.stringify(portfolioData, null, 2)}
 Respond with ONLY the structured resume JSON matching the requested response schema.`;
 
       const response = await generateContentWithFallback({
-        model: "gemini-3.5-flash",
+        model: "gemini-1.5-flash",
         timeoutMs: 55000,
         contents: `${systemPrompt}\n\nGenerate and return the formatted ATS resume JSON in the target language: "${targetLanguage}".`,
         config: {
@@ -846,7 +846,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
       let actualTokenCount = Math.ceil((promptSizeChars + contextSizeChars) / 4);
       try {
         const countQuery = await ai.models.countTokens({
-          model: "gemini-3.5-flash",
+          model: "gemini-1.5-flash",
           contents: promptText + "\n\nContext:\n" + contextText
         });
         if (countQuery && countQuery.totalTokens) {
@@ -881,7 +881,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
 • RAG retrieval size: 0 (Direct portfolio context payload used)
 • Projects included: ${diagnostics.numberOfProjectsIncluded}
 • Experience positions included: ${diagnostics.numberOfExperienceIncluded}
-• Model utilized for synthesis: gemini-3.5-flash
+• Model utilized for synthesis: gemini-1.5-flash
 • Overall Execution Latency: ${diagnostics.overallLatencySeconds} seconds
 ===================================================
 `);
@@ -900,7 +900,7 @@ Respond with ONLY the structured resume JSON matching the requested response sch
       getGeminiClient();
 
       const response = await generateContentWithFallback({
-        model: "gemini-3.5-flash",
+        model: "gemini-1.5-flash",
         timeoutMs: 25000,
         contents: `Provide exactly 3 keywords separated by commas that describe a professional, high-quality technical or business-related image for this blog post.
         Title: ${title}

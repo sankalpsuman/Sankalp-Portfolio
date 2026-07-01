@@ -7,7 +7,8 @@ import {
   Database, 
   Cpu, 
   Workflow, 
-  Users 
+  Users,
+  Terminal
 } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 
@@ -34,6 +35,7 @@ const CATEGORIES = [
   { name: 'API & Data', icon: Database, color: 'purple', key: 'api_data' },
   { name: 'AI in QA', icon: Cpu, color: 'cyan', key: 'ai_qa' },
   { name: 'Automation & DevOps', icon: Workflow, color: 'emerald', key: 'automation_devops' },
+  { name: 'Tools', icon: Terminal, color: 'slate', key: 'tools' },
   { name: 'Leadership', icon: Users, color: 'orange', key: 'leadership' },
 ];
 
@@ -58,12 +60,16 @@ export default function Skills() {
     load();
   }, []);
 
-  const getCategoryName = (category: string) => {
+  const getCategoryName = (category: string, key: string) => {
+    const translated = t(`skills.categories.${key}`);
+    if (translated !== `skills.categories.${key}`) return translated;
+    
     const norm = category.toLowerCase().trim();
     if (norm.includes('testing')) return t('skills.categories.testing');
     if (norm.includes('api') || norm.includes('data')) return t('skills.categories.api_data');
     if (norm.includes('ai') || norm.includes('qa')) return t('skills.categories.ai_qa');
     if (norm.includes('automation') || norm.includes('devops')) return t('skills.categories.automation_devops');
+    if (norm.includes('tools')) return t('skills.categories.tools') || "Tools";
     if (norm.includes('leadership')) return t('skills.categories.leadership');
     return category;
   };
@@ -89,8 +95,8 @@ export default function Skills() {
   };
 
   return (
-    <Section id="skills" title={t('skills.title')} subtitle={t('skills.subtitle')}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <Section id="skills" title={t('skills.title') || "Professional Toolkit"} subtitle={t('skills.subtitle')}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-7xl mx-auto">
         {CATEGORIES.map((cat, catIdx) => {
           // Filter matching skills. We normalize the check to match both database and fallbacks
           const catSkills = items.filter(s => {
@@ -99,7 +105,8 @@ export default function Skills() {
             return sCat === cName || 
                    (cName.includes('api') && sCat.includes('api')) ||
                    (cName.includes('ai') && sCat.includes('ai')) ||
-                   (cName.includes('devops') && sCat.includes('devops'));
+                   (cName.includes('devops') && sCat.includes('devops')) ||
+                   (cName.includes('tools') && sCat.includes('tools'));
           });
           
           if (catSkills.length === 0) return null;
@@ -107,37 +114,33 @@ export default function Skills() {
           return (
             <motion.div
               key={cat.name}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: catIdx * 0.1 }}
-              className="p-8 bg-white/[0.01] backdrop-blur-md border border-white/5 rounded-3xl hover:border-brand/35 hover:bg-white/[0.03] transition-all group relative overflow-hidden shadow-lg"
+              transition={{ delay: catIdx * 0.05 }}
+              className="p-5 bg-white/[0.01] backdrop-blur-sm border border-white/5 rounded-2xl hover:border-brand/20 transition-all group flex flex-col"
             >
-              {/* Visual Glass Reflection Glare */}
-              <div className="absolute top-0 -left-1/2 w-1/4 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-25 group-hover:left-[150%] transition-all duration-[1000ms] ease-out pointer-events-none" />
-
-              <div className="flex items-center gap-4 mb-8 relative z-10">
-                <div className="p-3 rounded-2xl bg-white/5 text-brand border border-white/10 group-hover:scale-110 group-hover:border-brand/40 group-hover:bg-brand/10 transition-all duration-300">
-                  <cat.icon className="w-6 h-6" />
+              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/5">
+                <div className="p-2 rounded-lg bg-brand/5 text-brand group-hover:bg-brand/10 transition-colors">
+                  <cat.icon className="w-3.5 h-3.5" />
                 </div>
-                <h3 className="text-xl font-bold text-white group-hover:text-brand transition-colors duration-300">{getCategoryName(cat.name)}</h3>
+                <h3 className="text-[10px] font-bold text-gray-400 tracking-[0.25em] uppercase">{getCategoryName(cat.name, cat.key)}</h3>
               </div>
 
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1.5">
                 {catSkills.map((skill) => (
-                  <div key={skill.id} className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-300 font-medium">{getSkillName(skill)}</span>
-                      <span className="text-brand font-mono">{skill.level}%</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden p-[1px]">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${skill.level}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1, delay: 0.5 }}
-                        className="h-full bg-gradient-to-r from-brand to-purple-600 rounded-full"
-                      />
+                  <div 
+                    key={skill.id} 
+                    className="flex items-center justify-between p-1.5 rounded-md bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all group/skill"
+                  >
+                    <span className="text-[10px] font-medium text-gray-400 group-hover/skill:text-gray-200 transition-colors truncate pr-1">
+                      {getSkillName(skill)}
+                    </span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <div className="w-6 h-0.5 bg-white/5 rounded-full overflow-hidden hidden xs:block">
+                        <div className="h-full bg-brand/40" style={{ width: `${skill.level}%` }} />
+                      </div>
+                      <span className="text-[8.5px] font-mono text-brand/50 tabular-nums">{skill.level}%</span>
                     </div>
                   </div>
                 ))}

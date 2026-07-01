@@ -137,7 +137,7 @@ Return ONLY valid JSON.
 Input: ${JSON.stringify(flatContent, null, 2)}`;
 
     const response = await generateContentWithFallback(ai, {
-      model: "gemini-3.5-flash",
+      model: "gemini-1.5-flash",
       contents: systemPrompt,
       config: {
         responseMimeType: "application/json",
@@ -162,6 +162,57 @@ Input: ${JSON.stringify(flatContent, null, 2)}`;
   } catch (error) {
     console.error('[Translation Client] Client-side translation generation failed:', error);
     return { hi: {}, fr: {}, de: {} };
+  }
+}
+
+/**
+ * Efficiently translates multiple documents in a single batched API call to minimize quota exhaustion.
+ */
+export async function bulkAutoTranslateDocuments<T extends object>(documents: T[]): Promise<(T & { translations?: Record<string, any> })[]> {
+  if (!documents || documents.length === 0) return [];
+  
+  try {
+    const batchedFlat: TranslatableFlat = {};
+    
+    // 1. Accumulate all translatable fields from all documents with a unique prefix
+    documents.forEach((doc, idx) => {
+      const flat = flattenTranslatable(doc);
+      Object.keys(flat).forEach(key => {
+        batchedFlat[`doc_${idx}_${key}`] = flat[key];
+      });
+    });
+
+    if (Object.keys(batchedFlat).length === 0) {
+      return documents;
+    }
+
+    console.log(`[Translation utility] Bulk auto-translating ${documents.length} documents (${Object.keys(batchedFlat).length} fields total).`);
+    
+    // 2. Perform ONE request for everything
+    const translatedNests = await translateContent(batchedFlat);
+    
+    // 3. Re-map the results back to the original documents
+    return documents.map((doc, idx) => {
+      const prefix = `doc_${idx}_`;
+      const translations: Record<string, any> = { ...((doc as any).translations || {}) };
+      
+      ['hi', 'fr', 'de'].forEach(lang => {
+        const langData = translatedNests[lang] || {};
+        const docLangData = langData[`doc_${idx}`] || {};
+        translations[lang] = {
+          ...(translations[lang] || {}),
+          ...docLangData
+        };
+      });
+
+      return {
+        ...doc,
+        translations
+      };
+    });
+  } catch (error) {
+    console.error('[Translation utility] Bulk auto-translation failed:', error);
+    return documents;
   }
 }
 

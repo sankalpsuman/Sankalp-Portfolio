@@ -4,7 +4,7 @@ import { Bot, Plus, Trash2, Edit2, Loader2, Save, X, ToggleLeft, ToggleRight, Gl
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
-import { autoTranslateDocument } from '../../lib/translationUtils';
+import { autoTranslateDocument, bulkAutoTranslateDocuments } from '../../lib/translationUtils';
 
 interface AITool {
   id?: string;
@@ -82,6 +82,21 @@ export default function AIToolsEditor() {
     }
   };
 
+  const handleAutoTranslateAll = async () => {
+    if (tools.length === 0) return;
+    setTranslating(true);
+    try {
+      const updated = await bulkAutoTranslateDocuments(tools);
+      setTools(updated);
+      alert('All AI tools auto-translated successfully! Don’t forget to save individual changes.');
+    } catch (e) {
+      console.error(e);
+      alert('Bulk translation failed. Quota may be exhausted.');
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   useEffect(() => { loadTools(); }, []);
 
   const loadTools = async () => {
@@ -118,7 +133,22 @@ export default function AIToolsEditor() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold flex items-center gap-2"><Bot className="text-purple-500" /> AI Playground Tools</h2>
-        <button onClick={() => { setActiveEditorLang('en'); setEditing({ name: '', description: '', prompt: '', icon: 'Zap', placeholder: '', enabled: true, order: tools.length }); }} className="bg-purple-600 px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> New AI Tool</button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleAutoTranslateAll}
+            disabled={translating || tools.length === 0}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-50 text-gray-300 rounded-lg text-xs font-bold transition-all border border-white/10 cursor-pointer"
+            title="Translate ALL tools in one go"
+          >
+            {translating ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Globe className="w-3.5 h-3.5 text-purple-400" />
+            )}
+            <span>Bulk All</span>
+          </button>
+          <button onClick={() => { setActiveEditorLang('en'); setEditing({ name: '', description: '', prompt: '', icon: 'Zap', placeholder: '', enabled: true, order: tools.length }); }} className="bg-purple-600 px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> New AI Tool</button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4">

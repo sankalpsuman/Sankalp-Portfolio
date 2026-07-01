@@ -6,7 +6,7 @@ import { uploadToCloudinary } from '../../lib/cloudinary';
 import { ImageCropper } from '../../components/admin/ImageCropper';
 import { DeleteConfirmModal } from '../../components/admin/DeleteConfirmModal';
 import { motion, AnimatePresence } from 'motion/react';
-import { autoTranslateDocument } from '../../lib/translationUtils';
+import { autoTranslateDocument, bulkAutoTranslateDocuments } from '../../lib/translationUtils';
 
 interface Project {
   id: string;
@@ -89,6 +89,21 @@ export default function ProjectsEditor() {
     } catch (e) {
       console.error(e);
       alert('Failed to generate automatic translations.');
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  const handleAutoTranslateAll = async () => {
+    if (items.length === 0) return;
+    setTranslating(true);
+    try {
+      const updated = await bulkAutoTranslateDocuments(items);
+      setItems(updated);
+      alert('All projects auto-translated successfully! Individual changes must still be saved.');
+    } catch (e) {
+      console.error(e);
+      alert('Bulk translation failed. Quota may be exhausted.');
     } finally {
       setTranslating(false);
     }

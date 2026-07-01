@@ -117,15 +117,15 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
 
   const coreGenerationPromise = (async () => {
     const ai = getGeminiClient();
-    const requestedModel = optimizedParams.model || "gemini-3.5-flash";
+    const requestedModel = optimizedParams.model || "gemini-1.5-flash";
     
     // Stable, high-quota, production-ready models to prioritize on free tiers
-    const primaryStableModels = ["gemini-3.1-flash-lite", "gemini-flash-latest"];
+    const primaryStableModels = ["gemini-1.5-flash-8b", "gemini-1.5-flash"];
     
-    // If the requested model is gemini-3.5-flash or another highly restricted preview model,
+    // If the requested model is gemini-1.5-flash or another highly restricted preview model,
     // or if we are executing within a Vercel Serverless Function, we prioritize stable,
     // low-latency models first to guarantee execution completes within Vercel's absolute timeout.
-    const isHighQuotaRisk = requestedModel.includes("gemini-3.5");
+    const isHighQuotaRisk = requestedModel.includes("1.5-pro");
     
     let modelsToTry: string[] = [];
     // Prioritize the requested model first to ensure lowest latency and best execution quality
@@ -139,9 +139,9 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
     }
     
     // Add other fallback models to ensure broad coverage without violating free-tier quotas on paid-only models
-    const fallbackPool = ["gemini-flash-latest"];
+    const fallbackPool = ["gemini-1.5-flash"];
     if (requestedModel.includes("pro") || requestedModel.includes("image")) {
-      fallbackPool.push("gemini-3.1-pro-preview");
+      fallbackPool.push("gemini-1.5-pro");
     }
     for (const m of fallbackPool) {
       if (!modelsToTry.includes(m)) {
@@ -180,7 +180,7 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
           
           // If there are multiple fallback models scheduled and this is the first (often slower/unstable) model,
           // cap its individual attempt timeout to 55% of the total target timeout (up to 23s maximum)
-          // to guarantee we have ample runway to try the ultra-fast fallback models (e.g. gemini-3.1-flash-lite) if it hangs.
+          // to guarantee we have ample runway to try the ultra-fast fallback models (e.g. gemini-1.5-flash-8b) if it hangs.
           const modelTimeoutMs = (modelsToTry.length > 1 && model === modelsToTry[0])
             ? Math.min(23000, Math.floor(targetTimeoutMs * 0.55))
             : targetTimeoutMs;

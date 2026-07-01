@@ -12,16 +12,16 @@ export async function generateContentWithFallback(
   aiInstance: GoogleGenAI,
   params: any
 ): Promise<any> {
-  const requestedModel = params.model || "gemini-3.5-flash";
+  const requestedModel = params.model || "gemini-1.5-flash";
   
   // Stable, high-quota, production-ready models to prioritize on free tiers
   const primaryStableModels = [
-    "gemini-3.1-flash-lite",
-    "gemini-flash-latest",
+    "gemini-1.5-flash-8b",
+    "gemini-1.5-flash",
   ];
 
-  // If requested model is high quota risk (like gemini-3.5), try more generous production-grade models first.
-  const isHighQuotaRisk = requestedModel.includes("gemini-3.5");
+  // If requested model is high quota risk, try more generous production-grade models first.
+  const isHighQuotaRisk = requestedModel.includes("pro");
 
   let modelsToTry: string[] = [];
   if (isHighQuotaRisk) {
