@@ -139,22 +139,12 @@ export default function Hero() {
 
   return (
     <>
-      <section id="hero" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-[#050816]">
-        {/* Background Effects */}
-        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-brand/5 blur-[80px] rounded-full animate-pulse will-change-[opacity]"></div>
-          <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-purple-600/5 blur-[80px] rounded-full will-change-transform"></div>
-          <div 
-            className="absolute inset-0 opacity-[0.02]" 
-            style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)', backgroundSize: '40px 40px' }}
-          ></div>
-        </div>
-
+      <section id="hero" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 text-center">
           <motion.div
-             initial={{ opacity: 0, y: 20 }}
+             initial={{ opacity: 0, y: 30 }}
              animate={{ opacity: 1, y: 0 }}
-             transition={{ duration: 0.6, ease: "easeOut" }}
+             transition={{ duration: 0.8, ease: "easeOut" }}
              className="space-y-8 will-change-[transform,opacity]"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
@@ -165,11 +155,47 @@ export default function Hero() {
               <span className="text-xs font-mono text-brand uppercase tracking-widest">{t('hero.badge')}</span>
             </div>
 
-             {/* Command Hub Container: Beautiful glassmorphic deck */}
-             <div className="relative max-w-4xl mx-auto rounded-[2rem] p-6 sm:p-12 mb-10 overflow-hidden border border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent backdrop-blur-md shadow-2xl space-y-6">
+             {/* Command Hub Container: Premium glassmorphic deck */}
+             <motion.div 
+               animate={{ 
+                 y: [0, -10, 0],
+               }}
+               transition={{ 
+                 duration: 6, 
+                 repeat: Infinity, 
+                 ease: "easeInOut" 
+               }}
+               onMouseMove={handleMouseMove}
+               onMouseLeave={handleMouseLeave}
+               style={{
+                 rotateX: rotateX,
+                 rotateY: rotateY,
+                 transformStyle: "preserve-3d",
+               }}
+               className="relative max-w-4xl mx-auto rounded-[2.5rem] p-6 sm:p-12 mb-10 overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] space-y-6 group/card"
+             >
+               {/* Border Shimmer Effect */}
+               <div className="absolute inset-0 pointer-events-none">
+                 <div className="absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-1000">
+                    <div className="absolute inset-[-100%] animate-[aurora_10s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,rgba(34,211,238,0.1)_90deg,transparent_180deg,rgba(168,85,247,0.1)_270deg,transparent_360deg)]" />
+                 </div>
+               </div>
+
+               {/* Animated Edge Glow */}
+               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-500" />
+               <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-purple-400/50 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-500" />
+
+               {/* Holographic Reflection */}
+               <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.1),transparent_50%)]" 
+                    style={{ 
+                      '--mouse-x': `${(mouseX + 0.5) * 100}%`,
+                      '--mouse-y': `${(mouseY + 0.5) * 100}%`
+                    } as any}
+               />
+
                {/* Outer decorative accents/watermarks */}
-               <div className="absolute top-0 left-0 w-32 h-32 bg-cyan-400/5 blur-[50px] pointer-events-none rounded-full" />
-               <div className="absolute bottom-0 right-0 w-32 h-32 bg-purple-500/5 blur-[50px] pointer-events-none rounded-full" />
+               <div className="absolute top-0 left-0 w-48 h-48 bg-brand/10 blur-[60px] pointer-events-none rounded-full" />
+               <div className="absolute bottom-0 right-0 w-48 h-48 bg-purple-500/10 blur-[60px] pointer-events-none rounded-full" />
 
                {/* Watermark Logo Background Grid or Scope Circles */}
                <div className="absolute left-[5%] top-[10%] opacity-15 pointer-events-none font-mono text-[9px] text-[#22d3ee]/30 text-left whitespace-nowrap hidden sm:block leading-relaxed">
@@ -274,7 +300,7 @@ export default function Hero() {
                    <span>LinkedIn</span>
                  </a>
                </div>
-             </div>
+             </motion.div>
           </motion.div>
         </div>
 

@@ -274,7 +274,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
           style={{ willChange: "opacity", transform: "translate3d(0,0,0)" }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#050816]/92 backdrop-blur-md transform-gpu"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-xl transform-gpu"
         >
           <motion.div
             initial={{ scale: 0.96, opacity: 0, y: 15 }}

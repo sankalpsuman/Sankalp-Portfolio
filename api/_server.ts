@@ -600,7 +600,7 @@ Expected output format:
       // Lazily resolve / verify client is configured
       const ai = getGeminiClient();
 
-      const systemPrompt = `You are an elite, professional ATS Resume and CV Writer.
+      const systemInstructions = `You are an elite, professional ATS Resume and CV Writer.
 Your goal is to synthesize 100% of the raw portfolio data into a highly polished, clean, recruiter-ready resume/CV optimized for ATS (Applicant Tracking Systems).
 
 STRICT DATA PROCESSING & OPERATIONAL RULES:
@@ -615,7 +615,7 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
      * Total Years of Experience (personalInfo.yearsOfExperience, calculated or summarized from history)
      * Languages (personalInfo.languages, translated/extracted from "about" or other sections, or fallback list)
      * Work Experience (experience, with responsibilities, achievements, and quantified metrics)
-     * Projects: Include up to 10 projects from the source portfolio data in the "projects" section. Ensure that you do NOT limit projects to 3. If there are up to 10 projects in the input data, extract and return all of them.
+     * Projects: ONLY include Personal Projects (like ResumeMorph) in the "projects" section. Do NOT include professional company projects as separate items in the "projects" section; they should be mentioned briefly under the respective experience block.
      * Technical Skills / Tools & Technologies (skills, categorized domain lists containing all technical languages, frameworks, automation tools, and assistive systems)
      * Certifications (certifications)
      * Education (education)
@@ -623,9 +623,6 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
      * Impact Stories & Qualitative Breakthroughs (impactStories)
      * QA Metrics & Quantitative Impact (qaMetrics)
      * AI Playground Tools & Specialized LLM Stack (aiTools)
-     * Career Timeline / Career Journey (integrated dynamically or added under achievements/additionalSections)
-     * Publications, Blogs, or Content (as an additionalSection, or list details under "Technical Publications & Written Insight")
-     * All External Links (under contact, projects, and certifications where available)
    - Under "personalInfo", the "website" field MUST be mapped to the provided "portfolioUrl" in the payload (unless there is an official custom website specified in "contact") to guarantee recruiters can access the live portfolio!
    - For every single project in "projects", always capture and include its live/GitHub url as "link" in the response schema. Never omit the links. Do NOT skip projects.
    - If there are custom user-added blocks or sections that do not map directly to standard resume headers, map them elegantly under "additionalSections" in the response schema. Never omit any custom sections, no matter how small.
@@ -648,13 +645,13 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
 5. VERIFICATION:
    - Validate that none of the core sections (personalInfo, experience, projects, skills, education) are missing before outputting the final JSON.
 
-6. EXTREME CONCISENESS & SPEED OPTIMIZATION:
-   - Include up to 10 projects from the source data in the "projects" list. Do NOT cap the project count at 3. Provide enough high-quality content to fill a clean, professional two or three-page layout.
-   - For experience bullets, limit to exactly 3-5 highly punchy, action-oriented bullet points per role.
-   - For project descriptions, generate 4-6 strong, detailed resume bullets focusing on the business problem solved, role/responsibilities, testing contribution, features implemented/tested, and impact/learnings. Use bullet points separated by newlines (e.g., "• Point 1\\n• Point 2").
+6. EXTREME CONCISENESS & SPEED OPTIMIZATION (MAX 2 PAGES):
+   - Make the resume fit cleanly on a maximum of 2 pages. Keep the wording very concise.
+   - For experience bullets, limit to exactly 3-5 highly punchy, action-oriented bullet points per role. Include work projects concisely inside the "experience" bullets as 1 or 2 lines. Do NOT create long winded paragraphs.
+   - For Personal Projects (e.g. ResumeMorph), keep it brief in the "projects" array.
    - Limit additional sections lists to the top 3 items only.
-   - Summaries must be 3-4 sentences max.
-   - This keeps the output compact, highly digestible, and allows faster generation under serverless execution timeout limits (within 5 seconds).
+   - Summaries must be 3 sentences max.
+   - This keeps the output compact, highly digestible, and allows faster generation under serverless execution timeout limits.
 
 6. TONE, STYLE & LOCALIZATION:
    - STYLE: Write in a natural, professional Indian professional style (e.g., standard business English as used in Indian tech hubs). Use varied sentence lengths and avoid repetitive grammar patterns.
@@ -673,9 +670,9 @@ STRICT DATA PROCESSING & OPERATIONAL RULES:
    - METRICS: DO NOT add or invent numbers like 30%, 40%, 90%, 95%, 98%. Since there is no proof of these percentages, remove them completely. Use qualitative impact statements instead of fabricated percentages.
 
 8. PROJECTS SECTION:
-   - Projects must NOT repeat Experience.
-   - For each project include: Project Name, Client/Product, Role, Technologies Used, Project Overview, Responsibilities, Key Achievements, Business Impact.
-   - Explain: Why the project exists, your role, key contributions, technologies used, and business impact.
+   - ONLY include Personal Projects (e.g. ResumeMorph) in the "projects" section. Name this section appropriately or just map it to the "projects" JSON array.
+   - DO NOT include professional company projects here. Instead, integrate company projects as 1 or 2 bullet points under the respective Experience section.
+   - For the personal project, include: Project Name, Description, Tech Stack, Link, and Role. Keep the description very concise.
 
 9. SKILLS & ATS OPTIMIZATION:
    - Balance all skill columns. Avoid sections with only one skill.
@@ -707,10 +704,203 @@ IMPORTANT RULES:
    - Do not exaggerate skills; stay truthful to the provided data.
    - Preserve ATS optimization and maintain the existing JSON layout and formatting. Ensure every claim is defensible during interviews.
 
-Raw Portfolio JSON:
-${JSON.stringify(portfolioData, null, 2)}
+ADDITIONAL GENERATION LENGTH CONSTRAINT (CRITICAL FOR TIMEOUT PREVENTION):
+   - To guarantee generation completes under server-side latency limits, you must enforce a strict, maximum length of 30-40 words for any professional summary and a maximum of 12 words per experience bullet point. Be extremely brief, concise, and direct in all descriptions.`;
 
-Respond with ONLY the structured resume JSON matching the requested response schema.`;
+      const defaultPortfolioText = `SANKALP SUMAN
+
+QA Lead | Software Test Specialist | Scrum Master
+
+📍 Delhi NCR, India
+📞 +91 9540446448
+📧 sankalpsmn@gmail.com
+🔗 LinkedIn: linkedin.com/in/sankalpsuman
+🌐 Portfolio: https://sankalp-suman.vercel.app
+🚀 ResumeMorph: https://resume-morph.vercel.app
+
+⸻
+
+PROFESSIONAL SUMMARY
+
+QA Lead with 8+ years of experience in Enterprise, Telecom, SaaS, Desktop, Web, Mobile, API, and Database Testing. Experienced in leading QA activities, defining test strategies, Scrum facilitation, release management, stakeholder collaboration, and end-to-end software delivery. Strong expertise in Manual Testing, API Testing, SQL, Agile methodologies, and quality assurance processes. Hands-on with Python, Selenium (Learning), Google AI Studio, and modern AI-assisted testing practices, with working knowledge of LLMs, RAG, MCP, Firebase, and Vercel.
+
+⸻
+
+CORE COMPETENCIES
+
+Testing & Quality Assurance
+* Functional Testing
+* Regression Testing
+* Smoke Testing
+* Sanity Testing
+* Exploratory Testing
+* Integration Testing
+* System Testing
+* User Acceptance Testing (UAT)
+* Cross Browser Testing
+* Compatibility Testing
+
+API & Database Testing
+* REST API Testing
+* SOAP API Testing
+* Postman
+* SQL
+* Database Testing
+* ETL Validation
+
+Programming & Automation
+* Python
+* Selenium (Learning)
+* SQL
+
+AI & Modern Technologies
+* Prompt Engineering
+* Google AI Studio
+* LLM Fundamentals
+* RAG (Working Knowledge)
+* MCP (Working Knowledge)
+* Firebase
+* Vercel
+
+Agile & DevOps
+* Scrum Master
+* Sprint Planning
+* Sprint Reviews
+* Daily Standups
+* Retrospectives
+* Backlog Refinement
+* Git & GitHub
+* Jenkins
+* Docker
+
+Tools
+Jira • Confluence • Octane • BrowserStack • Charles Proxy • Postman • Git • Jenkins • Docker
+
+⸻
+
+PROFESSIONAL EXPERIENCE
+
+Software Test Specialist & Scrum Master
+Amdocs
+December 2021 – Present | Gurugram, India
+
+Responsibilities
+* Led end-to-end QA activities for enterprise telecom applications and product releases.
+* Defined test strategy, test planning, estimation, execution, and release validation.
+* Performed Functional, Regression, System, Integration, API, Database, ETL, and UAT testing.
+* Collaborated with Product Owners, Developers, Business Analysts, and stakeholders throughout the SDLC.
+* Facilitated Sprint Planning, Daily Standups, Sprint Reviews, Retrospectives, and defect triage meetings.
+* Performed requirement analysis and created test scenarios based on business requirements.
+* Mentored QA engineers and supported sprint execution and production releases.
+* Validated production deployments and post-release verification.
+* Explored Google AI Studio, Prompt Engineering, and LLMs to improve requirement understanding and test case generation.
+* Gained practical understanding of RAG and MCP concepts while learning AI application testing.
+
+Projects
+* ActixOne HTML Portal
+* ActixOne Desktop Client
+
+Environment: Telecom | Agile | Jira | Confluence | Octane | SQL | Postman | Docker | Jenkins
+
+⸻
+
+Senior Software Test Engineer (Adobe Client)
+Hexaview Technologies Pvt. Ltd.
+June 2019 – December 2021 | Noida, India
+
+Project
+Adobe Acrobat Reader – Liquid Mode
+
+Responsibilities
+* Worked on Adobe Acrobat Reader (Liquid Mode) across Desktop, Web, and Mobile platforms.
+* Participated in requirement analysis and sprint planning discussions.
+* Designed and executed Functional, Regression, Smoke, Sanity, Exploratory, and Compatibility test cases.
+* Validated PDF rendering, document viewing, navigation, annotations, and usability across platforms.
+* Performed Cross-Browser and Cross-Platform testing.
+* Reported, tracked, verified, and retested defects using Jira.
+* Collaborated with Developers, Product Managers, and QA teams during Agile sprints.
+* Participated in release validation, production verification, and quality reporting.
+* Maintained test documentation and execution reports.
+
+Environment: Adobe Acrobat Reader | Agile | Jira | Desktop | Web | Mobile
+
+⸻
+
+Software Test Engineer
+Opkey
+August 2018 – May 2019 | Noida, India
+
+Responsibilities
+* Performed Functional, Regression, Smoke, Integration, and UI Testing for enterprise SaaS applications.
+* Analyzed business requirements and prepared detailed test scenarios and test cases.
+* Executed Cross-Browser and Compatibility Testing.
+* Logged, tracked, and verified defects using Jira.
+* Collaborated with Developers to reproduce and resolve defects.
+* Supported User Acceptance Testing (UAT) and production releases.
+* Participated in Agile sprint activities and maintained QA documentation.
+* Prepared execution reports and ensured product quality before release.
+
+Environment: SaaS | Agile | Jira | Manual Testing
+
+⸻
+
+PERSONAL PROJECT
+
+ResumeMorph
+Product Owner | QA | AI-Assisted Development (Learning Project)
+Live Application: https://resume-morph.vercel.app
+Technology: React • TypeScript • Firebase • Vercel • Google AI Studio
+
+Responsibilities
+* Conceived and managed a personal resume builder as a product learning initiative.
+* Defined product vision, feature roadmap, user stories, and functional requirements.
+* Prioritized product backlog and planned feature releases.
+* Performed Functional, Regression, Usability, and Acceptance Testing.
+* Used AI-assisted (vibe coding) development to rapidly prototype and validate features.
+* Learned the complete Software Development Lifecycle (SDLC) from idea to deployment.
+* Gained practical understanding of Product Ownership, Agile planning, requirement gathering, backlog management, stakeholder communication, release planning, and product lifecycle.
+* Deployed and maintained the application using Firebase and Vercel.
+
+⸻
+
+PERSONAL PORTFOLIO
+
+Portfolio Website
+https://sankalp-suman.vercel.app
+
+Designed and maintain a personal portfolio showcasing projects, technical skills, certifications, and professional experience.
+
+⸻
+
+KEY ACHIEVEMENTS
+* Successfully led QA activities for multiple enterprise software releases.
+* Mentored QA engineers and supported Agile sprint execution.
+* Improved regression testing efficiency through reusable testing practices.
+* Built ResumeMorph as a personal product learning initiative to gain practical experience in Product Ownership, SDLC, and modern AI-assisted application development.
+
+⸻
+
+CERTIFICATIONS
+* ISTQB Foundation Level Certified Tester
+* NPTEL – Design and Analysis of Algorithms
+
+⸻
+
+EDUCATION
+Bachelor of Technology (Computer Science & Engineering)
+Dr. A.P.J. Abdul Kalam Technical University (AKTU)
+
+⸻
+
+DOMAINS
+* Telecom
+* Enterprise Applications
+* PDF Solutions
+* SaaS Applications`;
+
+      const portfolioRawText = portfolioData ? JSON.stringify(portfolioData, null, 2) : defaultPortfolioText;
+
+      const systemPrompt = `${systemInstructions}\n\nRaw Portfolio Information to use for generating the ATS Resume:\n\`\`\`\n${portfolioRawText}\n\`\`\`\n\nRespond with ONLY the structured resume JSON matching the requested response schema.`;
 
       const response = await generateContentWithFallback({
         model: "gemini-3.5-flash",

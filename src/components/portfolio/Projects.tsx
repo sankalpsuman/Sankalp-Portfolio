@@ -139,7 +139,7 @@ export default function Projects() {
               onMouseLeave={() => setHoveredId(null)}
               onClick={handleProjectClick}
               className={cn(
-                "group relative flex flex-col bg-gradient-to-b from-[#0b0f2a] to-[#040616] border border-white/[0.06] rounded-3xl overflow-hidden transition-all duration-500 cursor-pointer shadow-lg hover:shadow-2xl hover:shadow-[#6366f1]/10",
+                "group relative flex flex-col bg-white/[0.02] backdrop-blur-xl border border-white/[0.06] rounded-3xl overflow-hidden transition-all duration-500 cursor-pointer shadow-lg hover:shadow-2xl hover:shadow-[#6366f1]/10",
                 isFlagship 
                   ? "md:col-span-2 lg:flex-row gap-8 lg:gap-12 p-8 lg:p-10 border-white/[0.08] hover:border-[#6366f1]/30" 
                   : "p-6 border-white/[0.05] hover:border-[#6366f1]/20 hover:y-[-6px]"

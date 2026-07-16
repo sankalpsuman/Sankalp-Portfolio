@@ -54,7 +54,7 @@ export default function Section({
   return (
     <section 
       id={id} 
-      className={cn("py-20 lg:py-32 relative overflow-hidden bg-[#050816]", className)}
+      className={cn("py-20 lg:py-32 relative overflow-hidden", className)}
     >
       {/* 2026 Cyber Grid Overlay & Dot Array Blueprint */}
       <div 

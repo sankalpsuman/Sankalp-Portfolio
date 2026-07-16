@@ -121,22 +121,17 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
     
     // Defined list of all the latest models in use from top (highest quality/pro) to low (lightest/flash)
     const latestModels = [
-      "gemini-3.5-pro",
       "gemini-3.5-flash",
-      "gemini-3.1-pro",
-      "gemini-3.1-flash",
       "gemini-3.1-flash-lite",
-      "gemini-2.5-pro",
+      "gemini-3.1-pro-preview",
       "gemini-2.5-flash",
-      "gemini-2.5-flash-lite",
-      "gemini-2.5-flash-image",
-      "gemini-nano"
+      "gemini-2.5-flash-lite"
     ];
 
     let modelsToTry: string[] = [];
     
     // Always start with the requested model first if specified, to honor client-side intent
-    if (requestedModel && !latestModels.includes(requestedModel)) {
+    if (requestedModel) {
       modelsToTry.push(requestedModel);
     }
     
