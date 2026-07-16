@@ -11,6 +11,7 @@ import {
   Terminal
 } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
+import { SkillLogo } from './SkillLogo';
 
 interface Skill {
   id: string;
@@ -156,9 +157,12 @@ export default function Skills() {
                 {catSkills.map((skill) => (
                   <div 
                     key={skill.id} 
-                    className="flex items-center justify-between p-1.5 rounded-md bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all group/skill"
+                    className="flex items-center p-1.5 rounded-md bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all group/skill gap-2"
                   >
-                    <span className="text-[10px] font-medium text-gray-400 group-hover/skill:text-gray-200 transition-colors truncate pr-1">
+                    <div className="shrink-0 text-gray-500 group-hover/skill:text-brand transition-colors flex items-center justify-center filter grayscale group-hover/skill:grayscale-0 opacity-70 group-hover/skill:opacity-100">
+                      <SkillLogo name={skill.name} className="w-3.5 h-3.5 object-contain" />
+                    </div>
+                    <span className="text-[10px] font-medium text-gray-400 group-hover/skill:text-gray-200 transition-colors truncate">
                       {getSkillName(skill)}
                     </span>
                   </div>

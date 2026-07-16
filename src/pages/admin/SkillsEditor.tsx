@@ -93,9 +93,20 @@ export default function SkillsEditor() {
       // Support comma separated skills
       const skillNames = newSkill.name.split(',')
         .map(n => n.trim())
-        .filter(n => n && !skills.some(s => s.name.toLowerCase() === n.toLowerCase()));
+        .filter(n => n);
 
       if (skillNames.length === 0) {
+        setSaving(false);
+        return;
+      }
+
+      // Check for duplicates
+      const duplicates = skillNames.filter(n => 
+        skills.some(s => s.name.toLowerCase().trim() === n.toLowerCase().trim())
+      );
+
+      if (duplicates.length > 0) {
+        alert(`The following skill(s) already exist: ${duplicates.join(', ')}`);
         setSaving(false);
         return;
       }
@@ -171,6 +182,20 @@ export default function SkillsEditor() {
           originalTransStr !== localTransStr
         );
       });
+
+      // Check for duplicates in the localSkills list
+      const duplicatesInUpdate = changedSkills.filter(changed => 
+        localSkills.some(other => 
+          other.id !== changed.id && 
+          other.name.toLowerCase().trim() === changed.name.toLowerCase().trim()
+        )
+      );
+
+      if (duplicatesInUpdate.length > 0) {
+        alert(`Cannot save. The following skill(s) are duplicated: ${duplicatesInUpdate.map(d => d.name).join(', ')}`);
+        setSaving(false);
+        return;
+      }
 
       await Promise.all(changedSkills.map(s => 
         updateCollectionDocument('skills', s.id, { 
