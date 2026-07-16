@@ -574,15 +574,24 @@ Expected output format:
       });
 
       let cleanedTranslationText = (response.text || '{}').trim();
+      console.log('[API] AI Translation raw output:', cleanedTranslationText);
+
       if (cleanedTranslationText.startsWith("```")) {
         cleanedTranslationText = cleanedTranslationText.replace(/^```(?:json)?\n?/, "");
       }
       if (cleanedTranslationText.endsWith("```")) {
         cleanedTranslationText = cleanedTranslationText.substring(0, cleanedTranslationText.length - 3).trim();
       }
-      const translated = JSON.parse(cleanedTranslationText);
-      res.json(translated);
+      
+      try {
+        const translated = JSON.parse(cleanedTranslationText);
+        res.json(translated);
+      } catch (e) {
+        console.error('[API] Failed to parse translation JSON:', cleanedTranslationText, e);
+        throw e;
+      }
     } catch (error: any) {
+      console.error('[API] Translation generation failed:', error);
       return handleRouteError(res, error, 'ai/translate');
     }
   });

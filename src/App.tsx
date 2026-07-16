@@ -21,7 +21,7 @@ const BlogDetail = lazy(() => lazyRetry(() => import('./pages/BlogDetail.tsx')))
 const NowPage = lazy(() => lazyRetry(() => import('./pages/NowPage.tsx')));
 
 const LoadingFallback = () => {
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(10);
   const [logs, setLogs] = useState<string[]>([]);
   const logsList = [
     'Initializing automated QA pipeline...',
@@ -33,17 +33,32 @@ const LoadingFallback = () => {
   ];
 
   useEffect(() => {
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += Math.floor(Math.random() * 8) + 4;
-      if (currentProgress >= 100) {
-        currentProgress = 100;
-        clearInterval(interval);
-      }
-      setProgress(currentProgress);
-    }, 70);
+    // Immediate bump to simulate initial load start
+    const timer = setTimeout(() => setProgress(30), 100);
+    
+    const handleLoad = () => {
+      setProgress(100);
+    };
 
-    return () => clearInterval(interval);
+    if (document.readyState === 'complete') {
+      handleLoad();
+    } else {
+      window.addEventListener('load', handleLoad);
+    }
+
+    // Interval to fill the gap if load takes time
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) return prev;
+        return prev + Math.floor(Math.random() * 5);
+      });
+    }, 200);
+
+    return () => {
+      window.removeEventListener('load', handleLoad);
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
