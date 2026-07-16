@@ -1,7 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import SEO from '../components/SEO';
 import { LazySection } from '../components/portfolio/LazySection';
-import { ImmersiveBackground } from '../components/portfolio/ImmersiveBackground';
+import { BackgroundEffects } from '../components/portfolio/BackgroundEffects';
 
 // Core Components (Eager)
 import Navbar from '../components/portfolio/Navbar';
@@ -66,8 +66,8 @@ export default function PortfolioHome() {
   }, []);
 
   return (
-    <div id="portfolio-home" className="selection:bg-brand/30 selection:text-white overflow-hidden relative">
-      <ImmersiveBackground active={true} />
+    <div id="portfolio-home" className="bg-[#050816] selection:bg-brand/30 selection:text-white overflow-hidden relative">
+      <BackgroundEffects active={welcomeDismissed} />
       <WelcomePopup onLaunch={() => setWelcomeDismissed(true)} />
       <SEO />
       <Navbar />
