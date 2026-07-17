@@ -117,7 +117,7 @@ export default function Experience() {
 
   return (
     <Section id="experience" title={t('experience.title')} subtitle={t('experience.subtitle')}>
-      <div className="relative space-y-16 lg:space-y-24 after:absolute after:inset-y-0 after:left-4 lg:after:left-1/2 after:w-px after:bg-gradient-to-b after:from-brand/50 after:via-white/5 after:to-transparent after:-translate-x-1/2">
+      <div className="relative space-y-10 sm:space-y-16 lg:space-y-24 after:absolute after:inset-y-0 after:left-4 lg:after:left-1/2 after:w-px after:bg-gradient-to-b after:from-brand/50 after:via-white/5 after:to-transparent after:-translate-x-1/2">
         {items.map((item, idx) => (
           <motion.div
             key={item.id}
@@ -125,18 +125,18 @@ export default function Experience() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className={`relative flex flex-col ${idx % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'} items-start lg:items-center gap-8 group`}
+            className={`relative flex flex-col ${idx % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'} items-start lg:items-center gap-6 sm:gap-8 group`}
           >
             {/* Timeline Node */}
             <div className="absolute left-4 lg:left-1/2 -translate-x-1/2 z-10">
-               <div className="w-10 h-10 rounded-full bg-[#030014] border border-brand/30 flex items-center justify-center group-hover:scale-110 group-hover:border-brand transition-all duration-500 shadow-[0_0_20px_rgba(var(--brand-primary-rgb),0.15)] group-hover:shadow-[0_0_30px_rgba(var(--brand-primary-rgb),0.4)]">
-                  <div className="w-2.5 h-2.5 rounded-full bg-brand animate-pulse"></div>
+               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#030014] border border-brand/30 flex items-center justify-center group-hover:scale-110 group-hover:border-brand transition-all duration-500 shadow-[0_0_20px_rgba(var(--brand-primary-rgb),0.15)] group-hover:shadow-[0_0_30px_rgba(var(--brand-primary-rgb),0.4)]">
+                  <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-brand animate-pulse"></div>
                </div>
             </div>
  
             {/* Content Side */}
-             <div className={`w-full lg:w-1/2 pl-12 lg:pl-0 ${idx % 2 === 0 ? 'lg:pr-16' : 'lg:pl-16'}`}>
-              <div className={`p-8 bg-[#050816]/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] hover:border-brand/30 transition-all duration-500 flex flex-col items-start hover:bg-white/[0.04] relative overflow-hidden shadow-2xl`}>
+             <div className={`w-full lg:w-1/2 pl-10 sm:pl-12 lg:pl-0 ${idx % 2 === 0 ? 'lg:pr-16' : 'lg:pl-16'}`}>
+              <div className={`p-5 sm:p-8 bg-[#050816]/40 backdrop-blur-xl border border-white/5 rounded-3xl sm:rounded-[2.5rem] hover:border-brand/30 transition-all duration-500 flex flex-col items-start hover:bg-white/[0.04] relative overflow-hidden shadow-2xl`}>
                 {/* Visual Glass Reflection Glare */}
                 <div className="absolute top-0 -left-1/2 w-1/4 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-25 group-hover:left-[150%] transition-all duration-[1000ms] ease-out pointer-events-none" />
 

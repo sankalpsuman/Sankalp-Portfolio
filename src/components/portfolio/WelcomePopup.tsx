@@ -218,8 +218,16 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
     if (!ctx) return;
 
     let animationId: number;
-    canvas.width = 450;
-    canvas.height = 180;
+    
+    const resizeCanvas = () => {
+      if (!canvasRef.current) return;
+      const rect = canvasRef.current.getBoundingClientRect();
+      canvasRef.current.width = rect.width;
+      canvasRef.current.height = rect.height;
+    };
+    
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
     const columns = Math.floor(canvas.width / 12);
     const drops = Array(columns).fill(1).map(() => Math.floor(Math.random() * -30));
@@ -252,6 +260,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
     draw();
     return () => {
       cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', resizeCanvas);
     };
   }, [isVisible]);
 
@@ -274,7 +283,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
           style={{ willChange: "opacity", transform: "translate3d(0,0,0)" }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#050816]/92 backdrop-blur-md transform-gpu"
+          className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 bg-[#050816]/95 backdrop-blur-md transform-gpu"
         >
           <motion.div
             initial={{ scale: 0.96, opacity: 0, y: 15 }}
@@ -282,11 +291,11 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
             exit={{ scale: 0.94, opacity: 0, y: 15 }}
             transition={{ type: "spring", damping: 32, stiffness: 450, mass: 0.6 }}
             style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
-            className="w-full max-w-lg bg-[#0a0e23] border border-brand/35 rounded-[2.5rem] p-6 sm:p-8 relative overflow-hidden shadow-[0_0_60px_rgba(59,130,246,0.3)] transform-gpu"
+            className="w-full max-w-[440px] bg-[#0a0e23] border border-brand/35 rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-8 relative overflow-hidden shadow-[0_0_60px_rgba(59,130,246,0.3)] transform-gpu"
           >
             {/* Absolute Rotating cyber grid target loops (GIF replacement design) */}
-            <div className="absolute -top-12 -right-12 w-44 h-44 bg-brand/10 rounded-full border-2 border-dashed border-brand/20 animate-spin" style={{ animationDuration: '30s' }}></div>
-            <div className="absolute -top-8 -right-8 w-36 h-36 bg-purple-500/5 rounded-full border border-dashed border-purple-500/20 animate-reverse-spin" style={{ animationDuration: '18s' }}></div>
+            <div className="absolute -top-12 -right-12 w-32 h-32 sm:w-44 sm:h-44 bg-brand/10 rounded-full border-2 border-dashed border-brand/20 animate-spin" style={{ animationDuration: '30s' }}></div>
+            <div className="absolute -top-8 -right-8 w-24 h-24 sm:w-36 sm:h-36 bg-purple-500/5 rounded-full border border-dashed border-purple-500/20 animate-reverse-spin" style={{ animationDuration: '18s' }}></div>
 
             {/* Matrix Digital Background Canvas (representing live visual loading feeds) */}
             <div className="absolute top-[110px] left-0 right-0 h-[100px] opacity-[0.22] pointer-events-none overflow-hidden select-none">
@@ -316,16 +325,16 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
 
               {/* Status Headers */}
               <div className="space-y-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-mono text-cyan-400 uppercase tracking-[0.2em] shadow-inner">
-                  <Terminal className="w-3.5 h-3.5 animate-pulse text-brand" />
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] sm:text-[10px] font-mono text-cyan-400 uppercase tracking-[0.15em] sm:tracking-[0.2em] shadow-inner">
+                  <Terminal className="w-3 sm:w-3.5 h-3 sm:h-3.5 animate-pulse text-brand" />
                   INIT_SYSTEM: SUCCESSFUL
                 </div>
                 
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-none font-display">
+                <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-none font-display">
                   SANKALP <span className="text-brand bg-gradient-to-r from-cyan-400 via-brand to-purple-400 text-transparent bg-clip-text">SUMAN</span>
                 </h2>
                 
-                <p className="text-gray-400 text-xs tracking-wider max-w-sm mx-auto font-mono uppercase text-cyan-300/80">
+                <p className="text-gray-400 text-[10px] sm:text-xs tracking-wider max-w-sm mx-auto font-mono uppercase text-cyan-300/80">
                   <AutoTranslate text="R&D Software Test Specialist & Scrum Master" />
                 </p>
               </div>

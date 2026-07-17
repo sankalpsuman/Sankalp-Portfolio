@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getDocument, HERO_DOC } from '../../services/firestoreService';
-import { Download, Linkedin, Send, Calendar } from 'lucide-react';
+import { Download, Linkedin, Send, Calendar, Sparkles } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 import { AIResumeModal } from './AIResumeModal';
+import { Tooltip } from './Tooltip';
 
 interface HeroData {
   headline: string;
@@ -72,10 +73,9 @@ export default function Hero() {
         <>
           {parts[0]}
           <span className="relative inline-block">
-            <span className="bg-gradient-to-r from-cyan-400 via-brand to-purple-400 bg-clip-text text-transparent filter drop-shadow-[0_0_20px_rgba(34,211,238,0.35)] select-none">
+            <span className="bg-gradient-to-r from-cyan-400 via-brand to-purple-400 bg-clip-text text-transparent filter drop-shadow-[0_0_20px_rgba(34,211,238,0.35)] select-none hover:scale-[1.02] transition-transform duration-500">
               {nameEN}
             </span>
-            <span className="absolute bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400/80 to-purple-500/80 rounded-full blur-[1px] transform scale-x-100 origin-left hover:scale-x-105 transition-transform" />
           </span>
           {parts[1]}
         </>
@@ -86,10 +86,9 @@ export default function Hero() {
         <>
           {parts[0]}
           <span className="relative inline-block">
-            <span className="bg-gradient-to-r from-cyan-400 via-brand to-purple-400 bg-clip-text text-transparent filter drop-shadow-[0_0_20px_rgba(34,211,238,0.35)] select-none">
+            <span className="bg-gradient-to-r from-cyan-400 via-brand to-purple-400 bg-clip-text text-transparent filter drop-shadow-[0_0_20px_rgba(34,211,238,0.35)] select-none hover:scale-[1.02] transition-transform duration-500">
               {nameHI}
             </span>
-            <span className="absolute bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400/80 to-purple-500/80 rounded-full blur-[1px]" />
           </span>
           {parts[1]}
         </>
@@ -166,22 +165,34 @@ export default function Hero() {
             </div>
 
              {/* Command Hub Container: Beautiful glassmorphic deck */}
-             <div className="relative max-w-4xl mx-auto rounded-[2rem] p-6 sm:p-12 mb-10 overflow-hidden border border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent backdrop-blur-md shadow-2xl space-y-6">
-               {/* Outer decorative accents/watermarks */}
-               <div className="absolute top-0 left-0 w-32 h-32 bg-cyan-400/5 blur-[50px] pointer-events-none rounded-full" />
-               <div className="absolute bottom-0 right-0 w-32 h-32 bg-purple-500/5 blur-[50px] pointer-events-none rounded-full" />
+             <div 
+               onMouseMove={handleMouseMove}
+               onMouseLeave={handleMouseLeave}
+               onMouseEnter={() => setIsHovered(true)}
+               style={{
+                 transform: isHovered ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)` : 'perspective(1000px) rotateX(0deg) rotateY(0deg)',
+                 transition: isHovered ? 'none' : 'transform 0.5s ease-out',
+               }}
+               className="relative max-w-4xl mx-auto rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-10 mb-10 border border-white/[0.08] bg-white/[0.01] backdrop-blur-xl shadow-2xl space-y-6 transform-gpu"
+             >
+               {/* Background Decorative Wrapper (Clipped) */}
+               <div className="absolute inset-0 rounded-3xl sm:rounded-[2.5rem] overflow-hidden pointer-events-none">
+                 {/* Outer decorative accents/watermarks */}
+                 <div className="absolute top-0 left-0 w-32 h-32 bg-cyan-400/5 blur-[60px] pointer-events-none rounded-full" />
+                 <div className="absolute bottom-0 right-0 w-32 h-32 bg-purple-500/5 blur-[60px] pointer-events-none rounded-full" />
 
-               {/* Watermark Logo Background Grid or Scope Circles */}
-               <div className="absolute left-[5%] top-[10%] opacity-15 pointer-events-none font-mono text-[9px] text-[#22d3ee]/30 text-left whitespace-nowrap hidden sm:block leading-relaxed">
-                 RUNNING LOGS: SYSTEM_READY <br />
-                 QA_LEAD: VERIFIED_PASS <br />
-                 AST_PASS_STATE_99.9%
-               </div>
-               
-               <div className="absolute right-[5%] bottom-[10%] opacity-15 pointer-events-none font-mono text-[9px] text-[#22d3ee]/30 text-right hidden sm:block leading-relaxed">
-                 SYS_ENGINE: ACTIVE <br />
-                 CSM_ISTQB_SECURE_NODE <br />
-                 AUTOMATION_COGNITIVE
+                 {/* Watermark Logo Background Grid or Scope Circles */}
+                 <div className="absolute left-[5%] top-[10%] opacity-15 pointer-events-none font-mono text-[9px] text-[#22d3ee]/30 text-left whitespace-nowrap hidden sm:block leading-relaxed">
+                   RUNNING LOGS: SYSTEM_READY <br />
+                   QA_LEAD: VERIFIED_PASS <br />
+                   AST_PASS_STATE_99.9%
+                 </div>
+                 
+                 <div className="absolute right-[5%] bottom-[10%] opacity-15 pointer-events-none font-mono text-[9px] text-[#22d3ee]/30 text-right hidden sm:block leading-relaxed">
+                   SYS_ENGINE: ACTIVE <br />
+                   CSM_ISTQB_SECURE_NODE <br />
+                   AUTOMATION_COGNITIVE
+                 </div>
                </div>
 
                {/* Glass corner design cues */}
@@ -191,28 +202,28 @@ export default function Hero() {
                <div className="absolute bottom-4 right-4 border-b border-r border-white/10 w-4 h-4"></div>
 
                {/* Real Name Headline */}
-               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-tight will-change-transform font-display">
+               <h1 className="text-3xl sm:text-6xl lg:text-7xl font-black tracking-tighter text-white leading-[1.05] will-change-transform font-display">
                  {renderFormattedHeadline(getLocalizedField(data, 'headline', 'hero.headline'))}
                </h1>
 
                {/* Active Sub-role Rotating Badge with tech parentheses */}
-               <div className="flex items-center justify-center gap-3">
-                 <span className="text-gray-600 font-mono text-xs sm:text-sm">[</span>
-                 <div className="h-10 sm:h-12 flex items-center justify-center">
+               <div className="flex items-center justify-center gap-2 sm:gap-3">
+                 <span className="text-white/20 font-mono text-[10px] sm:text-xs">/</span>
+                 <div className="h-7 sm:h-10 flex items-center justify-center">
                    <AnimatePresence mode="wait">
                      <motion.span
                        key={titleIndex}
-                       initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
+                       initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                       exit={{ opacity: 0, y: -12, filter: "blur(4px)" }}
+                       exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
                        transition={{ duration: 0.35, ease: "easeOut" }}
-                       className="text-lg sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent tracking-wide select-none font-display h-auto"
+                       className="text-sm sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent tracking-[0.2em] select-none font-display h-auto uppercase"
                      >
                        {titles[titleIndex]}
                      </motion.span>
                    </AnimatePresence>
                  </div>
-                 <span className="text-gray-600 font-mono text-xs sm:text-sm">]</span>
+                 <span className="text-white/20 font-mono text-[10px] sm:text-xs">/</span>
                </div>
 
                {/* Tech separator bar with terminal prompt style */}
@@ -226,54 +237,60 @@ export default function Hero() {
                </div>
 
                {/* High precision description */}
-               <p className="max-w-2xl mx-auto text-sm sm:text-base lg:text-lg text-gray-400 leading-relaxed font-sans">
+               <p className="max-w-xl mx-auto text-xs sm:text-base text-gray-400/90 leading-relaxed font-sans px-4 font-medium tracking-tight">
                  {getLocalizedField(data, 'description', 'hero.description')}
                </p>
 
-               {/* Button grid inside HUD container */}
-               <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 pt-2 max-w-3xl mx-auto w-full px-2 relative z-30">
-                 <a 
-                   href={data?.resumeUrl || "#"} 
-                   target="_blank"
-                   className="h-11 px-6 bg-brand hover:brightness-110 text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5 group shadow-lg shadow-brand/20 w-full sm:w-auto relative overflow-hidden"
-                 >
-                   {/* Subtle glass sweep glow on button */}
-                   <span className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 translate-x-[-150%] group-hover:translate-x-[250%] transition-transform duration-1000 ease-out z-10 pointer-events-none" />
-                   <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-                   <span>{t('hero.btn_resume')}</span>
-                 </a>
-                 
-                 <AIResumeModal />
-                 
-                 <a 
-                   href="#contact"
-                   className="h-11 px-6 bg-white/[0.03] hover:bg-white/[0.08] text-white text-xs font-semibold rounded-xl border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2.5 w-full sm:w-auto"
-                 >
-                   <Send className="w-4 h-4 text-cyan-400" />
-                   <span>{t('hero.btn_contact')}</span>
-                 </a>
+                {/* Button grid inside HUD container */}
+                <div className="flex flex-row flex-nowrap items-center justify-center gap-3 sm:gap-6 pt-4 max-w-full relative z-30">
+                  <Tooltip content={t('hero.btn_resume')}>
+                    <a 
+                      href={data?.resumeUrl || "#"} 
+                      target="_blank"
+                      className="w-9 h-9 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-brand text-white hover:text-white rounded border border-white/10 hover:border-brand/50 transition-all flex items-center justify-center group shadow-lg shadow-brand/5 shrink-0 relative overflow-hidden"
+                    >
+                      <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </a>
+                  </Tooltip>
+                  
+                  <Tooltip content="AI Resume">
+                    <div className="shrink-0">
+                      <AIResumeModal />
+                    </div>
+                  </Tooltip>
+                  
+                  <Tooltip content={t('hero.btn_contact')}>
+                    <a 
+                      href="#contact"
+                      className="w-9 h-9 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-cyan-500 text-white hover:text-white rounded border border-white/10 hover:border-cyan-500/50 transition-all flex items-center justify-center shrink-0"
+                    >
+                      <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </a>
+                  </Tooltip>
 
-                 {settings?.calendlyUrl && (
-                   <a 
-                     href={settings.calendlyUrl}
-                     target="_blank"
-                     rel="noreferrer"
-                     className="h-11 px-6 bg-gradient-to-r from-brand to-brand/80 hover:brightness-110 text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5 group shadow-md shadow-brand/5 w-full sm:w-auto"
-                   >
-                     <Calendar className="w-4 h-4 text-purple-300" />
-                     <span>{t('hero.btn_strategy')}</span>
-                   </a>
-                 )}
-                 
-                 <a 
-                   href={data?.linkedinUrl || "https://www.linkedin.com/in/sankalpsuman"} 
-                   target="_blank"
-                   className="h-11 px-6 bg-[#0077b5]/10 hover:bg-[#0077b5]/20 text-[#00a0dc] hover:text-white rounded-xl border border-[#0077b5]/20 hover:border-[#0077b5]/50 transition-all flex items-center justify-center gap-2.5 w-full sm:w-auto group"
-                 >
-                   <Linkedin className="w-4 h-4 text-[#00a0dc] group-hover:text-white" />
-                   <span>LinkedIn</span>
-                 </a>
-               </div>
+                  {settings?.calendlyUrl && (
+                    <Tooltip content={t('hero.btn_strategy')}>
+                      <a 
+                        href={settings.calendlyUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-9 h-9 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-purple-500 text-white hover:text-white rounded border border-white/10 hover:border-purple-500/50 transition-all flex items-center justify-center group shrink-0"
+                      >
+                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </a>
+                    </Tooltip>
+                  )}
+                  
+                  <Tooltip content="LinkedIn">
+                    <a 
+                      href={data?.linkedinUrl || "https://www.linkedin.com/in/sankalpsuman"} 
+                      target="_blank"
+                      className="w-9 h-9 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-blue-600 text-white hover:text-white rounded border border-white/10 hover:border-blue-600/50 transition-all flex items-center justify-center shrink-0"
+                    >
+                      <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </a>
+                  </Tooltip>
+                </div>
              </div>
           </motion.div>
         </div>

@@ -324,7 +324,7 @@ export default function Navbar() {
                       href={link.href}
                       onClick={(e) => scrollToAnchor(e, link.href)}
                       className={cn(
-                        "flex items-center justify-between px-6 py-4 rounded-2xl transition-all font-bold uppercase tracking-widest text-sm",
+                        "flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl transition-all font-bold uppercase tracking-widest text-xs sm:text-sm",
                         isActive ? "bg-brand/10 text-brand border border-brand/20" : "text-gray-400 border border-transparent"
                       )}
                     >
@@ -336,7 +336,7 @@ export default function Navbar() {
                       to={link.href}
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
-                        "flex items-center justify-between px-6 py-4 rounded-2xl transition-all font-bold uppercase tracking-widest text-sm",
+                        "flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl transition-all font-bold uppercase tracking-widest text-xs sm:text-sm",
                         isActive ? "bg-brand/10 text-brand border border-brand/20" : "text-gray-400 border border-transparent"
                       )}
                     >

@@ -14,99 +14,7 @@ export interface DocumentChunk {
 let vectorIndex: DocumentChunk[] = [];
 let hasBeenIndexed = false;
 
-// Fallback high-fidelity content corpus matching Sankalp's real profile
-const FALLBACK_CORPUS = [
-  {
-    id: 'bio_about',
-    source: 'about',
-    title: 'About Sankalp Suman - Bio and Leadership Focus',
-    content: `Sankalp Suman is a results-driven QA Lead & Software Test Specialist with 7+ years of professional software testing experience. He currently works as a Software Test Specialist and Scrum Master at Amdocs. His unique background includes being a UPSC Civil Services Aspirant with Sociology as an optional subject, demonstrating wide intellectual depth, extreme discipline, high leadership caliber, and sociological understanding of organizations/processes. He specializes in AI-powered testing, manual and automated regression suites, API validation, Agile Scrum, and bridging the gap between QA automation and agentic generative intelligence.`
-  },
-  {
-    id: 'career_goals',
-    source: 'goals',
-    title: 'Career Goals and Relocation readiness',
-    content: `Sankalp Suman is open to exciting software QA, testing, and quality engineering leadership opportunities globally, including India 🇮🇳, the USA 🇺🇸, Germany 🇩🇪, and other global tech hubs. He has ready availability for remote/hybrid positions or relocation, and is highly interested in roles involving advanced test automation, AI-Assisted QA, and Scrum Master agile ceremonies.`
-  },
-  {
-    id: 'exp_amdocs',
-    source: 'experience',
-    title: 'Experience at Amdocs',
-    content: `Amdocs (Dec 2021 – Present): Software Test Specialist & Scrum Master at Gurgaon, India. Leading QA delivery for enterprise-scale telecom platforms. Implementing AI-assisted testing workflows and managing Agile sprints as Scrum Master. Succeeded in increasing delivery speed and test case efficiency.`
-  },
-  {
-    id: 'exp_hexaview',
-    source: 'experience',
-    title: 'Experience at Hexaview (Adobe Client)',
-    content: `Hexaview - Adobe Client (Jun 2019 – Dec 2021): Senior Quality Engineer. Focused on complex software validation for Adobe products. Built automated testing frameworks, reduced regression cycle execution duration, and optimized test suites.`
-  },
-  {
-    id: 'exp_opkey',
-    source: 'experience',
-    title: 'Experience at Opkey',
-    content: `Opkey (Aug 2018 – May 2019): Quality Engineer. Manual and automated testing for cloud platforms. Contributed to early-stage test case generation logic, API reliability, and black-box validations.`
-  },
-  {
-    id: 'skill_ai_qa',
-    source: 'skills',
-    title: 'Skills - AI in QA',
-    content: `Advanced tech skills: AI-driven testing (95% expertise), prompt engineering (90%), integrating LLMs into software quality assurance processes, and building agentic AI QA pipelines to automate manual test planning.`
-  },
-  {
-    id: 'skill_testing',
-    source: 'skills',
-    title: 'Skills - Core Testing & Automation',
-    content: `Core expertise: Manual and functional testing, API physical validation (Postman, REST Assured) with 92% expertise, automated GUI automation using Selenium Webdriver with Java/Python, Playwright, ETL testing, SQL database testing, JIRA, and Test Planning.`
-  },
-  {
-    id: 'skill_scrum',
-    source: 'skills',
-    title: 'Skills - Leadership & Scrum',
-    content: `Methodology experience: Scrum Master Leadership (90%), managing Agile sprints, hosting standups, retrospectives, organizing backlog grooming sessions, resolving cross-team dependencies, and managing test plan risks.`
-  },
-  {
-    id: 'proj_tc_gen',
-    source: 'projects',
-    title: 'Project: AI Test Case Generator Agent',
-    content: `Project AI Test Case Generator: An autonomous QA agent that extracts detailed test scenarios and step-by-step test execution cases directly from natural-language product documentation with 95% accuracy. Built using Python, Gemini API, Selenium, and React.`
-  },
-  {
-    id: 'proj_resume_morph',
-    source: 'projects',
-    title: 'Project: Resume Morph AI',
-    content: `Project Resume Morph AI: A dynamic portfolio application that automatically adapts and prioritizes portfolio content based on the target job description or recruiter requirements using LLMs and advanced prompt engineering. Built with Next.js, OpenAI, Tailwind, and Firebase.`
-  },
-  {
-    id: 'proj_copilot_dash',
-    source: 'projects',
-    title: 'Project: QA Copilot Dashboard',
-    content: `Project QA Copilot Dashboard: A real-time monitoring dashboard for automated test execution that features AI-driven defect analysis, pattern categorization, and auto root-cause detection of failing test scripts. Developed with Node.js, D3.js, MongoDB, and LangChain.`
-  },
-  {
-    id: 'cert_istqb',
-    source: 'certifications',
-    title: 'ISTQB Certified Tester Accolade',
-    content: `Accreditation: ISTQB Certified Tester issued by the International Software Testing Qualifications Board (ISTQB) in 2019, confirming deep knowledge of software quality methodologies, functional verification, and defect lifecycles.`
-  },
-  {
-    id: 'cert_csm',
-    source: 'certifications',
-    title: 'Scrum Master Certified',
-    content: `Professional Certification: Certified Scrum Master (CSM) issued by the Scrum Alliance in 2021, verifying credentials in Agile delivery practices, sprint backlog planning, risk management, and scrum coaching.`
-  },
-  {
-    id: 'contact_info',
-    source: 'contact',
-    title: 'Contact Information & Links',
-    content: `Contact details: Email is sankalpsmn@gmail.com, Location is Gurgaon / Delhi NCR, India, LinkedIn profile URL is linkedin.com/in/sankalp-suman. To schedule meetings or interviews, please use the floating 'Book Interview' action in the chatbot or the scheduler on the website.`
-  },
-  {
-    id: 'now_focus',
-    source: 'now',
-    title: 'Focused on Currently',
-    content: `Sankalp is currently focused on leading Amdocs' QA acceleration by compiling and integrating Agentic workflows into the Software Testing Life Cycle (STLC). This bridges traditional test automation with Generative AI tools, driving 40% faster product delivery. He is also actively preparing for global relocations in response to career opportunities.`
-  }
-];
+
 
 // Vector math utilities
 function dotProduct(a: number[], b: number[]): number {
@@ -231,13 +139,20 @@ export async function buildKnowledgeBase(db: Firestore | null, ai?: GoogleGenAI)
       }
 
       // Load Collections in parallel
-      const [expSnap, skillsSnap, projSnap, certSnap, blogsSnap, storiesSnap] = await Promise.all([
+      const [expSnap, skillsSnap, projSnap, certSnap, blogsSnap, storiesSnap, achieveSnap, testSnap, faqSnap, metricsSnap, toolsSnap, timelineSnap, settingsSnap] = await Promise.all([
         getDocs(collection(db, 'experience')),
         getDocs(collection(db, 'skills')),
         getDocs(collection(db, 'projects')),
         getDocs(collection(db, 'certifications')),
         getDocs(collection(db, 'blogs')),
-        getDocs(collection(db, 'impactStories'))
+        getDocs(collection(db, 'impactStories')),
+        getDocs(collection(db, 'achievements')),
+        getDocs(collection(db, 'testimonials')),
+        getDocs(collection(db, 'faqs')),
+        getDocs(collection(db, 'qaMetrics')),
+        getDocs(collection(db, 'aiTools')),
+        getDocs(collection(db, 'timeline')),
+        getDoc(doc(db, 'settings', 'global'))
       ]);
 
       expSnap.forEach(docSnap => {
@@ -302,6 +217,80 @@ export async function buildKnowledgeBase(db: Firestore | null, ai?: GoogleGenAI)
         });
       });
 
+      achieveSnap.forEach(docSnap => {
+        const d = docSnap.data();
+        chunks.push({
+          id: `firestore_achieve_${docSnap.id}`,
+          source: 'achievements',
+          title: `Award & Achievement: ${d.title}`,
+          content: `Achievement: ${d.title}. Organization: ${d.organization}. Date: ${d.date}. Description: ${d.description || ''}. Badge: ${d.badge || ''}`
+        });
+      });
+
+      testSnap.forEach(docSnap => {
+        const d = docSnap.data();
+        chunks.push({
+          id: `firestore_testimonial_${docSnap.id}`,
+          source: 'testimonials',
+          title: `Testimonial from ${d.name} (${d.role})`,
+          content: `Professional Review from ${d.name}, ${d.role} at ${d.company}: "${d.content}". Rating: ${d.rating}/5 stars.`
+        });
+      });
+
+      faqSnap.forEach(docSnap => {
+        const d = docSnap.data();
+        if (d.visible !== false) {
+          chunks.push({
+            id: `firestore_faq_${docSnap.id}`,
+            source: 'faq',
+            title: `FAQ: ${d.question}`,
+            content: `Question: ${d.question}. Answer: ${d.answer}. Category: ${d.category}`
+          });
+        }
+      });
+
+      metricsSnap.forEach(docSnap => {
+        const d = docSnap.data();
+        chunks.push({
+          id: `firestore_metric_${docSnap.id}`,
+          source: 'qa_metrics',
+          title: `QA Performance Metric: ${d.label}`,
+          content: `Metric: ${d.label}. Value: ${d.value}. Trend: ${d.trend}. Type: ${d.type}. This is a live performance indicator for Quality Assurance.`
+        });
+      });
+
+      toolsSnap.forEach(docSnap => {
+        const d = docSnap.data();
+        if (d.enabled) {
+          chunks.push({
+            id: `firestore_aitool_${docSnap.id}`,
+            source: 'ai_tools',
+            title: `AI Catalyst Tool: ${d.name}`,
+            content: `AI Tool: ${d.name}. Description: ${d.description}. This tool is part of the Agentic Quality Engineering framework.`
+          });
+        }
+      });
+
+      timelineSnap.forEach(docSnap => {
+        const d = docSnap.data();
+        chunks.push({
+          id: `firestore_timeline_${docSnap.id}`,
+          source: 'timeline',
+          title: `Career Milestone: ${d.title} at ${d.company}`,
+          content: `Milestone: ${d.title}. Company: ${d.company}. Date: ${d.date}. Description: ${d.description}. This represents a key point in the professional career journey.`
+        });
+      });
+
+      if (settingsSnap.exists()) {
+        const d = settingsSnap.data();
+        chunks.push({
+          id: `firestore_settings`,
+          source: 'settings',
+          title: `Global Site Settings & Social Presence`,
+          content: `Brand Name: ${d.brandName}. LinkedIn URL: ${d.linkedinUrl}. GitHub URL: ${d.githubUrl}. Resume URL: ${d.resumeUrl}. Calendly: ${d.calendlyUrl}`
+        });
+      }
+
     } catch (e) {
       console.warn('[RAG] Firestore load encountered warnings, relying on secure fallbacks:', e);
     }
@@ -309,18 +298,7 @@ export async function buildKnowledgeBase(db: Firestore | null, ai?: GoogleGenAI)
     console.warn('[RAG] No active Firestore connection, building baseline knowledge-base form defaults.');
   }
 
-  // 2. Blend/Merge with Fallbacks to prevent gaps in QA representation
-  for (const item of FALLBACK_CORPUS) {
-    const isDuplicate = chunks.some(c => c.id.replace('firestore_', '') === item.id.replace('bio_about', 'about').replace('contact_info', 'contact').replace('now_focus', 'now'));
-    if (!isDuplicate) {
-      chunks.push({
-        id: item.id,
-        source: item.source,
-        title: item.title,
-        content: item.content
-      });
-    }
-  }
+
 
   // 3. Optimize Embeddings generation - lazy compile embedding arrays to avoid rate limits
   // We populate our in-memory vector index, conserving existing matching vector scores from previous indices!
