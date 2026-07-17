@@ -60,7 +60,6 @@ import ImpactStoriesEditor from './admin/ImpactStoriesEditor';
 import QAMetricsEditor from './admin/QAMetricsEditor';
 import AIToolsEditor from './admin/AIToolsEditor';
 import NowEditor from './admin/NowEditor';
-import ResumeCenterEditor from './admin/ResumeCenterEditor';
 import AchievementsEditor from './admin/AchievementsEditor';
 import WhyHireMeEditor from './admin/WhyHireMeEditor';
 import AvailabilityEditor from './admin/AvailabilityEditor';
@@ -85,7 +84,6 @@ const NAV_ITEMS = [
   { path: 'faqs', label: 'FAQ', icon: HelpCircle },
   { path: 'blogs', label: 'Blog', icon: FileText },
   { path: 'now', label: 'Now Page', icon: Clock },
-  { path: 'resumes', label: 'Resume Center', icon: FileText },
   { path: 'availability', label: 'Availability Status', icon: CalendarRange },
   { path: 'book-meeting', label: 'Book a Meeting', icon: Calendar },
   { path: 'inquiries', label: 'Inquiries', icon: MessageSquare },
@@ -315,7 +313,6 @@ export default function AdminDashboard() {
                     <Route path="/availability" element={<AvailabilityEditor />} />
                     <Route path="/book-meeting" element={<BookMeetingEditor />} />
                     <Route path="/faqs" element={<FaqEditor />} />
-                    <Route path="/resumes" element={<ResumeCenterEditor />} />
                     <Route path="/ai" element={<AIEditor />} />
                     <Route path="/inquiries" element={<Inquiries />} />
                     <Route path="/contact" element={<ContactEditor />} />

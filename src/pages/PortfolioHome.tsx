@@ -7,7 +7,6 @@ import { BackgroundEffects } from '../components/portfolio/BackgroundEffects';
 import Navbar from '../components/portfolio/Navbar';
 import Hero from '../components/portfolio/Hero';
 import About from '../components/portfolio/About';
-import { WelcomePopup } from '../components/portfolio/WelcomePopup';
 import { lazyRetry } from '../lib/lazyRetry';
 
 // Below-the-fold Components (Lazy)
@@ -30,7 +29,7 @@ const Contact = lazy(() => lazyRetry(() => import('../components/portfolio/Conta
 const Footer = lazy(() => lazyRetry(() => import('../components/portfolio/Footer.tsx')));
 
 export default function PortfolioHome() {
-  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+  const [welcomeDismissed, setWelcomeDismissed] = useState(true);
 
   // Handle initial page load hash URL deep-linking with lazy loaded elements
   useEffect(() => {
@@ -68,7 +67,6 @@ export default function PortfolioHome() {
   return (
     <div id="portfolio-home" className="bg-[#050816] selection:bg-brand/30 selection:text-white overflow-hidden relative">
       <BackgroundEffects active={welcomeDismissed} />
-      <WelcomePopup onLaunch={() => setWelcomeDismissed(true)} />
       <SEO />
       <Navbar />
       <main>

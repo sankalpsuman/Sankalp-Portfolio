@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getDocument, HERO_DOC } from '../../services/firestoreService';
-import { Download, Linkedin, Send, Calendar, Sparkles } from 'lucide-react';
+import { Download, Linkedin, Send, Calendar, Sparkles, Briefcase } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 import { AIResumeModal } from './AIResumeModal';
 import { Tooltip } from './Tooltip';
@@ -242,41 +242,48 @@ export default function Hero() {
                </p>
 
                 {/* Button grid inside HUD container */}
-                <div className="flex flex-row flex-nowrap items-center justify-center gap-3 sm:gap-6 pt-4 max-w-full relative z-30">
-                  <Tooltip content={t('hero.btn_resume')}>
+                <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-4 max-w-full relative z-30">
+                  <Tooltip content="Resume">
                     <a 
                       href={data?.resumeUrl || "#"} 
                       target="_blank"
-                      className="w-9 h-9 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-brand text-white hover:text-white rounded border border-white/10 hover:border-brand/50 transition-all flex items-center justify-center group shadow-lg shadow-brand/5 shrink-0 relative overflow-hidden"
+                      className="w-10 h-10 sm:w-11 sm:h-11 bg-brand/20 hover:bg-brand text-brand hover:text-white rounded-xl border border-brand/30 hover:border-brand/50 transition-all flex items-center justify-center group shadow-lg shadow-brand/5 shrink-0 relative overflow-hidden"
                     >
-                      <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <Download className="w-5 h-5 sm:w-5 sm:h-5" />
                     </a>
                   </Tooltip>
                   
-                  <Tooltip content="AI Resume">
-                    <div className="shrink-0">
-                      <AIResumeModal />
-                    </div>
+                  <div className="shrink-0">
+                    <AIResumeModal />
+                  </div>
+                  
+                  <Tooltip content="Projects">
+                    <a 
+                      href="#projects"
+                      className="w-10 h-10 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-white/[0.1] text-white hover:text-cyan-400 rounded-xl border border-white/10 hover:border-cyan-500/50 transition-all flex items-center justify-center shrink-0"
+                    >
+                      <Briefcase className="w-5 h-5 sm:w-5 sm:h-5" />
+                    </a>
                   </Tooltip>
                   
-                  <Tooltip content={t('hero.btn_contact')}>
+                  <Tooltip content="Contact">
                     <a 
                       href="#contact"
-                      className="w-9 h-9 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-cyan-500 text-white hover:text-white rounded border border-white/10 hover:border-cyan-500/50 transition-all flex items-center justify-center shrink-0"
+                      className="w-10 h-10 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-cyan-500 text-white hover:text-white rounded-xl border border-white/10 hover:border-cyan-500/50 transition-all flex items-center justify-center shrink-0"
                     >
-                      <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <Send className="w-5 h-5 sm:w-5 sm:h-5" />
                     </a>
                   </Tooltip>
 
                   {settings?.calendlyUrl && (
-                    <Tooltip content={t('hero.btn_strategy')}>
+                    <Tooltip content="Meeting">
                       <a 
                         href={settings.calendlyUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-9 h-9 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-purple-500 text-white hover:text-white rounded border border-white/10 hover:border-purple-500/50 transition-all flex items-center justify-center group shrink-0"
+                        className="w-10 h-10 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-purple-500 text-white hover:text-white rounded-xl border border-white/10 hover:border-purple-500/50 transition-all flex items-center justify-center group shrink-0"
                       >
-                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <Calendar className="w-5 h-5 sm:w-5 sm:h-5" />
                       </a>
                     </Tooltip>
                   )}
@@ -285,9 +292,9 @@ export default function Hero() {
                     <a 
                       href={data?.linkedinUrl || "https://www.linkedin.com/in/sankalpsuman"} 
                       target="_blank"
-                      className="w-9 h-9 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-blue-600 text-white hover:text-white rounded border border-white/10 hover:border-blue-600/50 transition-all flex items-center justify-center shrink-0"
+                      className="w-10 h-10 sm:w-11 sm:h-11 bg-white/[0.03] hover:bg-blue-600 text-white hover:text-white rounded-xl border border-white/10 hover:border-blue-600/50 transition-all flex items-center justify-center shrink-0"
                     >
-                      <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <Linkedin className="w-5 h-5 sm:w-5 sm:h-5" />
                     </a>
                   </Tooltip>
                 </div>

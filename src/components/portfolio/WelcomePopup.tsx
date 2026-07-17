@@ -139,77 +139,6 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
     return () => clearInterval(timer);
   }, []);
 
-  // Preload synthesis voices on mount for prompt readiness
-  useEffect(() => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.getVoices();
-      const handleVoicesChanged = () => {
-        window.speechSynthesis.getVoices();
-      };
-      window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
-      return () => {
-        window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
-      };
-    }
-  }, []);
-
-  const speakWelcomeMessage = () => {
-    try {
-      if (!('speechSynthesis' in window)) return;
-      
-      // Stop any other active spoken elements immediately
-      window.speechSynthesis.cancel();
-      
-      const text = "Welcome. I’m Sankalp Suman. Thanks for visiting my portfolio.";
-      const utterance = new SpeechSynthesisUtterance(text);
-      
-      const voices = window.speechSynthesis.getVoices();
-      
-      // Look specifically for Indian English male voices first (iOS: Rishi, Windows: Ravi, Chrome: Google English (India))
-      const searchLang = 'en-in';
-      const maleIndianVoice = voices.find(v => {
-        const name = v.name.toLowerCase();
-        const lang = v.lang.toLowerCase();
-        const isIndian = lang.includes(searchLang) || lang.includes('en_in');
-        const isMaleKeyword = name.includes('male') || name.includes('rishi') || name.includes('ravi') || name.includes('google') || name.includes('microsoft');
-        return isIndian && isMaleKeyword;
-      }) || voices.find(v => {
-        const lang = v.lang.toLowerCase();
-        return lang.includes(searchLang) || lang.includes('en_in');
-      });
-
-      // Secondary fallback to standard Western professional male voice if no Indian English is available
-      const fallbackMaleVoice = voices.find(v => {
-        const name = v.name.toLowerCase();
-        const lang = v.lang.toLowerCase();
-        return lang.startsWith('en') && (
-          name.includes('male') || 
-          name.includes('david') || 
-          name.includes('daniel') || 
-          name.includes('guy') || 
-          name.includes('kirk') || 
-          name.includes('premium') || 
-          name.includes('natural')
-        );
-      });
-
-      const selectedVoice = maleIndianVoice || fallbackMaleVoice || voices.find(v => v.lang.toLowerCase().startsWith('en')) || voices[0];
-      
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-      }
-      
-      // Fine-tune pitch and rate for an authentic, premium male Indian English greeting tone
-      utterance.pitch = 0.95; // Grounded masculine tone
-      utterance.rate = 0.90;  // Empathetic and professional cadence
-      utterance.volume = 1.0;
-      
-      window.speechSynthesis.speak(utterance);
-    } catch (err) {
-      console.warn('[Welcome Voice Grid Error]:', err);
-    }
-  };
-
   // Matrix binary digital rain waterfall behind the modal popup (acting like a live cool GIF!)
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -265,9 +194,6 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onLaunch }) => {
   }, [isVisible]);
 
   const handleLaunch = () => {
-    try {
-      speakWelcomeMessage();
-    } catch (e) {}
     setIsVisible(false);
     if (onLaunch) {
       onLaunch();

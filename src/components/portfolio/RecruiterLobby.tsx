@@ -1,20 +1,8 @@
 import { useState, useEffect } from 'react';
 import Section from './Section';
 import { getCollection, getDocument, updateCollectionDocument } from '../../services/firestoreService';
-import { FileText, CalendarCheck, CheckCircle2, XCircle, Clock, Calendar, Briefcase, ExternalLink, Sparkles } from 'lucide-react';
+import { CalendarCheck, CheckCircle2, XCircle, Clock, Calendar, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
-
-interface Resume {
-  id: string;
-  title: string;
-  description?: string;
-  category: string;
-  version: string;
-  pdfUrl?: string;
-  previewUrl?: string;
-  isFeatured: boolean;
-  downloadsCount: number;
-}
 
 interface AvailabilityData {
   openToWork: boolean;
@@ -35,7 +23,6 @@ interface BookMeetingData {
 }
 
 export default function RecruiterLobby() {
-  const [resumes, setResumes] = useState<Resume[]>([]);
   const [availability, setAvailability] = useState<AvailabilityData>({
     openToWork: true,
     openToRemote: true,
@@ -52,17 +39,8 @@ export default function RecruiterLobby() {
     ctaDescription: 'Find a time that suits you on my calendar to discuss potential contracts, consulting, or interview loops.'
   });
 
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
-
   useEffect(() => {
     async function load() {
-      try {
-        const resumeList = await getCollection<Resume>('resumes', 'version');
-        setResumes(resumeList);
-      } catch (e) {
-        console.warn('Fallback resumes listing used:', e);
-      }
-
       try {
         const avail = await getDocument<AvailabilityData>('settings/availability');
         if (avail) setAvailability(avail);
@@ -80,38 +58,12 @@ export default function RecruiterLobby() {
     load();
   }, []);
 
-  const handleDownload = async (resume: Resume) => {
-    setDownloadingId(resume.id);
-    try {
-      const updatedCount = (resume.downloadsCount || 0) + 1;
-      // Increment download counter securely
-      await updateCollectionDocument('resumes', resume.id, {
-        downloadsCount: updatedCount
-      });
-      
-      // Update local state increment
-      setResumes(prev => prev.map(r => r.id === resume.id ? { ...r, downloadsCount: updatedCount } : r));
-      
-      // Open the URL
-      if (resume.pdfUrl) {
-        window.open(resume.pdfUrl, '_blank');
-      }
-    } catch (e) {
-      console.error('Download update error, fallback link opened:', e);
-      if (resume.pdfUrl) {
-        window.open(resume.pdfUrl, '_blank');
-      }
-    } finally {
-      setDownloadingId(null);
-    }
-  };
-
   return (
     <Section id="recruiter-lobby" title="Recruiter Lobby" subtitle="Dynamic credentials, availability badges, and interview scheduler">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="flex flex-col items-center justify-center max-w-2xl mx-auto w-full">
         
-        {/* Left Side: Availability & Booking */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Availability & Booking */}
+        <div className="w-full space-y-6">
           {/* Availability Block */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -214,81 +166,6 @@ export default function RecruiterLobby() {
               )}
             </div>
           </motion.div>
-        </div>
-
-        {/* Right Side: Resume Center List */}
-        <div className="lg:col-span-7 bg-white/[0.02] border border-white/5 p-6 rounded-2xl space-y-4 h-auto self-stretch flex flex-col">
-          <div className="pb-2 border-b border-white/5">
-            <h4 className="text-sm uppercase font-mono tracking-wider font-bold text-gray-400 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-blue-400" />
-              Resume Center: Active Document Assets
-            </h4>
-            <p className="text-xs text-gray-500 mt-1">Select and track-download your preferred format or approved resume version below.</p>
-          </div>
-
-          <div className="space-y-3 overflow-y-auto max-h-[360px] pr-1 flex-1">
-            {resumes.map((resume, i) => (
-              <div 
-                key={resume.id || i}
-                className="p-4 bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 hover:border-brand/30 transition-all rounded-xl flex items-center justify-between gap-4 group"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-105 transition-all flex-shrink-0">
-                    <FileText className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h5 className="text-sm font-bold text-white group-hover:text-brand transition-all flex items-center gap-2">
-                      {resume.title}
-                      {resume.isFeatured && (
-                        <span className="text-[9px] uppercase px-1.5 py-0.5 font-bold tracking-wider bg-green-500/10 text-green-400 border border-green-500/20 rounded">
-                          Featured
-                        </span>
-                      )}
-                    </h5>
-                    {resume.description && (
-                      <p className="text-xs text-gray-400 leading-relaxed mt-1">{resume.description}</p>
-                    )}
-                    <div className="flex items-center gap-3 mt-1.5 text-[10px] text-gray-500 font-mono">
-                      <span>Ver: {resume.version}</span>
-                      <span>•</span>
-                      <span>Format: {resume.category}</span>
-                      <span>•</span>
-                      <span>Downloads: {resume.downloadsCount ?? 0}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {resume.previewUrl && (
-                    <a
-                      href={resume.previewUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-2 bg-white/5 hover:bg-white/15 hover:text-white rounded-lg text-gray-400 transition-colors text-xs"
-                      title="Preview Online Document"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  )}
-                  {resume.pdfUrl && (
-                    <button
-                      onClick={() => handleDownload(resume)}
-                      disabled={downloadingId === resume.id}
-                      className="px-3.5 py-2 bg-blue-500/10 hover:bg-blue-500 hover:text-white text-blue-300 transition-all rounded-lg text-xs font-semibold"
-                    >
-                      {downloadingId === resume.id ? 'Tracking...' : 'Download'}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {resumes.length === 0 && (
-              <div className="text-center py-12 text-gray-500 text-xs border border-dashed border-white/5 rounded-xl">
-                📄 No active resume documents published in the Resume Center yet.
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </Section>
