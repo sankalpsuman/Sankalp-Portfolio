@@ -183,6 +183,17 @@ export default function App() {
   };
 
   useEffect(() => {
+    if (!hasEntered) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [hasEntered]);
+
+  useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setAuthInitialized(true);
@@ -248,8 +259,8 @@ export default function App() {
             </AnimatePresence>
 
             <div className={cn(
-              "transition-all duration-1000",
-              !hasEntered ? "opacity-0 scale-95 blur-xl h-screen overflow-hidden pointer-events-none" : "opacity-100 scale-100 blur-0"
+              "transition-all duration-1000 ease-in-out",
+              !hasEntered ? "opacity-0 scale-95 blur-xl pointer-events-none" : "opacity-100 scale-100 blur-0"
             )}>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>

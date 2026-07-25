@@ -1,5 +1,4 @@
-import React, { Suspense, useRef, useState, useEffect } from 'react';
-import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
+import React, { Suspense, useState, useEffect } from 'react';
 
 interface LazySectionProps {
   children: React.ReactNode;
@@ -7,56 +6,23 @@ interface LazySectionProps {
 }
 
 const SectionLoader = () => (
-  <div className="h-40 flex items-center justify-center opacity-20">
-    <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
+  <div className="min-h-[400px] w-full flex flex-col items-center justify-center gap-6 opacity-20">
+    <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
   </div>
 );
 
 export const LazySection: React.FC<LazySectionProps> = ({ children, id }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [forceVisible, setForceVisible] = useState(false);
-  
-  const entry = useIntersectionObserver(ref, {
-    rootMargin: '200px',
-    freezeOnceVisible: true,
-  });
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
-
-    // Check if the current URL hash matches this section
-    const checkHash = () => {
-      const currentHash = window.location.hash;
-      if (currentHash === `#${id}`) {
-        setForceVisible(true);
-      }
-    };
-
-    checkHash();
-
-    window.addEventListener('hashchange', checkHash);
-
-    // Support instant navigation from navigation links
-    const handleForceVisible = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if (customEvent.detail === id) {
-        setForceVisible(true);
-      }
-    };
-
-    window.addEventListener('force-section-visible', handleForceVisible);
-
-    return () => {
-      window.removeEventListener('hashchange', checkHash);
-      window.removeEventListener('force-section-visible', handleForceVisible);
-    };
-  }, [id]);
-
-  const isVisible = !!entry?.isIntersecting || forceVisible;
+    // Mount all sections shortly after initial load to prevent scroll jumps
+    const timer = setTimeout(() => setIsMounted(true), 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div ref={ref} className="min-h-[100px]" id={id ? `lazy-wrapper-${id}` : undefined}>
-      {isVisible ? (
+    <div className="min-h-[100px]" id={id ? `lazy-wrapper-${id}` : undefined}>
+      {isMounted ? (
         <Suspense fallback={<SectionLoader />}>
           {children}
         </Suspense>
