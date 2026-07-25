@@ -47,7 +47,7 @@ export const WelcomeGateway = ({ onEnter }: WelcomeGatewayProps) => {
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]" />
       </div>
 
-      <div className="relative z-10 max-w-2xl w-full px-6 flex flex-col items-center text-center">
+      <div className="relative z-10 max-w-2xl w-full px-6 flex flex-col items-center text-center py-12 md:py-0">
         <AnimatePresence mode="wait">
           {loading ? (
             <motion.div
@@ -57,8 +57,8 @@ export const WelcomeGateway = ({ onEnter }: WelcomeGatewayProps) => {
               exit={{ opacity: 0 }}
               className="flex flex-col items-center gap-4"
             >
-              <div className="w-16 h-16 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-blue-400">Syncing Reality...</p>
+              <div className="w-12 h-12 md:w-16 md:h-16 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+              <p className="font-mono text-[9px] md:text-[10px] uppercase tracking-[0.3em] text-blue-400">Syncing Reality...</p>
             </motion.div>
           ) : (
             <motion.div
@@ -66,53 +66,53 @@ export const WelcomeGateway = ({ onEnter }: WelcomeGatewayProps) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="space-y-12"
+              className="space-y-8 md:space-y-12"
             >
               {/* Branding */}
-              <div className="flex flex-col items-center gap-4">
+              <div className="flex flex-col items-center gap-3 md:gap-4">
                 <motion.div 
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.3)] border border-white/10"
+                  className="w-14 h-14 md:w-16 md:h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.3)] border border-white/10"
                 >
                   {settings?.logoUrl ? (
-                    <img src={settings.logoUrl} alt="Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
+                    <img src={settings.logoUrl} alt="Logo" className="w-8 h-8 md:w-10 md:h-10 object-contain" referrerPolicy="no-referrer" />
                   ) : (
-                    <Cpu className="w-8 h-8 text-white" />
+                    <Cpu className="w-6 h-6 md:w-8 md:h-8 text-white" />
                   )}
                 </motion.div>
                 
                 <div className="space-y-1">
-                   <h2 className="text-[10px] font-black tracking-[0.5em] text-blue-500 uppercase">
+                   <h2 className="text-[9px] md:text-[10px] font-black tracking-[0.4em] md:tracking-[0.5em] text-blue-500 uppercase px-4">
                      {settings?.role_tag || 'Lead Quality Engineer'}
                    </h2>
                 </div>
               </div>
 
               {/* Main Greeting */}
-              <div className="space-y-6">
-                <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-white uppercase leading-none">
+              <div className="space-y-4 md:space-y-6">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter text-white uppercase leading-none px-2">
                   WELCOME TO THE <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400">
                     {data?.name?.toUpperCase() || 'SANKALP'}'S UNIVERSE
                   </span>
                 </h1>
                 
-                <p className="text-slate-400 text-lg md:text-xl font-serif italic max-w-lg mx-auto">
+                <p className="text-slate-400 text-base md:text-xl font-serif italic max-w-lg mx-auto px-4">
                   {data?.title || 'Bridging the gap between Quality Assurance and Generative AI.'}
                 </p>
               </div>
 
               {/* Status Badges */}
-              <div className="flex flex-wrap justify-center gap-4">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Verified Professional</span>
+              <div className="flex flex-wrap justify-center gap-3 md:gap-4 px-4">
+                <div className="flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                   <ShieldCheck className="w-3 h-3 md:w-4 md:h-4 text-emerald-400" />
+                   <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-300">Verified Professional</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-                   <Globe className="w-4 h-4 text-blue-400" />
-                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Open to Collaboration</span>
+                <div className="flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                   <Globe className="w-3 h-3 md:w-4 md:h-4 text-blue-400" />
+                   <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-300">Open to Collaboration</span>
                 </div>
               </div>
 
@@ -121,7 +121,7 @@ export const WelcomeGateway = ({ onEnter }: WelcomeGatewayProps) => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onEnter}
-                className="group relative px-12 py-5 rounded-full bg-blue-600 text-white font-black uppercase tracking-[0.3em] text-xs shadow-[0_0_40px_rgba(37,99,235,0.4)] hover:shadow-[0_0_60px_rgba(37,99,235,0.6)] transition-all overflow-hidden"
+                className="group relative px-10 md:px-12 py-4 md:py-5 rounded-full bg-blue-600 text-white font-black uppercase tracking-[0.3em] text-[10px] md:text-xs shadow-[0_0_40px_rgba(37,99,235,0.4)] hover:shadow-[0_0_60px_rgba(37,99,235,0.6)] transition-all overflow-hidden mx-auto"
               >
                 <span className="relative z-10 flex items-center gap-3">
                   Enter Portfolio <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
@@ -130,8 +130,8 @@ export const WelcomeGateway = ({ onEnter }: WelcomeGatewayProps) => {
               </motion.button>
 
               {/* Footer Meta */}
-              <div className="pt-8">
-                <p className="text-[9px] font-mono uppercase tracking-[0.4em] text-slate-600">
+              <div className="pt-4 md:pt-8">
+                <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.4em] text-slate-600">
                   EST. 2024 • DESIGNED BY SANKALP SUMAN
                 </p>
               </div>

@@ -191,7 +191,7 @@ export default function Navbar() {
                  href="https://linkedin.com/in/sankalpsuman" 
                  target="_blank" 
                  rel="noreferrer"
-                 className="p-2.5 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95"
+                 className="p-2 hover:lg:p-2.5 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95"
                >
                   <Linkedin className="w-4 h-4" />
                </a>
@@ -199,7 +199,7 @@ export default function Navbar() {
                  href="https://github.com/sankalpsuman" 
                  target="_blank" 
                  rel="noreferrer"
-                 className="p-2.5 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95"
+                 className="p-2 hover:lg:p-2.5 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95"
                >
                   <Github className="w-4 h-4" />
                </a>
@@ -246,7 +246,7 @@ export default function Navbar() {
               to="/#contact"
               onClick={(e) => scrollToAnchor(e, '/#contact')}
               className={cn(
-                "hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-full font-black transition-all uppercase tracking-[0.2em] text-[10px] border",
+                "hidden md:flex items-center gap-2 px-5 lg:px-6 py-2.5 rounded-full font-black transition-all uppercase tracking-[0.2em] text-[10px] border",
                 scrolled 
                   ? "bg-white text-space-950 border-white hover:bg-transparent hover:text-white" 
                   : "bg-blue-600 text-white border-blue-600 shadow-[0_0_25px_rgba(37,99,235,0.4)] hover:bg-transparent hover:shadow-none"
@@ -257,7 +257,7 @@ export default function Navbar() {
 
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2.5 text-slate-300 hover:text-white bg-white/5 rounded-full transition-colors"
+              className="lg:hidden p-2.5 text-slate-300 hover:text-white bg-white/5 rounded-full transition-colors ml-1"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -272,37 +272,56 @@ export default function Navbar() {
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="lg:hidden absolute top-24 left-4 right-4 glass-card rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl z-50"
+            className="lg:hidden absolute top-24 left-4 right-4 glass-card rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl z-50 max-h-[80vh] overflow-y-auto"
           >
             <div className="p-8 space-y-6">
-              {NAV_LINKS.map((link) => (
-                <Link 
-                  key={link.key}
-                  to={link.href}
-                  onClick={(e) => link.type === 'anchor' ? scrollToAnchor(e, link.href) : setMobileMenuOpen(false)}
-                  className="block py-2 text-lg font-black uppercase tracking-[0.2em] text-slate-300 hover:text-blue-400 transition-colors"
-                >
-                  {t(`nav.${link.key}`)}
-                </Link>
-              ))}
-              <div className="pt-6 border-t border-white/5 flex flex-col gap-4">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Select Language</span>
-                <div className="grid grid-cols-2 gap-2">
-                  {LANGUAGES.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => {
-                        setLanguage(lang.code as any);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={cn(
-                        "py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all",
-                        language === lang.code ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-white/5 text-slate-400 hover:text-white"
-                      )}
+              <div className="flex flex-col gap-2">
+                {NAV_LINKS.map((link) => (
+                  <Link 
+                    key={link.key}
+                    to={link.href}
+                    onClick={(e) => link.type === 'anchor' ? scrollToAnchor(e, link.href) : setMobileMenuOpen(false)}
+                    className="block py-3 px-4 rounded-2xl hover:bg-white/5 text-lg font-black uppercase tracking-[0.2em] text-slate-300 hover:text-blue-400 transition-all"
+                  >
+                    {t(`nav.${link.key}`)}
+                  </Link>
+                ))}
+              </div>
+
+              <div className="pt-6 border-t border-white/5 space-y-6">
+                <div className="flex flex-col gap-4">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Select Language</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          setLanguage(lang.code as any);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={cn(
+                          "py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all",
+                          language === lang.code ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-white/5 text-slate-400 hover:text-white"
+                        )}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Quick Actions</span>
+                  <div className="flex gap-2">
+                    <Link 
+                      to="/#contact"
+                      onClick={(e) => scrollToAnchor(e, '/#contact')}
+                      className="flex-1 flex items-center justify-center py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[11px]"
                     >
-                      {lang.label}
-                    </button>
-                  ))}
+                      {t('nav.inquire')}
+                    </Link>
+                    {logoUrl && <div className="flex-1 [&>button]:w-full [&>button]:py-4 [&>button]:rounded-2xl"><AIResumeModal /></div>}
+                  </div>
                 </div>
               </div>
             </div>

@@ -72,7 +72,7 @@ export default function Hero({ data }: { data?: any }) {
           {/* Main Title */}
           <motion.h1 
             variants={itemVariants}
-            className="text-6xl md:text-8xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/40 leading-tight"
+            className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tight mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/40 leading-tight px-4"
           >
             {data?.name || 'Sankalp Suman'}
           </motion.h1>
@@ -80,19 +80,19 @@ export default function Hero({ data }: { data?: any }) {
           {/* Subtitle */}
           <motion.p 
             variants={itemVariants}
-            className="text-xl md:text-2xl font-serif italic text-slate-400 mb-10 leading-relaxed max-w-2xl mx-auto"
+            className="text-lg md:text-2xl font-serif italic text-slate-400 mb-8 md:mb-10 leading-relaxed max-w-2xl mx-auto px-6"
           >
             {data?.title || 'Bridging the gap between Quality Assurance and Generative AI.'}
           </motion.p>
 
           {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <div className="flex flex-wrap items-center justify-center gap-4">
+          <motion.div variants={itemVariants} className="flex flex-col items-center justify-center gap-6 md:gap-8 px-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
               <a 
                 href="#projects"
-                className="group relative px-8 py-4 rounded-full bg-white text-space-950 font-bold overflow-hidden transition-all hover:scale-105 active:scale-95"
+                className="w-full sm:w-auto group relative px-8 py-4 rounded-full bg-white text-space-950 font-bold overflow-hidden transition-all hover:scale-105 active:scale-95 text-center"
               >
-                <span className="relative z-10 flex items-center gap-2">
+                <span className="relative z-10 flex items-center justify-center gap-2">
                   View My Universe <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -100,18 +100,18 @@ export default function Hero({ data }: { data?: any }) {
               
               <a 
                 href="#contact"
-                className="px-8 py-4 rounded-full bg-white/[0.05] border border-white/10 backdrop-blur-md text-white font-semibold transition-all hover:bg-white/[0.1] hover:border-white/20 active:scale-95"
+                className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/[0.05] border border-white/10 backdrop-blur-md text-white font-semibold transition-all hover:bg-white/[0.1] hover:border-white/20 active:scale-95 text-center"
               >
                 Initiate Contact
               </a>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-px bg-white/10 mx-2 hidden sm:block" />
+            <div className="flex items-center gap-3 w-full justify-center">
+              <div className="h-10 w-px bg-white/10 mx-2 hidden md:block" />
               
               {/* Feature Icons Group */}
-              <div className="flex items-center gap-3">
-                <AIResumeModal />
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+                <div className="scale-90 sm:scale-100"><AIResumeModal /></div>
                 
                 {settings?.linkedinUrl && (
                   <a 
