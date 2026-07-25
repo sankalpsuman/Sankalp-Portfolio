@@ -68,7 +68,7 @@ export default function PortfolioHome() {
 
   return (
     <PageTransition>
-      <div id="portfolio-home" className="bg-[#050816] selection:bg-brand/30 selection:text-white relative">
+      <div id="portfolio-home" className="bg-[#050816] selection:bg-brand/30 selection:text-white overflow-x-hidden relative">
         <BackgroundEffects active={welcomeDismissed} />
         <SEO />
         <Navbar />

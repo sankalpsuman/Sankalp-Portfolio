@@ -73,7 +73,7 @@ const LoadingFallback = () => {
   }, [progress, logs]);
 
   return (
-    <div className="min-h-screen bg-[#050816] flex flex-col items-center justify-center p-6 text-white font-sans overflow-hidden relative selection:bg-cyan-500/30">
+    <div className="min-h-[100svh] bg-[#050816] flex flex-col items-center justify-center p-6 text-white font-sans overflow-hidden relative selection:bg-cyan-500/30">
       {/* Decorative radial gradients for luxury feel */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand/10 blur-[80px] pointer-events-none rounded-full" />
       <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-cyan-500/5 blur-[90px] pointer-events-none rounded-full" />
@@ -301,8 +301,9 @@ export default function App() {
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Suspense>
-              <AIChatbot />
             </div>
+            
+            <AIChatbot />
           </ErrorBoundary>
         </LanguageProvider>
       </Router>

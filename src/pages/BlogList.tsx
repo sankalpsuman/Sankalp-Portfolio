@@ -46,7 +46,7 @@ export default function BlogList() {
 
   return (
     <PageTransition>
-      <div className="bg-[#050816] min-h-screen text-white flex flex-col">
+      <div className="bg-[#050816] min-h-[100svh] text-white flex flex-col">
          <SEO
            title={`${t('nav.blog')} | Sankalp Suman`}
            description="Insights on Quality Engineering, AI-driven automation, and modern software testing strategies."

@@ -20,7 +20,10 @@ export const BackgroundEffects: React.FC<{ active?: boolean }> = memo(({ active 
     }
 
     let resizeTimer: NodeJS.Timeout;
+    let lastWidth = window.innerWidth;
     const checkMobile = () => {
+      if (window.innerWidth === lastWidth && stars.length > 0) return;
+      lastWidth = window.innerWidth;
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       

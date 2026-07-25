@@ -83,7 +83,7 @@ export default function BlogDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050816] flex items-center justify-center text-white">
+      <div className="min-h-[100svh] bg-[#050816] flex items-center justify-center text-white">
         <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
       </div>
     );
@@ -98,7 +98,7 @@ export default function BlogDetail() {
 
   return (
     <PageTransition>
-      <div className="bg-[#050816] min-h-screen text-white">
+      <div className="bg-[#050816] min-h-[100svh] text-white">
          <SEO 
            title={tTitle}
            description={tExcerpt}

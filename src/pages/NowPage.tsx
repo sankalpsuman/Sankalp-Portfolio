@@ -37,7 +37,7 @@ export default function NowPage() {
 
   return (
     <PageTransition>
-      <div className="bg-[#050816] min-h-screen text-white">
+      <div className="bg-[#050816] min-h-[100svh] text-white">
          <Navbar />
          
          <header className="pt-40 pb-20 px-4 relative overflow-hidden">

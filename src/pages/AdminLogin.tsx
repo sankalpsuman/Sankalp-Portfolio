@@ -65,7 +65,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050816] flex items-center justify-center p-4">
+    <div className="min-h-[100svh] bg-[#050816] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_50%)]"></div>
       
       <motion.div 

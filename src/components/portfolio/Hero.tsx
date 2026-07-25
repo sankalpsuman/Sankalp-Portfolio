@@ -41,7 +41,7 @@ export default function Hero({ data }: { data?: any }) {
   };
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+    <section id="hero" className="relative min-h-[100svh] flex items-center justify-center overflow-hidden pt-20">
       <BackgroundEffects />
       
       {/* Cinematic Centerpiece Overlay */}
