@@ -12,12 +12,12 @@ export async function generateContentWithFallback(
   aiInstance: GoogleGenAI,
   params: any
 ): Promise<any> {
-  const requestedModel = params.model || "gemini-3.5-flash";
+  const requestedModel = params.model || "gemini-3.1-flash";
   
   // Defined list of all the latest models in use from top (highest quality/pro) to low (lightest/flash)
   const latestModels = [
-    "gemini-3.5-pro",
-    "gemini-3.5-flash",
+    "gemini-3.1-pro",
+    "gemini-3.1-flash",
     "gemini-3.1-pro",
     "gemini-3.1-flash",
     "gemini-3.1-flash-lite",

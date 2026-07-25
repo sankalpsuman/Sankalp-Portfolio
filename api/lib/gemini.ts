@@ -117,11 +117,11 @@ Respond with standard JSON matching this schema format. Return ONLY raw JSON sta
 
   const coreGenerationPromise = (async () => {
     const ai = getGeminiClient();
-    const requestedModel = optimizedParams.model || "gemini-3.5-flash";
+    const requestedModel = optimizedParams.model || "gemini-3.1-flash";
     
     // Defined list of all the latest models in use from top (highest quality/pro) to low (lightest/flash)
     const latestModels = [
-      "gemini-3.5-flash",
+      "gemini-3.1-flash",
       "gemini-3.1-flash-lite",
       "gemini-3.1-pro-preview",
       "gemini-2.5-flash",

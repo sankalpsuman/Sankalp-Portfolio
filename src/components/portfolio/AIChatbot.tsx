@@ -111,7 +111,7 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
 }`;
 
   const response = await generateContentWithFallback(ai, {
-    model: "gemini-3.5-flash",
+    model: "gemini-3.1-flash",
     contents: `${systemPrompt}\n\nClient Conversation History:\n${conversationHistory}\n\nAssess this conversation, and respond in the required JSON format. Provide the next reply.`,
     config: {
       responseMimeType: "application/json",
@@ -744,7 +744,7 @@ Please make sure your server environment variables are configured (such as **GEM
             {/* Messages Area / Scheduler view */}
             <div className="flex-1 flex flex-col min-h-0 relative">
               {showExitForm ? (
-                <div className="p-6 flex-1 overflow-y-auto flex flex-col justify-center bg-[#0b0e1a]/50 text-white" id="chatbot-exit-form-container">
+                <div className="p-6 flex-1 overflow-y-auto overscroll-none flex flex-col justify-center bg-[#0b0e1a]/50 text-white" id="chatbot-exit-form-container">
                   {submitExitSuccess ? (
                     <motion.div
                       initial={{ scale: 0.9, opacity: 0 }}
@@ -847,7 +847,7 @@ Please make sure your server environment variables are configured (such as **GEM
                   )}
                 </div>
               ) : showScheduler ? (
-                <div className="p-5 flex-1 overflow-y-auto bg-[#0b0e1a]/50 text-white">
+                <div className="p-5 flex-1 overflow-y-auto overscroll-none bg-[#0b0e1a]/50 text-white">
                   <div className="flex justify-between items-center mb-4">
                     <h5 className="font-semibold text-sm flex items-center gap-1.5">
                       <Calendar className="text-brand" size={16} />
@@ -931,7 +931,7 @@ Please make sure your server environment variables are configured (such as **GEM
               ) : (
                 <>
                   {/* Messages Scroll Map */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar flex flex-col" id="chatbot-messages-holder">
+                  <div className="flex-1 overflow-y-auto overscroll-none p-4 space-y-4 custom-scrollbar flex flex-col" id="chatbot-messages-holder">
                     {messages.map((m, index) => {
                       if (m.role === 'system') {
                         return (
