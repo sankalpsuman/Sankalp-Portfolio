@@ -5,11 +5,14 @@ import { motion } from 'motion/react';
 
 interface AvailabilityData {
   openToWork: boolean;
-  openToRemote: boolean;
-  openToGermany: boolean;
-  openToUSA: boolean;
-  openToContract: boolean;
-  openToFreelance: boolean;
+  globalOpportunities: boolean;
+  openAcrossIndia: boolean;
+  remoteFriendly: boolean;
+  hybrid: boolean;
+  onsite: boolean;
+  relocationAvailable: boolean;
+  contractConsulting: boolean;
+  fullTimeRoles: boolean;
   note?: string;
   lastUpdated?: string;
 }
@@ -17,12 +20,15 @@ interface AvailabilityData {
 export default function AvailabilityEditor() {
   const [data, setData] = useState<AvailabilityData>({
     openToWork: true,
-    openToRemote: true,
-    openToGermany: true,
-    openToUSA: false,
-    openToContract: true,
-    openToFreelance: true,
-    note: 'Actively searching for Lead QA Automation or DevOps Engineering contracts.',
+    globalOpportunities: true,
+    openAcrossIndia: true,
+    remoteFriendly: true,
+    hybrid: true,
+    onsite: true,
+    relocationAvailable: true,
+    contractConsulting: true,
+    fullTimeRoles: true,
+    note: 'Actively exploring leadership roles in QA, Test Automation, and AI-driven Quality Engineering.',
     lastUpdated: new Date().toISOString().split('T')[0]
   });
   const [loading, setLoading] = useState(true);
@@ -34,9 +40,22 @@ export default function AvailabilityEditor() {
   useEffect(() => {
     async function load() {
       try {
-        const docData = await getDocument<AvailabilityData>(docPath);
+        const docData = await getDocument<any>(docPath);
         if (docData) {
-          setData(docData);
+          // Map fields with defaults for migration
+          setData({
+            openToWork: docData.openToWork ?? true,
+            globalOpportunities: docData.globalOpportunities ?? true,
+            openAcrossIndia: docData.openAcrossIndia ?? true,
+            remoteFriendly: docData.remoteFriendly ?? docData.openToRemote ?? true,
+            hybrid: docData.hybrid ?? true,
+            onsite: docData.onsite ?? true,
+            relocationAvailable: docData.relocationAvailable ?? docData.openToUSA ?? true,
+            contractConsulting: docData.contractConsulting ?? docData.openToContract ?? true,
+            fullTimeRoles: docData.fullTimeRoles ?? true,
+            note: docData.note || 'Actively exploring leadership roles in QA, Test Automation, and AI-driven Quality Engineering.',
+            lastUpdated: docData.lastUpdated
+          });
         }
       } catch (e) {
         console.warn('Could not load availability settings:', e);
@@ -92,7 +111,7 @@ export default function AvailabilityEditor() {
         <div>
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-500" />
-            Recruiter Availability Toggles
+            Recruiter Hub Management
           </h2>
           <p className="text-xs text-gray-500">Configure search parameters and status updates</p>
         </div>
@@ -118,12 +137,15 @@ export default function AvailabilityEditor() {
 
         <div className="space-y-3">
           {[
-            { key: 'openToWork' as const, label: 'Open To Work / Active Job Search' },
-            { key: 'openToRemote' as const, label: 'Open To Remote Relocation' },
-            { key: 'openToGermany' as const, label: 'Open To Germany Onsite/Hybrid' },
-            { key: 'openToUSA' as const, label: 'Open To United States Opportunities' },
-            { key: 'openToContract' as const, label: 'Open To Contract Enlistments' },
-            { key: 'openToFreelance' as const, label: 'Open To Freelance & Advisory gigs' }
+            { key: 'openToWork' as const, label: 'Actively Open to Work' },
+            { key: 'globalOpportunities' as const, label: 'Open to Global Opportunities' },
+            { key: 'openAcrossIndia' as const, label: 'Open Across India' },
+            { key: 'remoteFriendly' as const, label: 'Remote Friendly' },
+            { key: 'hybrid' as const, label: 'Hybrid Availability' },
+            { key: 'onsite' as const, label: 'Onsite Availability' },
+            { key: 'relocationAvailable' as const, label: 'Relocation Available' },
+            { key: 'contractConsulting' as const, label: 'Contract / Consulting' },
+            { key: 'fullTimeRoles' as const, label: 'Full-Time Roles' }
           ].map((item) => (
             <label
               key={item.key}
@@ -141,13 +163,13 @@ export default function AvailabilityEditor() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Short recuiter note status</label>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Professional Career Summary (Recruiter Hub)</label>
           <textarea
-            rows={2}
+            rows={3}
             value={data.note || ''}
             onChange={(e) => setData({ ...data, note: e.target.value })}
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500"
-            placeholder="Introduce active contracts or notices..."
+            placeholder="e.g. Actively exploring leadership roles in QA, Test Automation, and AI-driven Quality Engineering..."
           />
         </div>
 
