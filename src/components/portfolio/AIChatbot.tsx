@@ -201,7 +201,7 @@ export const AIChatbot: React.FC = () => {
     // If the session was cleared or messages are empty, initialize a brand new session/session id
     if (!messages || messages.length === 0) {
       const savedSessionId = `session_${Math.random().toString(36).substring(2, 11)}_${Date.now().toString(36)}`;
-      localStorage.setItem('portfolio_chatbot_session_id', savedSessionId);
+      sessionStorage.setItem('portfolio_chatbot_session_id', savedSessionId);
       setSessionId(savedSessionId);
       
       const fresh: ChatMessage[] = [
@@ -216,7 +216,7 @@ How can I help you today?`,
         }
       ];
       setMessages(fresh);
-      localStorage.setItem('portfolio_chatbot_history', JSON.stringify(fresh));
+      sessionStorage.setItem('portfolio_chatbot_history', JSON.stringify(fresh));
     }
     setIsOpen(true);
     setIsMinimized(false);
@@ -224,9 +224,9 @@ How can I help you today?`,
 
   const handleDirectClose = () => {
     // Clear storage to force fresh session on next open
-    localStorage.removeItem('portfolio_chatbot_history');
-    localStorage.removeItem('portfolio_chatbot_lead');
-    localStorage.removeItem('portfolio_chatbot_session_id');
+    sessionStorage.removeItem('portfolio_chatbot_history');
+    sessionStorage.removeItem('portfolio_chatbot_lead');
+    sessionStorage.removeItem('portfolio_chatbot_session_id');
 
     // Reset states
     setMessages([]);
@@ -257,7 +257,7 @@ How can I help you today?`,
     setLeadData(mergedLead);
 
     // Save to sync
-    localStorage.setItem('portfolio_chatbot_lead', JSON.stringify(mergedLead));
+    sessionStorage.setItem('portfolio_chatbot_lead', JSON.stringify(mergedLead));
 
     try {
       await fetch('/api/chat/email', {
@@ -279,9 +279,9 @@ How can I help you today?`,
 
     setTimeout(() => {
       // Clear storage
-      localStorage.removeItem('portfolio_chatbot_history');
-      localStorage.removeItem('portfolio_chatbot_lead');
-      localStorage.removeItem('portfolio_chatbot_session_id');
+      sessionStorage.removeItem('portfolio_chatbot_history');
+      sessionStorage.removeItem('portfolio_chatbot_lead');
+      sessionStorage.removeItem('portfolio_chatbot_session_id');
 
       // Reset
       setMessages([]);
@@ -301,15 +301,15 @@ How can I help you today?`,
   // Initialize session and history
   useEffect(() => {
     // Session ID setup
-    let savedSessionId = localStorage.getItem('portfolio_chatbot_session_id');
+    let savedSessionId = sessionStorage.getItem('portfolio_chatbot_session_id');
     if (!savedSessionId) {
       savedSessionId = `session_${Math.random().toString(36).substring(2, 11)}_${Date.now().toString(36)}`;
-      localStorage.setItem('portfolio_chatbot_session_id', savedSessionId);
+      sessionStorage.setItem('portfolio_chatbot_session_id', savedSessionId);
     }
     setSessionId(savedSessionId);
 
     // Chat History setup
-    const savedHistory = localStorage.getItem('portfolio_chatbot_history');
+    const savedHistory = sessionStorage.getItem('portfolio_chatbot_history');
     if (savedHistory) {
       try {
         setMessages(JSON.parse(savedHistory));
@@ -321,7 +321,7 @@ How can I help you today?`,
     }
 
     // Lead data setup
-    const savedLead = localStorage.getItem('portfolio_chatbot_lead');
+    const savedLead = sessionStorage.getItem('portfolio_chatbot_lead');
     if (savedLead) {
       try {
         const parsed = JSON.parse(savedLead);
@@ -359,9 +359,9 @@ How can I help you today?`,
 
   // Save changes to history and Firestore
   const syncChatState = async (updatedMessages: ChatMessage[], updatedLead?: LeadData) => {
-    localStorage.setItem('portfolio_chatbot_history', JSON.stringify(updatedMessages));
+    sessionStorage.setItem('portfolio_chatbot_history', JSON.stringify(updatedMessages));
     if (updatedLead) {
-      localStorage.setItem('portfolio_chatbot_lead', JSON.stringify(updatedLead));
+      sessionStorage.setItem('portfolio_chatbot_lead', JSON.stringify(updatedLead));
     }
 
     // Direct Firestore write
@@ -392,7 +392,7 @@ How can I help you today?`,
       }
     ];
     setMessages(fresh);
-    localStorage.setItem('portfolio_chatbot_history', JSON.stringify(fresh));
+    sessionStorage.setItem('portfolio_chatbot_history', JSON.stringify(fresh));
   };
 
   // Scroll to bottom (optimized speed and visual flow during live printing)
@@ -603,8 +603,8 @@ Please make sure your server environment variables are configured (such as **GEM
 
   const handleClearHistory = () => {
     if (window.confirm('Are you sure you want to clear the conversation and restart?')) {
-      localStorage.removeItem('portfolio_chatbot_history');
-      localStorage.removeItem('portfolio_chatbot_lead');
+      sessionStorage.removeItem('portfolio_chatbot_history');
+      sessionStorage.removeItem('portfolio_chatbot_lead');
       setLeadData({});
       setIsRecruiter(false);
       initializeFirstMessage();
