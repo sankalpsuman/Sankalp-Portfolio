@@ -2,16 +2,17 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
-  --font-display: "Space Grotesk", sans-serif;
+  --font-serif: "Cormorant Garamond", serif;
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  
+  --color-space-950: #020617;
+  --color-space-900: #0f172a;
+  --color-nebula-purple: #7c3aed;
+  --color-nebula-blue: #2563eb;
+  --color-star-gold: #fbbf24;
   --color-brand: var(--brand-primary, #3b82f6);
-}
-
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
 }
 
 :root {
@@ -25,68 +26,24 @@ html {
 }
 
 body {
-  @apply bg-[#050816] text-white antialiased selection:bg-brand/30 selection:text-white;
+  @apply bg-[#020617] text-slate-200 antialiased selection:bg-brand/30 selection:text-white;
   font-family: var(--font-sans);
 }
 
-.markdown-body {
-  @apply text-gray-300 leading-relaxed;
-}
-
-.markdown-body h1 {
-  @apply text-3xl font-bold text-white mt-8 mb-4 font-display;
-}
-
-.markdown-body h2 {
-  @apply text-2xl font-bold text-white mt-8 mb-4 font-display;
-}
-
-.markdown-body h3 {
-  @apply text-xl font-bold text-white mt-6 mb-3 font-display;
-}
-
-.markdown-body p {
-  @apply mb-6 text-gray-300 leading-loose;
-}
-
-.markdown-body ul, .markdown-body ol {
-  @apply mb-6 ml-6 space-y-2;
-}
-
-.markdown-body ul {
-  @apply list-disc;
-}
-
-.markdown-body ol {
-  @apply list-decimal;
-}
-
-.markdown-body li {
-  @apply pl-2;
-}
-
-.markdown-body code {
-  @apply bg-white/10 px-1.5 py-0.5 rounded font-mono text-sm text-brand;
-}
-
-.markdown-body pre {
-  @apply bg-black/40 border border-white/10 rounded-2xl p-6 mb-8 overflow-x-auto;
-}
-
-.markdown-body pre code {
-  @apply bg-transparent p-0 text-gray-300;
-}
-
-.markdown-body blockquote {
-  @apply border-l-4 border-brand pl-6 italic my-8 text-gray-400;
-}
-
-.markdown-body img {
-  @apply rounded-3xl border border-white/5 my-8 shadow-2xl mx-auto;
-}
-
-.markdown-body a {
-  @apply text-brand font-semibold hover:underline;
+@layer utilities {
+  .glass-card {
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)];
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  }
+  
+  .nebula-glow {
+    background: radial-gradient(circle at center, var(--color-nebula-blue) 0%, transparent 70%);
+    filter: blur(100px);
+    opacity: 0.15;
+  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -111,8 +68,31 @@ body {
   display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-.scrollbar-none {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+/* Print Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #resume-content, #resume-content * {
+    visibility: visible;
+  }
+  #resume-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}
+
+.page-break-avoid {
+  page-break-inside: avoid;
+  break-inside: avoid;
 }

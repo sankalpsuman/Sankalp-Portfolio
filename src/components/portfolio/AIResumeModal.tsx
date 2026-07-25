@@ -8,6 +8,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 import { Tooltip } from './Tooltip';
+import { RESUME_CONFIG, RESUME_STYLES } from '../../constants/resumeStyles';
 
 interface ResumeData {
   personalInfo: {
@@ -74,7 +75,7 @@ export const AIResumeModal: React.FC = () => {
     setError(null);
     try {
       // 1. Fetch current portfolio data for context
-      const [hero, about, contact, experience, projects, skills, certifications, blogs, achievements, qaMetrics, aiTools, impactStories, timeline] = await Promise.all([
+      const [hero, about, contact, experience, projects, skills, certifications, blogs, achievements, qaMetrics, aiTools, impactStories, timeline] = (await Promise.all([
         getDocument(HERO_DOC),
         getDocument(ABOUT_DOC),
         getDocument(CONTACT_DOC),
@@ -88,7 +89,7 @@ export const AIResumeModal: React.FC = () => {
         getCollection('aiTools'),
         getCollection('impactStories'),
         getCollection('timeline')
-      ]);
+      ])) as any[];
 
       const portfolioData = {
         personalInfo: {
@@ -142,25 +143,92 @@ export const AIResumeModal: React.FC = () => {
     if (!resumeRef.current) return;
     setIsExporting(true);
     try {
-      const canvas = await html2canvas(resumeRef.current, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
+      await document.fonts.ready;
       
-      const imgData = canvas.toDataURL('image/png');
+      const container = resumeRef.current;
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
       
-      const imgProps = pdf.getImageProperties(imgData);
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const marginMm = 15;
+      const contentWidthMm = pdfWidth - (2 * marginMm);
+      const pxToMm = contentWidthMm / RESUME_CONFIG.WIDTH;
+
+      // Identify blocks for capturing
+      const blocks: HTMLElement[] = [];
+      Array.from(container.children).forEach(child => {
+        const htmlChild = child as HTMLElement;
+        if (htmlChild.classList.contains('print:hidden')) return;
+
+        // If it's a list container, we want its items as separate blocks
+        const listContainer = htmlChild.querySelector('.space-y-6, .space-y-4');
+        if (listContainer) {
+          const title = htmlChild.querySelector('h2');
+          if (title) blocks.push(title.parentElement || title);
+          
+          Array.from(listContainer.children).forEach(item => {
+            blocks.push(item as HTMLElement);
+          });
+        } else {
+          blocks.push(htmlChild);
+        }
+      });
+
+      let currentYMm = marginMm;
+
+      for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        
+        // Capture block at design width to preserve layout
+        const canvas = await html2canvas(block, {
+          scale: 4, // High resolution
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          width: RESUME_CONFIG.WIDTH,
+          onclone: (clonedDoc) => {
+            // Find the block in the cloned doc
+            // Since we captured 'block', the clone will represent that element
+            const clonedBlock = clonedDoc.body.firstChild as HTMLElement;
+            if (clonedBlock) {
+              clonedBlock.style.width = `${RESUME_CONFIG.WIDTH}px`;
+              clonedBlock.style.paddingLeft = '64px';
+              clonedBlock.style.paddingRight = '64px';
+              clonedBlock.style.margin = '0';
+              clonedBlock.style.boxSizing = 'border-box';
+              
+              // Ensure fonts are applied in the clone
+              clonedBlock.style.fontFamily = 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif';
+              const sansElements = clonedBlock.querySelectorAll('.font-sans');
+              sansElements.forEach(el => {
+                (el as HTMLElement).style.fontFamily = 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif';
+              });
+            }
+          }
+        });
+
+        const imgHeightMm = (canvas.height * pxToMm) / 4;
+
+        // Check for page break
+        if (currentYMm + imgHeightMm > pdfHeight - marginMm && i > 0) {
+          pdf.addPage();
+          currentYMm = marginMm;
+        }
+
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        pdf.addImage(imgData, 'PNG', marginMm, currentYMm, contentWidthMm, imgHeightMm, undefined, 'FAST');
+        
+        // Add spacing after blocks (matching mb-8, space-y-6, space-y-4)
+        const isHeader = i === 0;
+        const isSectionTitle = block.tagName === 'H2' || block.querySelector('h2');
+        const spacingPx = isHeader ? 32 : (isSectionTitle ? 8 : 16);
+        currentYMm += imgHeightMm + (spacingPx * pxToMm);
+      }
+
       pdf.save(`Sankalp_Suman_Resume_${selectedLang.toUpperCase()}.pdf`);
     } catch (err) {
       console.error('PDF Export error:', err);
@@ -200,7 +268,7 @@ export const AIResumeModal: React.FC = () => {
                   opacity: 1, 
                   scale: 0.8, 
                   x: 'calc(50vw - 180px)', 
-                  y: 'calc(50vh - 80px)',
+                  y: 'calc(50vh - 100px)',
                   width: '320px',
                 } : { 
                   opacity: 1, 
@@ -209,13 +277,14 @@ export const AIResumeModal: React.FC = () => {
                   y: 0,
                   width: '100%',
                 }}
+                whileHover={isMinimized ? { scale: 0.82 } : {}}
                 exit={{ opacity: 0, scale: 0.95, y: 30 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300, bounce: 0.2 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   if (isMinimized) setIsMinimized(false);
                 }}
-                className={`relative w-full max-w-4xl max-h-[92vh] bg-[#0d122b] border border-white/20 rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col z-[1000] ring-1 ring-white/10 pointer-events-auto ${isMinimized ? 'cursor-pointer hover:scale-[0.82] transition-transform' : ''}`}
+                className={`relative w-full max-w-4xl max-h-[92vh] bg-[#0d122b] border border-white/20 rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col z-[1000] ring-1 ring-white/10 pointer-events-auto ${isMinimized ? 'cursor-pointer' : ''}`}
               >
               {/* Header */}
               <div className={`p-5 sm:p-8 border-b border-white/10 flex items-center justify-between bg-white/[0.03] ${isMinimized ? 'border-none h-full' : ''}`}>
@@ -347,66 +416,70 @@ export const AIResumeModal: React.FC = () => {
                     <div className="bg-white rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 overflow-x-auto">
                       <div 
                         ref={resumeRef}
-                        className="p-10 sm:p-16 text-[#1a1a1a] font-serif leading-relaxed bg-white mx-auto"
-                        style={{ minHeight: '1120px', width: '800px', maxWidth: '100%' }}
+                        id="resume-content"
+                        className={`${RESUME_STYLES.container} ${RESUME_STYLES.pagePadding} mx-auto print:p-0`}
+                        style={{ minHeight: `${RESUME_CONFIG.MIN_HEIGHT}px`, width: `${RESUME_CONFIG.WIDTH}px`, maxWidth: '100%' }}
                       >
                         {/* Header */}
-                        <div className="text-center space-y-2 border-b-2 border-[#000000] pb-6 mb-8">
-                          <h1 className="text-3xl font-bold uppercase tracking-tight text-[#000000]">{generatedResume.personalInfo.name}</h1>
-                          <p className="text-xl font-medium text-[#374151]">{generatedResume.personalInfo.title}</p>
-                          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-[#4b5563] font-sans">
+                        <div className={RESUME_STYLES.header.wrapper}>
+                          <h1 className={RESUME_STYLES.header.name}>{generatedResume.personalInfo.name}</h1>
+                          <p className={RESUME_STYLES.header.title}>{generatedResume.personalInfo.title}</p>
+                          <div className={RESUME_STYLES.header.contactRow}>
                             <span>{generatedResume.personalInfo.email}</span>
                             <span>{generatedResume.personalInfo.phone}</span>
                             <span>{generatedResume.personalInfo.location}</span>
                             {generatedResume.personalInfo.languages?.length > 0 && (
-                              <span className="text-xs italic text-[#6b7280]">
+                              <span className={RESUME_STYLES.header.languageTag}>
                                 • {generatedResume.personalInfo.languages.join(', ')}
                               </span>
                             )}
                           </div>
-                          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-[#4b5563] font-sans font-medium">
-                            {generatedResume.personalInfo.linkedin && <a href={generatedResume.personalInfo.linkedin} className="text-[#2563eb] hover:underline">LinkedIn</a>}
-                            {generatedResume.personalInfo.website && <a href={generatedResume.personalInfo.website} className="text-[#2563eb] hover:underline">Portfolio</a>}
+                          <div className={RESUME_STYLES.header.linksRow}>
+                            {generatedResume.personalInfo.linkedin && <a href={generatedResume.personalInfo.linkedin} className={RESUME_STYLES.header.link}>LinkedIn</a>}
+                            {generatedResume.personalInfo.website && <a href={generatedResume.personalInfo.website} className={RESUME_STYLES.header.link}>Portfolio</a>}
                           </div>
                         </div>
 
                         {/* Summary */}
-                        <div className="mb-8">
-                          <h2 className="text-lg font-bold uppercase border-b border-[#000000] mb-3 text-[#000000]">Professional Summary</h2>
-                          <p className="text-sm text-justify text-[#1a1a1a]">{generatedResume.personalInfo.summary}</p>
+                        <div className={`${RESUME_STYLES.sectionMargin} ${RESUME_STYLES.pageBreakAvoid}`}>
+                          <h2 className={RESUME_STYLES.section.title}>Professional Summary</h2>
+                          <p className={RESUME_STYLES.section.paragraph}>{generatedResume.personalInfo.summary}</p>
                         </div>
 
                         {/* Experience */}
-                        <div className="mb-8">
-                          <h2 className="text-lg font-bold uppercase border-b border-[#000000] mb-4 text-[#000000]">Work Experience</h2>
+                        <div className={RESUME_STYLES.sectionMargin}>
+                          <h2 className={RESUME_STYLES.section.title}>Work Experience</h2>
                           <div className="space-y-6">
                             {generatedResume.experience.map((exp, i) => (
-                              <div key={i} className="space-y-1">
-                                <div className="flex justify-between font-bold text-sm text-[#000000]">
+                              <div key={i} className={RESUME_STYLES.experience.item}>
+                                <div className={RESUME_STYLES.experience.roleRow}>
                                   <span>{exp.role}</span>
                                   <span>{exp.period}</span>
                                 </div>
-                                <div className="flex justify-between italic text-sm text-[#374151] mb-2">
+                                <div className={RESUME_STYLES.experience.companyRow}>
                                   <span>{exp.company}</span>
                                   <span>{exp.location}</span>
                                 </div>
-                                <ul className="list-disc ml-5 space-y-1 text-sm text-[#1a1a1a]">
+                                <div className={RESUME_STYLES.experience.bullets}>
                                   {exp.bullets.map((bullet, j) => (
-                                    <li key={j}>{bullet}</li>
+                                    <div key={j} className={RESUME_STYLES.experience.bulletItem}>
+                                      <span className={RESUME_STYLES.experience.bulletDot} />
+                                      <span className="flex-1">{bullet}</span>
+                                    </div>
                                   ))}
-                                </ul>
+                                </div>
                               </div>
                             ))}
                           </div>
                         </div>
 
                         {/* Skills */}
-                        <div className="mb-8">
-                          <h2 className="text-lg font-bold uppercase border-b border-[#000000] mb-4 text-[#000000]">Technical Skills</h2>
-                          <div className="grid grid-cols-1 gap-y-3">
+                        <div className={`${RESUME_STYLES.sectionMargin} ${RESUME_STYLES.pageBreakAvoid}`}>
+                          <h2 className={RESUME_STYLES.section.title}>Technical Skills</h2>
+                          <div className={RESUME_STYLES.skills.container}>
                             {generatedResume.skills.map((skill, i) => (
-                              <div key={i} className="text-sm text-[#1a1a1a]">
-                                <span className="font-bold text-[#000000]">{skill.category}: </span>
+                              <div key={i} className={RESUME_STYLES.skills.item}>
+                                <span className={RESUME_STYLES.skills.category}>{skill.category}: </span>
                                 <span>{skill.items.join(', ')}</span>
                               </div>
                             ))}
@@ -414,19 +487,19 @@ export const AIResumeModal: React.FC = () => {
                         </div>
 
                         {/* Projects */}
-                        <div className="mb-8">
-                          <h2 className="text-lg font-bold uppercase border-b border-[#000000] mb-4 text-[#000000]">Key Projects</h2>
+                        <div className={RESUME_STYLES.sectionMargin}>
+                          <h2 className={RESUME_STYLES.section.title}>Key Projects</h2>
                           <div className="space-y-4">
                             {generatedResume.projects.map((proj, i) => (
-                              <div key={i} className="space-y-1">
-                                <div className="flex justify-between font-bold text-sm text-[#000000]">
+                              <div key={i} className={RESUME_STYLES.projects.item}>
+                                <div className={RESUME_STYLES.projects.nameRow}>
                                   <span>{proj.name}</span>
-                                  {proj.link && <span className="text-[10px] font-normal font-sans italic text-[#4b5563]">{proj.link}</span>}
+                                  {proj.link && <span className={RESUME_STYLES.projects.link}>{proj.link}</span>}
                                 </div>
-                                <p className="text-sm italic text-[#374151]">{proj.role}</p>
-                                <p className="text-sm text-[#1a1a1a]">{proj.description}</p>
-                                <div className="text-[11px] font-sans text-[#4b5563]">
-                                  <span className="font-bold text-[#374151]">Stack: </span>{proj.techStack.join(', ')}
+                                <p className={RESUME_STYLES.projects.role}>{proj.role}</p>
+                                <p className={RESUME_STYLES.projects.description}>{proj.description}</p>
+                                <div className={RESUME_STYLES.projects.stack}>
+                                  <span className={RESUME_STYLES.projects.stackLabel}>Stack: </span>{proj.techStack.join(', ')}
                                 </div>
                               </div>
                             ))}
@@ -434,17 +507,17 @@ export const AIResumeModal: React.FC = () => {
                         </div>
 
                         {/* Education */}
-                        <div className="mb-8">
-                          <h2 className="text-lg font-bold uppercase border-b border-[#000000] mb-4 text-[#000000]">Education</h2>
+                        <div className={`${RESUME_STYLES.sectionMargin} ${RESUME_STYLES.pageBreakAvoid}`}>
+                          <h2 className={RESUME_STYLES.section.title}>Education</h2>
                           <div className="space-y-3">
                             {generatedResume.education.map((edu, i) => (
-                              <div key={i} className="flex justify-between text-sm text-[#1a1a1a]">
+                              <div key={i} className={RESUME_STYLES.education.item}>
                                 <div>
-                                  <span className="font-bold text-[#000000]">{edu.school}</span>
-                                  <span className="mx-2 text-[#4b5563]">•</span>
-                                  <span className="italic text-[#374151]">{edu.degree}</span>
+                                  <span className={RESUME_STYLES.education.school}>{edu.school}</span>
+                                  <span className={RESUME_STYLES.education.separator}>•</span>
+                                  <span className={RESUME_STYLES.education.degree}>{edu.degree}</span>
                                 </div>
-                                <span className="font-bold text-[#000000]">{edu.period}</span>
+                                <span className={RESUME_STYLES.education.period}>{edu.period}</span>
                               </div>
                             ))}
                           </div>
@@ -452,18 +525,21 @@ export const AIResumeModal: React.FC = () => {
 
                         {/* Additional Sections */}
                         {generatedResume.additionalSections?.map((section, i) => (
-                          <div key={i} className="mb-8">
-                            <h2 className="text-lg font-bold uppercase border-b border-[#000000] mb-3 text-[#000000]">{section.title}</h2>
-                            <ul className="list-disc ml-5 space-y-1 text-sm text-[#1a1a1a]">
+                          <div key={i} className={RESUME_STYLES.sectionMargin}>
+                            <h2 className={RESUME_STYLES.section.title}>{section.title}</h2>
+                            <div className={RESUME_STYLES.experience.bullets}>
                               {section.bullets.map((bullet, j) => (
-                                <li key={j}>{bullet}</li>
+                                <div key={j} className={RESUME_STYLES.experience.bulletItem}>
+                                  <span className={RESUME_STYLES.experience.bulletDot} />
+                                  <span className="flex-1">{bullet}</span>
+                                </div>
                               ))}
-                            </ul>
+                            </div>
                           </div>
                         ))}
                         
                         {/* Footer Diagnostics (Optional/Hidden for Print) */}
-                        <div className="mt-12 pt-4 border-t border-[#f3f4f6] text-[8px] text-[#9ca3af] font-sans text-center print:hidden">
+                        <div className={RESUME_STYLES.footer}>
                           Generated by Sankalp Suman's AI Resume Synthesizer • {new Date().toLocaleDateString()}
                         </div>
                       </div>

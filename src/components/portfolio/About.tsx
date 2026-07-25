@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import Section from './Section';
 import { motion } from 'motion/react';
 import { getDocument, ABOUT_DOC } from '../../services/firestoreService';
-import { Zap, Award, Cpu } from 'lucide-react';
+import { Zap, Award, Cpu, Sparkles, Target, Rocket } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 import { AICommandCenterPortrait } from './AICommandCenterPortrait';
+import { cn } from '../../lib/utils';
 
 interface Metric {
   label: string;
@@ -18,13 +19,11 @@ interface AboutData {
   videoUrl?: string;
 }
 
-// 2026 Interactive high-tech achievement counter with viewport detection
 const AnimatedCounter: React.FC<{ value: string }> = ({ value }) => {
   const [count, setCount] = useState(0);
   const elementRef = useRef<HTMLSpanElement>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
 
-  // Extract digits for counting and keep chars like '+', '%' as static suffixes
   const numericStr = value.replace(/[^0-9]/g, '');
   const suffix = value.replace(/[0-9]/g, '');
   const target = parseInt(numericStr, 10);
@@ -38,14 +37,13 @@ const AnimatedCounter: React.FC<{ value: string }> = ({ value }) => {
         if (entry.isIntersecting && !hasAnimated) {
           setHasAnimated(true);
           let startTimestamp: number | null = null;
-          const duration = 1500; // Count over 1.5s
+          const duration = 2000;
 
           const animate = (timestamp: number) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            // Quadratic easing out: f(t) = t * (2 - t)
-            const easeOutQuad = progress * (2 - progress);
-            setCount(Math.floor(easeOutQuad * target));
+            const easeOutExpo = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+            setCount(Math.floor(easeOutExpo * target));
 
             if (progress < 1) {
               requestAnimationFrame(animate);
@@ -59,16 +57,11 @@ const AnimatedCounter: React.FC<{ value: string }> = ({ value }) => {
       { threshold: 0.1 }
     );
 
-    if (elementRef.current) {
-      observer.observe(elementRef.current);
-    }
-
+    if (elementRef.current) observer.observe(elementRef.current);
     return () => observer.disconnect();
   }, [target, hasAnimated]);
 
-  if (isNaN(target)) {
-    return <span>{value}</span>;
-  }
+  if (isNaN(target)) return <span>{value}</span>;
 
   return (
     <span ref={elementRef} className="tabular-nums">
@@ -113,78 +106,118 @@ export default function About({ active = true }: { active?: boolean }) {
 
   const metrics = data?.metrics || DEFAULT_METRICS;
 
-  const getMetricLabel = (label: string) => {
+  const getMetricIcon = (label: string) => {
     const lower = label.toLowerCase();
-    if (lower.includes('experience')) return t('about.metric_years');
-    if (lower.includes('projects')) return t('about.metric_projects');
-    if (lower.includes('teams')) return t('about.metric_teams');
-    if (lower.includes('acceleration') || lower.includes('qae') || lower.includes('qa')) return t('about.metric_acceleration');
-    return label;
+    if (lower.includes('experience')) return Rocket;
+    if (lower.includes('projects')) return Target;
+    if (lower.includes('teams')) return Award;
+    if (lower.includes('acceleration')) return Zap;
+    return Sparkles;
   };
 
   return (
-    <Section id="about" title={t('about.title')} subtitle={t('about.subtitle')}>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-        {/* Left: Content */}
-        <div className="space-y-8">
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="space-y-6"
-          >
-            <h3 className="text-2xl lg:text-3xl font-bold text-white leading-tight">
-              {t('about.heading_bold')}{' '}
-              <span className="text-brand">{t('about.heading_mid')}</span>{' '}
-              {t('about.heading_and')}{' '}
-              <span className="text-purple-400">{t('about.heading_end')}</span>
-            </h3>
-            <p className="text-gray-400 text-lg leading-relaxed whitespace-pre-line">
-              {getLocalizedField(data, 'content', 'about.content')}
-            </p>
-          </motion.div>
+    <Section 
+      id="about" 
+      title={t('about.title')} 
+      subtitle={t('about.subtitle')}
+      className="relative overflow-hidden"
+    >
+      {/* Decorative Orbs */}
+      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-600/5 blur-[100px] rounded-full pointer-events-none" />
 
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            {metrics.map((metric, idx) => (
-              <motion.div
-                key={metric.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="p-6 bg-white/[0.01] backdrop-blur-md border border-white/5 rounded-2xl hover:border-brand/35 hover:bg-white/[0.03] transition-all group relative overflow-hidden shadow-lg select-none"
-              >
-                {/* Visual Glass Reflection Glare */}
-                <div className="absolute top-0 -left-1/2 w-1/4 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-25 group-hover:left-[150%] transition-all duration-[1000ms] ease-out pointer-events-none" />
-
-                <div className="text-3xl font-black text-white mb-1 group-hover:text-brand transition-colors font-display">
-                  <AnimatedCounter value={metric.value} />
-                </div>
-                <div className="text-xs text-gray-500 uppercase tracking-widest font-mono">
-                  {getMetricLabel(metric.label)}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right: Visual - Cinematic AI Command Center Showcase */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+        {/* Left: Interactive Visual */}
         <motion.div
-           initial={{ opacity: 0, y: 15 }}
-           whileInView={{ opacity: 1, y: 0 }}
+           initial={{ opacity: 0, scale: 0.9 }}
+           whileInView={{ opacity: 1, scale: 1 }}
            viewport={{ once: true }}
-           transition={{ duration: 0.8, ease: "easeOut" }}
-           className="relative flex justify-center items-center"
+           transition={{ duration: 1 }}
+           className="lg:col-span-5 relative"
         >
-          <div className="w-full max-w-[460px] lg:max-w-none">
+          <div className="relative z-10">
             <AICommandCenterPortrait 
               active={active} 
               imageUrl={data?.imageUrl} 
               videoUrl={data?.videoUrl} 
             />
           </div>
+          {/* Subtle reflection below */}
+          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-gradient-to-t from-blue-500/10 to-transparent blur-2xl opacity-50" />
         </motion.div>
+
+        {/* Right: Content & Metrics */}
+        <div className="lg:col-span-7 space-y-12">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-6"
+          >
+            <h3 className="text-3xl md:text-5xl font-bold text-white leading-tight">
+              {t('about.heading_bold')}{' '}
+              <span className="text-blue-500 font-serif italic font-normal">{t('about.heading_mid')}</span>{' '}
+              {t('about.heading_and')}{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">{t('about.heading_end')}</span>
+            </h3>
+            <p className="text-slate-400 text-lg md:text-xl leading-relaxed font-light">
+              {getLocalizedField(data, 'content', 'about.content')}
+            </p>
+          </motion.div>
+
+          {/* Metrics Bento Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {metrics.map((metric, idx) => {
+              const Icon = getMetricIcon(metric.label);
+              return (
+                <motion.div
+                  key={metric.label}
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="group relative glass-card p-6 rounded-3xl overflow-hidden"
+                >
+                  <div className="relative z-10 flex items-start justify-between">
+                    <div className="space-y-2">
+                      <div className="text-4xl font-black text-white group-hover:text-blue-400 transition-colors">
+                        <AnimatedCounter value={metric.value} />
+                      </div>
+                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+                        {metric.label}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 text-slate-400 group-hover:text-blue-400 group-hover:bg-blue-400/10 group-hover:border-blue-400/20 transition-all">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                  </div>
+                  {/* Background decoration */}
+                  <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-blue-500/5 blur-2xl group-hover:bg-blue-500/10 transition-all" />
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Call to action or signature */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+            className="flex items-center gap-6 pt-4 border-t border-white/5"
+          >
+            <div className="flex -space-x-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-space-950 bg-slate-800 flex items-center justify-center text-[10px] font-bold text-white shadow-xl">
+                  {i === 3 ? '50+' : <Sparkles className="w-4 h-4 text-blue-400" />}
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-slate-500 font-medium">
+              Trusted by enterprise teams worldwide <br/> for high-integrity QA delivery.
+            </p>
+          </motion.div>
+        </div>
       </div>
     </Section>
   );

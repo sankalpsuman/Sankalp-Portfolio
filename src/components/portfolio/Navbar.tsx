@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cpu, Menu, X, Sparkles, Globe, ChevronDown } from 'lucide-react';
+import { Cpu, Menu, X, Sparkles, Globe, Linkedin, Github } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getDocument } from '../../services/firestoreService';
 import { throttle } from '../../lib/performance';
 import { useLanguage } from '../../hooks/useLanguage';
+import { AIResumeModal } from './AIResumeModal';
 
 const NAV_LINKS = [
   { label: 'ABOUT', href: '/#about', type: 'anchor', key: 'about' },
@@ -34,6 +35,7 @@ export default function Navbar() {
   
   const { language, setLanguage, t } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadSettings() {
@@ -50,14 +52,13 @@ export default function Navbar() {
 
     const observerOptions = {
       root: null,
-      rootMargin: '-50% 0px -40% 0px', // More centered detection for active section
+      rootMargin: '-50% 0px -40% 0px',
       threshold: 0,
     };
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
       if (isNavigating) return;
       entries.forEach((entry) => {
-        // We only update if the user isn't actively clicking a nav link
         if (entry.isIntersecting) {
           setActiveSection(entry.target.id);
         }
@@ -66,9 +67,7 @@ export default function Navbar() {
 
     const observer = new IntersectionObserver(observerCallback, observerOptions);
     
-    // Only observe if we are on the home page
-    if (location.pathname === '/') {
-      // Observe all logical sections
+    if (location.pathname === '/' || location.pathname === `/${language}`) {
       const sections = ['hero', 'about', 'career-journey', 'skills', 'ai-playground', 'projects', 'contact'];
       sections.forEach(id => {
         const el = document.getElementById(id);
@@ -81,222 +80,188 @@ export default function Navbar() {
       window.removeEventListener('scroll', handleScroll);
       observer.disconnect();
     };
-  }, [location.pathname]);
+  }, [location.pathname, isNavigating, language]);
 
-  const scrollToAnchor = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href.startsWith('/#')) {
-      const targetId = href.substring(2);
-      
-      // Dispatch custom event to mount the lazy-loaded section immediately
-      window.dispatchEvent(new CustomEvent('force-section-visible', { detail: targetId }));
+  const scrollToAnchor = useCallback((e: React.MouseEvent, href: string) => {
+    const targetId = href.includes('#') ? href.split('#')[1] : '';
+    if (!targetId) return;
 
-      if (location.pathname === '/') {
-        e.preventDefault();
-        
-        // Slight delay to allow the LazySection to mount the child in DOM
-        setTimeout(() => {
-          const element = document.getElementById(targetId);
-          if (element) {
-            setIsNavigating(true);
-            setActiveSection(targetId);
-            element.scrollIntoView({ behavior: 'smooth' });
-            
-            // Sync address bar hash without full page reload
-            window.history.pushState(null, '', `/#${targetId}`);
-
-            setTimeout(() => setIsNavigating(false), 1000);
-          }
-        }, 60);
-        
-        setMobileMenuOpen(false);
+    if (location.pathname === '/' || location.pathname === `/${language}`) {
+      e.preventDefault();
+      const element = document.getElementById(targetId);
+      if (element) {
+        setIsNavigating(true);
+        setActiveSection(targetId);
+        element.scrollIntoView({ behavior: 'smooth' });
+        window.history.pushState(null, '', href);
+        setTimeout(() => setIsNavigating(false), 1000);
       }
+      setMobileMenuOpen(false);
+    } else {
+      e.preventDefault();
+      navigate(href);
+      setMobileMenuOpen(false);
     }
-  };
+  }, [location.pathname, language, navigate]);
 
   return (
     <nav 
       className={cn(
         "fixed top-0 left-0 w-full z-[100] transition-all duration-500",
-        scrolled ? "py-4 bg-[#050816]/70 backdrop-blur-xl border-b border-white/5" : "py-8 bg-transparent"
+        scrolled ? "py-4" : "py-8"
       )}
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 group relative">
-          <div className="w-10 h-10 bg-brand rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-[0_0_20px_rgba(var(--brand-primary-rgb),0.3)] overflow-hidden">
-            {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-            ) : (
-              <Cpu className="w-6 h-6 text-white" />
-            )}
+      <div className={cn(
+        "max-w-7xl mx-auto px-4 sm:px-6 transition-all duration-500 flex items-center justify-between",
+        scrolled && "max-w-4xl"
+      )}>
+        <div className={cn(
+          "w-full flex items-center justify-between px-4 py-2 transition-all duration-500",
+          scrolled ? "glass-card rounded-full" : "bg-transparent"
+        )}>
+          {/* Logo */}
+          <Link 
+            to="/" 
+            className="flex items-center gap-3 group relative px-3 py-2 rounded-full hover:bg-white/5 transition-colors"
+          >
+            <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-[0_0_20px_rgba(37,99,235,0.4)] overflow-hidden">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                <Cpu className="w-5 h-5 text-white" />
+              )}
+            </div>
+            <div className={cn("flex flex-col transition-all duration-500", scrolled ? "w-0 opacity-0 -ml-4" : "opacity-100")}>
+              <span className="text-sm font-black text-white tracking-tighter uppercase leading-none">Sankalp</span>
+              <span className="text-[8px] font-mono text-blue-400 uppercase tracking-[0.2em] leading-none mt-1">QA Engine</span>
+            </div>
+          </Link>
+
+          {/* Desktop Nav Links */}
+          <div className={cn(
+            "hidden lg:flex items-center",
+            scrolled ? "gap-0.5" : "gap-1"
+          )}>
+            {NAV_LINKS.map((link) => {
+              const isActive = link.type === 'anchor' 
+                ? activeSection === link.href.split('#')[1] && (location.pathname === '/' || location.pathname === `/${language}`)
+                : location.pathname === link.href || location.pathname === `/${language}${link.href}`;
+
+              return (
+                <Link 
+                  key={link.key}
+                  to={link.href}
+                  onClick={(e) => link.type === 'anchor' ? scrollToAnchor(e, link.href) : undefined}
+                  className={cn(
+                    "relative px-4 py-2.5 text-[10px] font-black transition-all uppercase tracking-[0.15em] rounded-full flex items-center justify-center group",
+                    isActive ? "text-white" : "text-slate-400 hover:text-white"
+                  )}
+                >
+                  <AnimatePresence>
+                    {isActive && (
+                      <motion.div
+                        layoutId="active-nav-bg"
+                        className="absolute inset-0 bg-blue-600/10 border border-blue-500/20 rounded-full -z-10"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      />
+                    )}
+                  </AnimatePresence>
+                  <span className="relative z-10">{t(`nav.${link.key}`)}</span>
+                  {isActive && (
+                    <motion.span 
+                      layoutId="active-nav-dot"
+                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-black text-white tracking-tighter uppercase leading-none">Sankalp</span>
-            <span className="text-[10px] font-mono text-brand uppercase tracking-[0.2em] leading-none mt-1">QA Architecture</span>
-          </div>
-        </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-1 p-1 bg-white/2 backdrop-blur-md rounded-2xl border border-white/5">
-          {NAV_LINKS.map((link) => {
-            const isActive = link.type === 'anchor' 
-              ? activeSection === link.href.substring(2)
-              : location.pathname === link.href;
+          {/* Actions */}
+          <div className="flex items-center gap-2 pl-2">
+            <div className={cn(
+              "hidden md:flex items-center gap-1 border-r border-white/10 pr-2 transition-all",
+              scrolled ? "gap-0" : "gap-1"
+            )}>
+               {logoUrl && <AIResumeModal />}
+               <a 
+                 href="https://linkedin.com/in/sankalpsuman" 
+                 target="_blank" 
+                 rel="noreferrer"
+                 className="p-2.5 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95"
+               >
+                  <Linkedin className="w-4 h-4" />
+               </a>
+               <a 
+                 href="https://github.com/sankalpsuman" 
+                 target="_blank" 
+                 rel="noreferrer"
+                 className="p-2.5 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95"
+               >
+                  <Github className="w-4 h-4" />
+               </a>
+            </div>
 
-            const localizedLabel = t(`nav.${link.key}`);
-
-            return link.type === 'anchor' ? (
-              <a 
-                key={link.label}
-                href={link.href}
-                onClick={(e) => scrollToAnchor(e, link.href)}
-                className={cn(
-                  "px-4 py-2 text-[10px] font-bold transition-all uppercase tracking-[0.1em] rounded-xl flex items-center gap-1.5",
-                  isActive ? "bg-brand text-white shadow-lg shadow-brand/20" : "text-gray-400 hover:text-white"
-                )}
+            <div className="hidden lg:block relative">
+              <button 
+                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                className="flex items-center gap-2 px-4 py-2 hover:bg-white/5 rounded-full transition-all text-[10px] font-black uppercase tracking-widest text-slate-300 group"
               >
-                {isActive && <div className="w-1 h-1 bg-white rounded-full animate-pulse"></div>}
-                {localizedLabel}
-              </a>
-            ) : (
-              <Link 
-                key={link.label}
-                to={link.href}
-                className={cn(
-                  "px-4 py-2 text-[10px] font-bold transition-all uppercase tracking-[0.1em] rounded-xl flex items-center gap-1.5",
-                  isActive ? "bg-brand text-white shadow-lg shadow-brand/20" : "text-gray-400 hover:text-white hover:bg-white/5"
-                )}
-              >
-                {isActive && <div className="w-1 h-1 bg-white rounded-full animate-pulse"></div>}
-                {localizedLabel}
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* CTA & Language Selector */}
-        <div className="hidden lg:flex items-center gap-3">
-           {/* Desktop Language Selector */}
-           <div className="relative">
-             <button 
-               id="lang-selector-desktop"
-               onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-               className="flex items-center gap-2 px-3 py-2 bg-white/5 text-gray-300 hover:text-white rounded-xl border border-white/5 hover:border-white/10 transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-white/10"
-             >
-               <Globe className="w-3.5 h-3.5 text-brand animate-pulse" />
-               <span>{LANGUAGES.find(l => l.code === language)?.label || 'English'}</span>
-               <ChevronDown className={cn("w-3 h-3 opacity-60 transition-transform", langDropdownOpen && "rotate-180")} />
-             </button>
-             
-             <AnimatePresence>
-               {langDropdownOpen && (
-                 <>
-                   <div className="fixed inset-0 z-40" onClick={() => setLangDropdownOpen(false)} />
-                   <motion.div
-                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                     transition={{ duration: 0.15 }}
-                     className="absolute right-0 mt-2 w-40 bg-[#050816]/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50 p-1.5 space-y-1"
-                   >
-                     {LANGUAGES.map((lang) => (
-                       <button
-                         key={lang.code}
-                         id={`lang-opt-${lang.code}`}
-                         onClick={() => {
-                           setLanguage(lang.code as any);
-                           setLangDropdownOpen(false);
-                         }}
-                         className={cn(
-                           "w-full px-4 py-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer",
-                           language === lang.code 
-                             ? "bg-brand text-white shadow-md shadow-brand/20" 
-                             : "text-gray-400 hover:text-white hover:bg-white/5"
-                         )}
-                       >
-                         <span>{lang.label}</span>
-                         {language === lang.code && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
-                       </button>
-                     ))}
-                   </motion.div>
-                 </>
-               )}
-             </AnimatePresence>
-           </div>
-
-           <a 
-              href="/#contact" 
-              onClick={(e) => scrollToAnchor(e, '/#contact')}
-              className="group flex items-center gap-2 px-6 py-2.5 bg-white text-black text-[10px] font-black rounded-xl transition-all uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95"
-           >
-              {t('nav.inquire')}
-              <Sparkles className="w-3 h-3 text-brand" />
-           </a>
-        </div>
-
-        {/* Mobile Action Buttons (Language Selector dropdown & Mobile menu toggle) */}
-        <div className="lg:hidden flex items-center gap-2">
-          {/* Mobile Language Button */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setLangDropdownOpen(!langDropdownOpen);
-                if (mobileMenuOpen) setMobileMenuOpen(false);
-              }}
-              className="p-3 bg-white/5 hover:bg-white/10 text-brand rounded-xl border border-white/10 transition-colors flex items-center gap-1.5 cursor-pointer focus:outline-none"
-              title="Change Language / भाषा बदलें / Changer de langue / Sprache ändern"
-            >
-              <Globe className="w-4 h-4 text-brand" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-white">
-                {language === 'en' ? 'EN' : language === 'hi' ? 'HI' : language === 'fr' ? 'FR' : 'DE'}
-              </span>
-            </button>
-            
-            <AnimatePresence>
-              {langDropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setLangDropdownOpen(false)} />
+                <Globe className="w-4 h-4 text-blue-400 group-hover:rotate-12 transition-transform" />
+                <span>{LANGUAGES.find(l => l.code === language)?.short}</span>
+              </button>
+              
+              <AnimatePresence>
+                {langDropdownOpen && (
                   <motion.div
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-2 w-36 bg-[#050816]/98 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50 p-1.5 space-y-1"
+                    className="absolute right-0 mt-4 w-40 glass-card rounded-3xl overflow-hidden p-2 z-50 border border-white/10 shadow-2xl"
                   >
                     {LANGUAGES.map((lang) => (
                       <button
                         key={lang.code}
-                        id={`lang-mobile-dropdown-${lang.code}`}
                         onClick={() => {
                           setLanguage(lang.code as any);
                           setLangDropdownOpen(false);
                         }}
                         className={cn(
-                          "w-full px-4 py-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer",
-                          language === lang.code 
-                            ? "bg-brand text-white shadow-md shadow-brand/20" 
-                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                          "w-full px-4 py-3 rounded-2xl text-left text-[11px] font-black transition-all flex items-center justify-between uppercase tracking-widest",
+                          language === lang.code ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-slate-400 hover:text-white hover:bg-white/5"
                         )}
                       >
-                        <span>{lang.label}</span>
-                        {language === lang.code && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                        {lang.label}
                       </button>
                     ))}
                   </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
+                )}
+              </AnimatePresence>
+            </div>
 
-          {/* Mobile hamburger menu toggle */}
-          <button 
-            onClick={() => {
-              setMobileMenuOpen(!mobileMenuOpen);
-              if (langDropdownOpen) setLangDropdownOpen(false);
-            }}
-            className="p-3 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 transition-colors"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+            <Link 
+              to="/#contact"
+              onClick={(e) => scrollToAnchor(e, '/#contact')}
+              className={cn(
+                "hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-full font-black transition-all uppercase tracking-[0.2em] text-[10px] border",
+                scrolled 
+                  ? "bg-white text-space-950 border-white hover:bg-transparent hover:text-white" 
+                  : "bg-blue-600 text-white border-blue-600 shadow-[0_0_25px_rgba(37,99,235,0.4)] hover:bg-transparent hover:shadow-none"
+              )}
+            >
+              {t('nav.inquire')}
+            </Link>
+
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2.5 text-slate-300 hover:text-white bg-white/5 rounded-full transition-colors"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -304,85 +269,41 @@ export default function Navbar() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="lg:hidden absolute top-full left-0 w-full bg-[#050816]/95 backdrop-blur-2xl border-b border-white/5 overflow-hidden shadow-2xl"
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="lg:hidden absolute top-24 left-4 right-4 glass-card rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl z-50"
           >
-            <div className="p-6 space-y-4">
-              <div className="space-y-2">
-                {NAV_LINKS.map((link) => {
-                  const isActive = link.type === 'anchor' 
-                    ? activeSection === link.href.substring(2)
-                    : location.pathname === link.href;
-
-                  const localizedLabel = t(`nav.${link.key}`);
-
-                  return link.type === 'anchor' ? (
-                    <a 
-                      key={link.label}
-                      href={link.href}
-                      onClick={(e) => scrollToAnchor(e, link.href)}
-                      className={cn(
-                        "flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl transition-all font-bold uppercase tracking-widest text-xs sm:text-sm",
-                        isActive ? "bg-brand/10 text-brand border border-brand/20" : "text-gray-400 border border-transparent"
-                      )}
-                    >
-                      {localizedLabel}
-                    </a>
-                  ) : (
-                    <Link 
-                      key={link.label}
-                      to={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={cn(
-                        "flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl transition-all font-bold uppercase tracking-widest text-xs sm:text-sm",
-                        isActive ? "bg-brand/10 text-brand border border-brand/20" : "text-gray-400 border border-transparent"
-                      )}
-                    >
-                      {localizedLabel}
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {/* Mobile Language Selector */}
-              <div className="border-t border-white/5 pt-4">
-                <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-3 pl-2 flex items-center gap-2">
-                  <Globe className="w-3.5 h-3.5 text-brand" />
-                  <span>Language / भाषा</span>
-                </div>
-                <div className="flex items-center gap-1.5 p-1 bg-white/5 border border-white/10 rounded-xl">
+            <div className="p-8 space-y-6">
+              {NAV_LINKS.map((link) => (
+                <Link 
+                  key={link.key}
+                  to={link.href}
+                  onClick={(e) => link.type === 'anchor' ? scrollToAnchor(e, link.href) : setMobileMenuOpen(false)}
+                  className="block py-2 text-lg font-black uppercase tracking-[0.2em] text-slate-300 hover:text-blue-400 transition-colors"
+                >
+                  {t(`nav.${link.key}`)}
+                </Link>
+              ))}
+              <div className="pt-6 border-t border-white/5 flex flex-col gap-4">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Select Language</span>
+                <div className="grid grid-cols-2 gap-2">
                   {LANGUAGES.map((lang) => (
                     <button
                       key={lang.code}
-                      id={`lang-mobile-opt-${lang.code}`}
                       onClick={() => {
                         setLanguage(lang.code as any);
+                        setMobileMenuOpen(false);
                       }}
                       className={cn(
-                        "flex-1 py-2 rounded-lg text-xs font-bold transition-all text-center cursor-pointer",
-                        language === lang.code 
-                          ? "bg-brand text-white shadow-md shadow-brand/25" 
-                          : "text-gray-400 hover:text-white"
+                        "py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all",
+                        language === lang.code ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-white/5 text-slate-400 hover:text-white"
                       )}
-                      title={lang.label}
                     >
-                      {lang.short}
+                      {lang.label}
                     </button>
                   ))}
                 </div>
-              </div>
-
-              <div className="pt-2">
-                 <a 
-                   href="/#contact"
-                   onClick={(e) => scrollToAnchor(e, '/#contact')}
-                   className="flex items-center justify-center gap-3 w-full py-5 bg-brand text-white text-center font-black rounded-2xl tracking-[0.2em] uppercase text-xs shadow-xl shadow-brand/20"
-                 >
-                   {t('nav.establish_connection')}
-                   <Sparkles className="w-4 h-4" />
-                 </a>
               </div>
             </div>
           </motion.div>

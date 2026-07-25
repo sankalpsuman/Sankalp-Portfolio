@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Section from './Section';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { getCollection } from '../../services/firestoreService';
 import { 
   ShieldCheck, 
@@ -8,10 +8,12 @@ import {
   Cpu, 
   Workflow, 
   Users,
-  Terminal
+  Terminal,
+  Sparkles
 } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 import { SkillLogo } from './SkillLogo';
+import { cn } from '../../lib/utils';
 
 interface Skill {
   id: string;
@@ -21,156 +23,185 @@ interface Skill {
 }
 
 const DEFAULT_SKILLS: Skill[] = [
-  // Testing
   { id: 'functional', name: 'Functional Testing', category: 'Testing', level: 95 },
   { id: 'regression', name: 'Regression & Smoke', category: 'Testing', level: 95 },
-  { id: 'sit_uat', name: 'System/SIT & UAT', category: 'Testing', level: 90 },
-  { id: 'bdd', name: 'BDD Acceptance Criteria', category: 'Testing', level: 88 },
-  { id: 'exploratory', name: 'Exploratory & Sanity', category: 'Testing', level: 90 },
-
-  // API & Data
-  { id: 'postman', name: 'Postman & REST API', category: 'API & Data', level: 92 },
-  { id: 'sql_db', name: 'SQL & Database Testing', category: 'API & Data', level: 88 },
-  { id: 'etl_testing', name: 'ETL Validation & Mapping', category: 'API & Data', level: 85 },
-
-  // AI in QA
   { id: 'ai_tools', name: 'ChatGPT, Copilot, Gemini', category: 'AI in QA', level: 95 },
   { id: 'prompt_eng', name: 'Prompt Engineering', category: 'AI in QA', level: 90 },
-  { id: 'ai_gen', name: 'AI Test Case Generation', category: 'AI in QA', level: 92 },
-  { id: 'ai_debug', name: 'AI Debugging', category: 'AI in QA', level: 85 },
-
-  // Automation & DevOps
+  { id: 'postman', name: 'Postman & REST API', category: 'API & Data', level: 92 },
+  { id: 'sql_db', name: 'SQL & Database Testing', category: 'API & Data', level: 88 },
   { id: 'cicd', name: 'Jenkins & CI/CD', category: 'Automation & DevOps', level: 85 },
-  { id: 'docker_linux', name: 'Docker & Linux', category: 'Automation & DevOps', level: 80 },
-  { id: 'opkey', name: 'OpKey', category: 'Automation & DevOps', level: 82 },
-
-  // Tools
-  { id: 'jira_confluence', name: 'Jira & Confluence', category: 'Tools', level: 95 },
-  { id: 'alm_zephyr', name: 'Zephyr, Octane, ALM, QC', category: 'Tools', level: 90 },
-  { id: 'mobile_tools', name: 'Putty & ADB Logcat', category: 'Tools', level: 85 },
-  { id: 'python', name: 'Python (Basics)', category: 'Tools', level: 80 },
-
-  // Leadership / Process
   { id: 'scrum_agile', name: 'Agile & Scrum Master', category: 'Leadership', level: 95 },
-  { id: 'rca', name: 'Defect Triage & RCA', category: 'Leadership', level: 92 },
-  { id: 'release', name: 'Release Management', category: 'Leadership', level: 88 },
 ];
 
 const CATEGORIES = [
-  { name: 'Testing', icon: ShieldCheck, color: 'blue', key: 'testing' },
-  { name: 'API & Data', icon: Database, color: 'purple', key: 'api_data' },
-  { name: 'AI in QA', icon: Cpu, color: 'cyan', key: 'ai_qa' },
-  { name: 'Automation & DevOps', icon: Workflow, color: 'emerald', key: 'automation_devops' },
-  { name: 'Tools', icon: Terminal, color: 'slate', key: 'tools' },
-  { name: 'Leadership', icon: Users, color: 'orange', key: 'leadership' },
+  { id: 'testing', name: 'Testing', icon: ShieldCheck, color: 'from-blue-500 to-cyan-500' },
+  { id: 'api_data', name: 'API & Data', icon: Database, color: 'from-purple-500 to-indigo-500' },
+  { id: 'ai_qa', name: 'AI in QA', icon: Cpu, color: 'from-cyan-400 to-blue-500' },
+  { id: 'automation', name: 'Automation', icon: Workflow, color: 'from-emerald-400 to-cyan-500' },
+  { id: 'leadership', name: 'Leadership', icon: Users, color: 'from-orange-400 to-red-500' },
 ];
 
 export default function Skills() {
   const [items, setItems] = useState<Skill[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string>(CATEGORIES[0].name);
   const { t, resolveTranslation } = useLanguage();
 
   useEffect(() => {
     async function load() {
       try {
         const data = await getCollection<Skill>('skills');
-        if (data && data.length > 0) {
-          setItems(data);
-        } else {
-          setItems(DEFAULT_SKILLS);
-        }
+        setItems(data && data.length > 0 ? data : DEFAULT_SKILLS);
       } catch (err) {
-        console.warn("Skills data load failed, using fallbacks:", err);
         setItems(DEFAULT_SKILLS);
       }
     }
     load();
   }, []);
 
-  const getCategoryName = (category: string, key: string) => {
-    const translated = t(`skills.categories.${key}`);
-    if (translated !== `skills.categories.${key}`) return translated;
-    
-    const norm = category.toLowerCase().trim();
-    if (norm.includes('testing')) return t('skills.categories.testing');
-    if (norm.includes('api') || norm.includes('data')) return t('skills.categories.api_data');
-    if (norm.includes('ai') || norm.includes('qa')) return t('skills.categories.ai_qa');
-    if (norm.includes('automation') || norm.includes('devops')) return t('skills.categories.automation_devops');
-    if (norm.includes('tools')) return t('skills.categories.tools') || "Tools";
-    if (norm.includes('leadership')) return t('skills.categories.leadership');
-    return category;
-  };
-
-  const getSkillName = (skill: Skill) => {
-    const translated = t(`skills.list.${skill.id}`);
-    if (translated !== `skills.list.${skill.id}`) {
-      return translated;
-    }
-    
-    const map: Record<string, string> = {
-      'ai-driven testing': t('skills.list.ai_testing'),
-      'prompt engineering': t('skills.list.prompt_heavy'),
-      'api validation (rest/soap)': t('skills.list.api_validation'),
-      'selenium / playwright': t('skills.list.selenium_playwright'),
-      'sql & database testing': t('skills.list.sql_db'),
-      'scrum leadership': t('skills.list.scrum_lead'),
-      'ci/cd pipelines (jenkins/github actions)': t('skills.list.cicd_pipeline'),
-      'etl testing': t('skills.list.etl_testing')
-    };
-    
-    return map[skill.name.toLowerCase().trim()] || resolveTranslation(skill, 'name');
-  };
+  const filteredSkills = useMemo(() => {
+    return items.filter(s => {
+      const sCat = s.category.toLowerCase().trim();
+      const active = activeCategory.toLowerCase().trim();
+      return sCat === active || 
+             (active.includes('api') && sCat.includes('api')) ||
+             (active.includes('ai') && sCat.includes('ai')) ||
+             (active.includes('automation') && sCat.includes('automation'));
+    });
+  }, [items, activeCategory]);
 
   return (
-    <Section id="skills" title={t('skills.title') || "Professional Toolkit"} subtitle={t('skills.subtitle')}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-7xl mx-auto">
-        {CATEGORIES.map((cat, catIdx) => {
-          // Filter matching skills. We normalize the check to match both database and fallbacks
-          const catSkills = items.filter(s => {
-            const sCat = s.category.toLowerCase().trim();
-            const cName = cat.name.toLowerCase().trim();
-            return sCat === cName || 
-                   (cName.includes('api') && sCat.includes('api')) ||
-                   (cName.includes('ai') && sCat.includes('ai')) ||
-                   (cName.includes('devops') && sCat.includes('devops')) ||
-                   (cName.includes('tools') && sCat.includes('tools'));
-          });
-          
-          if (catSkills.length === 0) return null;
-
-          return (
-            <motion.div
-              key={cat.name}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: catIdx * 0.05 }}
-              className="p-5 bg-white/[0.01] backdrop-blur-sm border border-white/5 rounded-2xl hover:border-brand/20 transition-all group flex flex-col"
-            >
-              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/5">
-                <div className="p-2 rounded-lg bg-brand/5 text-brand group-hover:bg-brand/10 transition-colors">
-                  <cat.icon className="w-3.5 h-3.5" />
+    <Section 
+      id="skills" 
+      title={t('skills.title') || "Knowledge Universe"} 
+      subtitle={t('skills.subtitle')}
+    >
+      <div className="max-w-6xl mx-auto">
+        {/* Category Navigation (Planetary Selector) */}
+        <div className="flex flex-wrap justify-center gap-4 mb-16">
+          {CATEGORIES.map((cat) => {
+            const isActive = activeCategory === cat.name;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.name)}
+                className={cn(
+                  "group relative px-6 py-3 rounded-full transition-all duration-500 overflow-hidden",
+                  isActive ? "text-white" : "text-slate-400 hover:text-slate-200"
+                )}
+              >
+                <div className="relative z-10 flex items-center gap-2">
+                  <cat.icon className={cn("w-4 h-4 transition-transform duration-500", isActive && "scale-110")} />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+                    {cat.name}
+                  </span>
                 </div>
-                <h3 className="text-[10px] font-bold text-gray-400 tracking-[0.25em] uppercase">{getCategoryName(cat.name, cat.key)}</h3>
-              </div>
+                {isActive && (
+                  <motion.div
+                    layoutId="active-cat-bg"
+                    className={cn("absolute inset-0 bg-gradient-to-r -z-10", cat.color)}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                  />
+                )}
+                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            );
+          })}
+        </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1.5">
-                {catSkills.map((skill) => (
-                  <div 
-                    key={skill.id} 
-                    className="flex items-center p-1.5 rounded-md bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all group/skill gap-2"
-                  >
-                    <div className="shrink-0 text-gray-500 group-hover/skill:text-brand transition-colors flex items-center justify-center filter grayscale group-hover/skill:grayscale-0 opacity-70 group-hover/skill:opacity-100">
-                      <SkillLogo name={skill.name} className="w-3.5 h-3.5 object-contain" />
+        {/* Constellation View */}
+        <div className="relative min-h-[400px] flex items-center justify-center p-8 glass-card rounded-[3rem] overflow-hidden">
+          {/* Orbital Paths Background */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+            <div className="w-[300px] h-[300px] border border-slate-700 rounded-full animate-spin-slow" style={{ animationDuration: '40s' }} />
+            <div className="absolute w-[500px] h-[500px] border border-slate-800 rounded-full animate-spin-slow" style={{ animationDuration: '60s', animationDirection: 'reverse' }} />
+            <div className="absolute w-[700px] h-[700px] border border-slate-900 rounded-full animate-spin-slow" style={{ animationDuration: '90s' }} />
+          </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeCategory}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-8"
+            >
+              {filteredSkills.map((skill, idx) => (
+                <motion.div
+                  key={skill.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  whileHover={{ y: -5 }}
+                  className="group flex flex-col items-center gap-4 p-6 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all"
+                >
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center border border-white/10 group-hover:border-blue-500/50 transition-colors shadow-inner">
+                      <SkillLogo name={skill.name} className="w-8 h-8 opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all" />
                     </div>
-                    <span className="text-[10px] font-medium text-gray-400 group-hover/skill:text-gray-200 transition-colors truncate">
-                      {getSkillName(skill)}
-                    </span>
+                    {/* Pulsing indicator for high skill level */}
+                    {skill.level >= 90 && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center animate-pulse">
+                        <Sparkles className="w-2 h-2 text-white" />
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
+                  
+                  <div className="text-center">
+                    <h4 className="text-[10px] font-bold text-slate-200 uppercase tracking-widest mb-2 line-clamp-1">
+                      {skill.name}
+                    </h4>
+                    <div className="w-24 h-1 bg-white/5 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${skill.level}%` }}
+                        className="h-full bg-gradient-to-r from-blue-600 to-cyan-400"
+                        transition={{ duration: 1, delay: 0.5 }}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
-          );
-        })}
+          </AnimatePresence>
+
+          {/* Floating Stardust Particles */}
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  y: [0, -100],
+                  opacity: [0, 0.5, 0],
+                }}
+                transition={{
+                  duration: Math.random() * 5 + 5,
+                  repeat: Infinity,
+                  delay: Math.random() * 5,
+                }}
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  bottom: '0',
+                }}
+                className="absolute w-1 h-1 bg-blue-400/20 rounded-full blur-[1px]"
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="mt-12 flex justify-center items-center gap-8 opacity-40">
+           <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full" />
+              <span className="text-[10px] uppercase tracking-widest font-bold">Expert Authority</span>
+           </div>
+           <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-slate-700 rounded-full" />
+              <span className="text-[10px] uppercase tracking-widest font-bold">In-Orbit Specialization</span>
+           </div>
+        </div>
       </div>
     </Section>
   );

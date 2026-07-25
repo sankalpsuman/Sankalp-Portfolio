@@ -28,6 +28,8 @@ const BlogPreview = lazy(() => lazyRetry(() => import('../components/portfolio/B
 const Contact = lazy(() => lazyRetry(() => import('../components/portfolio/Contact.tsx')));
 const Footer = lazy(() => lazyRetry(() => import('../components/portfolio/Footer.tsx')));
 
+import { PageTransition } from '../components/PageTransition';
+
 export default function PortfolioHome() {
   const [welcomeDismissed, setWelcomeDismissed] = useState(true);
 
@@ -65,32 +67,34 @@ export default function PortfolioHome() {
   }, []);
 
   return (
-    <div id="portfolio-home" className="bg-[#050816] selection:bg-brand/30 selection:text-white overflow-hidden relative">
-      <BackgroundEffects active={welcomeDismissed} />
-      <SEO />
-      <Navbar />
-      <main>
-        <Hero />
-        <About active={welcomeDismissed} />
-        <LazySection id="why-hire-me"><WhyHireMe /></LazySection>
-        
-        <LazySection id="experience"><Experience /></LazySection>
-        <LazySection id="career-journey"><CareerTimeline /></LazySection>
-        <LazySection id="skills"><Skills /></LazySection>
-        <LazySection id="ai-qa"><AISection /></LazySection>
-        <LazySection id="ai-playground"><AIPlayground /></LazySection>
-        <LazySection id="qa-dashboard"><QADashboard /></LazySection>
-        <LazySection id="projects"><Projects /></LazySection>
-        <LazySection id="impact-stories"><ImpactStories /></LazySection>
-        <LazySection id="achievements"><Achievements /></LazySection>
-        <LazySection id="certifications"><Certifications /></LazySection>
-        <LazySection id="testimonials"><Testimonials /></LazySection>
-        <LazySection id="blog"><BlogPreview /></LazySection>
-        <LazySection id="recruiter-lobby"><RecruiterLobby /></LazySection>
-        <LazySection id="faq"><FAQ /></LazySection>
-        <LazySection id="contact"><Contact /></LazySection>
-      </main>
-      <LazySection><Footer /></LazySection>
-    </div>
+    <PageTransition>
+      <div id="portfolio-home" className="bg-[#050816] selection:bg-brand/30 selection:text-white overflow-hidden relative">
+        <BackgroundEffects active={welcomeDismissed} />
+        <SEO />
+        <Navbar />
+        <main>
+          <Hero />
+          <About active={welcomeDismissed} />
+          <LazySection id="why-hire-me"><WhyHireMe /></LazySection>
+          
+          <LazySection id="experience"><Experience /></LazySection>
+          <LazySection id="career-journey"><CareerTimeline /></LazySection>
+          <LazySection id="skills"><Skills /></LazySection>
+          <LazySection id="ai-qa"><AISection /></LazySection>
+          <LazySection id="ai-playground"><AIPlayground /></LazySection>
+          <LazySection id="qa-dashboard"><QADashboard /></LazySection>
+          <LazySection id="projects"><Projects /></LazySection>
+          <LazySection id="impact-stories"><ImpactStories /></LazySection>
+          <LazySection id="achievements"><Achievements /></LazySection>
+          <LazySection id="certifications"><Certifications /></LazySection>
+          <LazySection id="testimonials"><Testimonials /></LazySection>
+          <LazySection id="blog"><BlogPreview /></LazySection>
+          <LazySection id="recruiter-lobby"><RecruiterLobby /></LazySection>
+          <LazySection id="faq"><FAQ /></LazySection>
+          <LazySection id="contact"><Contact /></LazySection>
+        </main>
+        <LazySection><Footer /></LazySection>
+      </div>
+    </PageTransition>
   );
 }

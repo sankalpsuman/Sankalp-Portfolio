@@ -111,7 +111,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const t = (path: string, defaultOrReplacers?: string | Record<string, string | number>): string => {
+  const t = React.useCallback((path: string, defaultOrReplacers?: string | Record<string, string | number>): string => {
     const parts = path.split('.');
     let current = translations[language];
     
@@ -149,9 +149,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
 
     return value;
-  };
+  }, [language]);
 
-  const tArray = (path: string): string[] => {
+  const tArray = React.useCallback((path: string): string[] => {
     const parts = path.split('.');
     let current = translations[language];
     
@@ -169,9 +169,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
 
     return Array.isArray(current) ? current : [];
-  };
+  }, [language]);
 
-  const resolveTranslation = <T,>(obj: T | null | undefined, field: keyof T): any => {
+  const resolveTranslation = React.useCallback(<T,>(obj: T | null | undefined, field: keyof T): any => {
     if (!obj) return '';
     const englishValue = obj[field];
     if (language === 'en' || typeof englishValue !== 'string') {
@@ -205,10 +205,18 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     });
 
     return englishValue;
-  };
+  }, [language]);
+
+  const contextValue = React.useMemo(() => ({ 
+    language, 
+    setLanguage, 
+    t, 
+    tArray, 
+    resolveTranslation 
+  }), [language, setLanguage, t, tArray, resolveTranslation]);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, tArray, resolveTranslation }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );

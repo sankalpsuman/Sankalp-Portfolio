@@ -9,8 +9,9 @@ import { AIChatbot } from './components/portfolio/AIChatbot';
 import ErrorBoundary from './components/ErrorBoundary';
 import { LanguageProvider } from './hooks/useLanguage';
 import { lazyRetry } from './lib/lazyRetry';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ShieldCheck, Terminal } from 'lucide-react';
+import { cn } from './lib/utils';
 
 // Lazy load Pages
 const PortfolioHome = lazy(() => lazyRetry(() => import('./pages/PortfolioHome.tsx')));
@@ -166,9 +167,20 @@ const AdminGuard = ({ children, user, authInitialized }: { children: React.React
   return <>{children}</>;
 };
 
+import { WelcomeGateway } from './components/portfolio/WelcomeGateway';
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authInitialized, setAuthInitialized] = useState(false);
+  const [hasEntered, setHasEntered] = useState(() => {
+    // Check if user has already entered in this session
+    return sessionStorage.getItem('portfolio_entered') === 'true';
+  });
+
+  const handleEnter = () => {
+    setHasEntered(true);
+    sessionStorage.setItem('portfolio_entered', 'true');
+  };
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
@@ -229,47 +241,58 @@ export default function App() {
         <LanguageProvider>
           <Toaster position="bottom-right" />
           <ErrorBoundary>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                {/* English / Default Base Routes */}
-                <Route path="/" element={<PortfolioHome />} />
-                <Route path="/blog" element={<BlogList />} />
-                <Route path="/blog/:slug" element={<BlogDetail />} />
-                <Route path="/now" element={<NowPage />} />
+            <AnimatePresence mode="wait">
+              {!hasEntered && (
+                <WelcomeGateway onEnter={handleEnter} key="welcome-gateway" />
+              )}
+            </AnimatePresence>
 
-                {/* Hindi Prefixed Routes */}
-                <Route path="/hi" element={<PortfolioHome />} />
-                <Route path="/hi/blog" element={<BlogList />} />
-                <Route path="/hi/blog/:slug" element={<BlogDetail />} />
-                <Route path="/hi/now" element={<NowPage />} />
+            <div className={cn(
+              "transition-all duration-1000",
+              !hasEntered ? "opacity-0 scale-95 blur-xl h-screen overflow-hidden pointer-events-none" : "opacity-100 scale-100 blur-0"
+            )}>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  {/* English / Default Base Routes */}
+                  <Route path="/" element={<PortfolioHome />} />
+                  <Route path="/blog" element={<BlogList />} />
+                  <Route path="/blog/:slug" element={<BlogDetail />} />
+                  <Route path="/now" element={<NowPage />} />
 
-                {/* French Prefixed Routes */}
-                <Route path="/fr" element={<PortfolioHome />} />
-                <Route path="/fr/blog" element={<BlogList />} />
-                <Route path="/fr/blog/:slug" element={<BlogDetail />} />
-                <Route path="/fr/now" element={<NowPage />} />
+                  {/* Hindi Prefixed Routes */}
+                  <Route path="/hi" element={<PortfolioHome />} />
+                  <Route path="/hi/blog" element={<BlogList />} />
+                  <Route path="/hi/blog/:slug" element={<BlogDetail />} />
+                  <Route path="/hi/now" element={<NowPage />} />
 
-                {/* German Prefixed Routes */}
-                <Route path="/de" element={<PortfolioHome />} />
-                <Route path="/de/blog" element={<BlogList />} />
-                <Route path="/de/blog/:slug" element={<BlogDetail />} />
-                <Route path="/de/now" element={<NowPage />} />
+                  {/* French Prefixed Routes */}
+                  <Route path="/fr" element={<PortfolioHome />} />
+                  <Route path="/fr/blog" element={<BlogList />} />
+                  <Route path="/fr/blog/:slug" element={<BlogDetail />} />
+                  <Route path="/fr/now" element={<NowPage />} />
 
-                {/* Admin Management System (Non-prefixed) */}
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route 
-                  path="/admin/*" 
-                  element={
-                    <AdminGuard user={user} authInitialized={authInitialized}>
-                      <AdminDashboard />
-                    </AdminGuard>
-                  } 
-                />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
+                  {/* German Prefixed Routes */}
+                  <Route path="/de" element={<PortfolioHome />} />
+                  <Route path="/de/blog" element={<BlogList />} />
+                  <Route path="/de/blog/:slug" element={<BlogDetail />} />
+                  <Route path="/de/now" element={<NowPage />} />
+
+                  {/* Admin Management System (Non-prefixed) */}
+                  <Route path="/admin/login" element={<AdminLogin />} />
+                  <Route 
+                    path="/admin/*" 
+                    element={
+                      <AdminGuard user={user} authInitialized={authInitialized}>
+                        <AdminDashboard />
+                      </AdminGuard>
+                    } 
+                  />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+              <AIChatbot />
+            </div>
           </ErrorBoundary>
-          <AIChatbot />
         </LanguageProvider>
       </Router>
     </HelmetProvider>

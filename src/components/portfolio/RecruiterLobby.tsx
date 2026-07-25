@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import Section from './Section';
 import { getCollection, getDocument, updateCollectionDocument } from '../../services/firestoreService';
-import { CalendarCheck, CheckCircle2, XCircle, Clock, Calendar, ExternalLink } from 'lucide-react';
+import { CalendarCheck, CheckCircle2, XCircle, Clock, Calendar, ExternalLink, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
+import { AIResumeModal } from './AIResumeModal';
 
 interface AvailabilityData {
   openToWork: boolean;
@@ -164,6 +165,53 @@ export default function RecruiterLobby() {
                   Google Interview Calendar
                 </a>
               )}
+            </div>
+          </motion.div>
+
+          {/* Credentials Hub */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl space-y-6"
+          >
+            <h4 className="text-sm uppercase font-mono tracking-wider font-bold text-gray-400 flex items-center gap-2">
+              <CalendarCheck className="w-4 h-4 text-emerald-400" />
+              Credentials Management
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
+                        <CalendarCheck className="w-5 h-5" />
+                     </div>
+                     <span className="text-sm font-bold text-white">ATS Document</span>
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                     Standard high-performance resume optimized for recruiter screening systems.
+                  </p>
+                  <a 
+                    href="/resume.pdf" // This should ideally be dynamic from settings if available
+                    download="Sankalp_Suman_Resume.pdf"
+                    className="w-full flex justify-center items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                  >
+                    Download Protocol
+                  </a>
+               </div>
+
+               <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20 space-y-4">
+                  <div className="flex items-center gap-3">
+                     <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400">
+                        <Sparkles className="w-5 h-5" />
+                     </div>
+                     <span className="text-sm font-bold text-white">AI Synthesizer</span>
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                     Generate a real-time, context-aware resume in multiple languages using Gemini AI.
+                  </p>
+                  <AIResumeModal />
+               </div>
             </div>
           </motion.div>
         </div>

@@ -39,31 +39,31 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { getDocument, getCollection, HERO_DOC, ABOUT_DOC, SETTINGS_DOC, CONTACT_DOC, SEO_DOC, AI_DOC, NOW_DOC } from '../services/firestoreService';
 
-// Critical core modules (Loaded immediately for instant switching)
-import DashboardOverview from './admin/DashboardOverview';
-import HeroEditor from './admin/HeroEditor';
-import AboutEditor from './admin/AboutEditor';
-import ExperienceEditor from './admin/ExperienceEditor';
-import SkillsEditor from './admin/SkillsEditor';
-import ProjectsEditor from './admin/ProjectsEditor';
-import SettingsEditor from './admin/SettingsEditor';
-import BookMeetingEditor from './admin/BookMeetingEditor';
-import CertificationsEditor from './admin/CertificationsEditor';
-import AIEditor from './admin/AIEditor';
-import ContactEditor from './admin/ContactEditor';
-import SEOEditor from './admin/SEOEditor';
-import Inquiries from './admin/Inquiries';
-import BlogEditor from './admin/BlogEditor';
-import TestimonialsEditor from './admin/TestimonialsEditor';
-import TimelineEditor from './admin/TimelineEditor';
-import ImpactStoriesEditor from './admin/ImpactStoriesEditor';
-import QAMetricsEditor from './admin/QAMetricsEditor';
-import AIToolsEditor from './admin/AIToolsEditor';
-import NowEditor from './admin/NowEditor';
-import AchievementsEditor from './admin/AchievementsEditor';
-import WhyHireMeEditor from './admin/WhyHireMeEditor';
-import AvailabilityEditor from './admin/AvailabilityEditor';
-import FaqEditor from './admin/FaqEditor';
+// Lazy load admin editors
+const DashboardOverview = lazy(() => import('./admin/DashboardOverview'));
+const HeroEditor = lazy(() => import('./admin/HeroEditor'));
+const AboutEditor = lazy(() => import('./admin/AboutEditor'));
+const ExperienceEditor = lazy(() => import('./admin/ExperienceEditor'));
+const SkillsEditor = lazy(() => import('./admin/SkillsEditor'));
+const ProjectsEditor = lazy(() => import('./admin/ProjectsEditor'));
+const SettingsEditor = lazy(() => import('./admin/SettingsEditor'));
+const BookMeetingEditor = lazy(() => import('./admin/BookMeetingEditor'));
+const CertificationsEditor = lazy(() => import('./admin/CertificationsEditor'));
+const AIEditor = lazy(() => import('./admin/AIEditor'));
+const ContactEditor = lazy(() => import('./admin/ContactEditor'));
+const SEOEditor = lazy(() => import('./admin/SEOEditor'));
+const Inquiries = lazy(() => import('./admin/Inquiries'));
+const BlogEditor = lazy(() => import('./admin/BlogEditor'));
+const TestimonialsEditor = lazy(() => import('./admin/TestimonialsEditor'));
+const TimelineEditor = lazy(() => import('./admin/TimelineEditor'));
+const ImpactStoriesEditor = lazy(() => import('./admin/ImpactStoriesEditor'));
+const QAMetricsEditor = lazy(() => import('./admin/QAMetricsEditor'));
+const AIToolsEditor = lazy(() => import('./admin/AIToolsEditor'));
+const NowEditor = lazy(() => import('./admin/NowEditor'));
+const AchievementsEditor = lazy(() => import('./admin/AchievementsEditor'));
+const WhyHireMeEditor = lazy(() => import('./admin/WhyHireMeEditor'));
+const AvailabilityEditor = lazy(() => import('./admin/AvailabilityEditor'));
+const FaqEditor = lazy(() => import('./admin/FaqEditor'));
 
 const NAV_ITEMS = [
   { path: '', label: 'Overview', icon: LayoutDashboard },

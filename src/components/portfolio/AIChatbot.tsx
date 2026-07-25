@@ -484,7 +484,7 @@ How can I help you today?`,
       const tempMessages = [...nextMessages, { ...aiReplyMessage }];
       setMessages(tempMessages);
 
-      const batchSize = 3; // Write multiple elements at once to feel incredibly responsive and smooth
+      const batchSize = 6; // Increased batch size for smoother visual flow and fewer re-renders
       const streamTimer = setInterval(async () => {
         if (wordIndex < words.length) {
           for (let i = 0; i < batchSize && wordIndex < words.length; i++) {
@@ -524,7 +524,7 @@ How can I help you today?`,
             }).catch(e => console.warn("Failed sending lead email:", e));
           }
         }
-      }, 12);
+      }, 40); // Increased interval to 40ms to balance perceived speed and performance
 
     } catch (err: any) {
       console.error(err);
