@@ -10,6 +10,7 @@ import ReactMarkdown from 'react-markdown';
 import { GoogleGenAI, Type } from "@google/genai";
 import { generateContentWithFallback } from "../../services/geminiClientFallback";
 import { saveDocument, getDocument, HERO_DOC } from '../../services/firestoreService';
+import { SessionTimer } from './SessionTimer';
 
 interface ChatMessage {
   role: 'user' | 'model' | 'system';
@@ -1063,9 +1064,10 @@ Please make sure your server environment variables are configured (such as **GEM
                   <Send size={15} />
                 </button>
               </div>
-              <p className="text-[9px] opacity-40 text-center mt-1.5">
-                Representative AI Core • Keeps chats saved locally
-              </p>
+              <div className="flex items-center justify-between text-[9px] opacity-40 mt-1.5 px-0.5">
+                <span>Representative AI Core • Local storage sync</span>
+                <SessionTimer variant="chat" />
+              </div>
             </div>
             )}
           </motion.div>
@@ -1075,43 +1077,53 @@ Please make sure your server environment variables are configured (such as **GEM
       {/* Breathing Minimized Bubble Indicator */}
       <AnimatePresence>
         {isOpen && isMinimized && (
-          <motion.button
+          <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            onClick={() => setIsMinimized(false)}
-            id="chatbot-minimized-bubble"
-            className="flex items-center gap-2 bg-[#2563eb] border border-[#3b82f6]/40 text-white rounded-full px-5 py-3 hover:bg-[#1d4ed8] hover:shadow-lg transition-all pr-4"
+            className="flex items-center gap-2"
           >
-            <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-ping"></span>
-            <span className="text-xs font-semibold">Active AI Representative</span>
-            <Maximize2 size={13} className="ml-1 opacity-70" />
-          </motion.button>
+            <SessionTimer variant="compact" className="hidden sm:inline-flex" />
+            <button
+              onClick={() => setIsMinimized(false)}
+              id="chatbot-minimized-bubble"
+              className="flex items-center gap-2 bg-[#2563eb] border border-[#3b82f6]/40 text-white rounded-full px-5 py-3 hover:bg-[#1d4ed8] hover:shadow-lg transition-all pr-4 cursor-pointer"
+            >
+              <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-ping"></span>
+              <span className="text-xs font-semibold">Active AI Representative</span>
+              <Maximize2 size={13} className="ml-1 opacity-70" />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Primary Floating Action Button */}
+      {/* Primary Floating Action Button with Session Timer */}
       <AnimatePresence>
         {!isOpen && (
-          <motion.button
+          <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleOpenChat}
-            id="btn-chatbot-float"
-            className="w-14 h-14 bg-brand rounded-full flex items-center justify-center text-white cursor-pointer shadow-lg hover:shadow-xl hover:shadow-brand/20 active:scale-95 relative"
-            title="Ask Sankalp's Representative"
+            className="flex items-center gap-2"
           >
-            {/* Pulsing halo */}
-            <span className="absolute -inset-1.5 bg-brand rounded-full opacity-20 animate-ping"></span>
-            
-            <MessageSquare size={22} className="relative z-10" />
-            
-            {/* Unread badge/dot */}
-            <span className="absolute top-0 right-1 w-3.5 h-3.5 bg-green-500 border-2 border-neutral-900 rounded-full"></span>
-          </motion.button>
+            <SessionTimer variant="compact" />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleOpenChat}
+              id="btn-chatbot-float"
+              className="w-14 h-14 bg-brand rounded-full flex items-center justify-center text-white cursor-pointer shadow-lg hover:shadow-xl hover:shadow-brand/20 active:scale-95 relative"
+              title="Ask Sankalp's Representative"
+            >
+              {/* Pulsing halo */}
+              <span className="absolute -inset-1.5 bg-brand rounded-full opacity-20 animate-ping"></span>
+              
+              <MessageSquare size={22} className="relative z-10" />
+              
+              {/* Unread badge/dot */}
+              <span className="absolute top-0 right-1 w-3.5 h-3.5 bg-green-500 border-2 border-neutral-900 rounded-full"></span>
+            </motion.button>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

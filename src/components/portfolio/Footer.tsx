@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { getDocument } from '../../services/firestoreService';
 import { useLanguage } from '../../hooks/useLanguage';
 import { motion } from 'motion/react';
+import { SessionTimer } from './SessionTimer';
 
 interface GlobalSettings {
   calendlyUrl: string;
@@ -123,13 +124,15 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
             <span>© {currentYear} SANKALP SUMAN</span>
             <span className="w-1 h-1 bg-slate-800 rounded-full" />
             <span className="flex items-center gap-1.5">
               Built for <Sparkles className="w-3 h-3 text-blue-500" /> Quality
             </span>
+            <span className="w-1 h-1 bg-slate-800 rounded-full hidden sm:inline-block" />
+            <SessionTimer variant="footer" className="mt-1 sm:mt-0" />
           </div>
           
           <div className="flex items-center gap-8">
