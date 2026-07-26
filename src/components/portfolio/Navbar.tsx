@@ -7,6 +7,7 @@ import { getDocument } from '../../services/firestoreService';
 import { throttle } from '../../lib/performance';
 import { useLanguage } from '../../hooks/useLanguage';
 import { AIResumeModal } from './AIResumeModal';
+import { InstallPWAButton } from '../pwa/InstallPWAButton';
 
 const NAV_LINKS = [
   { label: 'ABOUT', href: '/#about', type: 'anchor', key: 'about' },
@@ -107,44 +108,33 @@ export default function Navbar() {
   return (
     <nav 
       className={cn(
-        "fixed top-0 left-0 w-full z-[100] transition-all duration-500",
-        scrolled ? "py-4" : "py-8"
+        "fixed top-0 left-0 w-full z-[100] transition-all duration-300 py-3 sm:py-4 px-3 sm:px-6"
       )}
     >
-      <div className={cn(
-        "max-w-7xl mx-auto px-4 sm:px-6 transition-all duration-500 flex items-center justify-between",
-        scrolled && "max-w-4xl"
-      )}>
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div 
-          style={{ height: '36.934px' }}
-          className={cn(
-            "w-full flex items-center justify-between px-4 py-2 transition-all duration-500",
-            scrolled ? "glass-card rounded-full" : "bg-transparent"
-          )}
+          className="w-full flex items-center justify-between px-3 sm:px-5 py-2 sm:py-2.5 rounded-full border border-white/10 bg-[#0b0f19]/80 backdrop-blur-2xl shadow-2xl shadow-black/50 transition-all duration-300"
         >
           {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center gap-3 group relative px-3 py-2 rounded-full hover:bg-white/5 transition-colors"
+            className="flex items-center gap-2.5 group relative shrink-0 py-0.5"
           >
-            <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-[0_0_20px_rgba(37,99,235,0.4)] overflow-hidden">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform shadow-[0_0_15px_rgba(37,99,235,0.4)] overflow-hidden shrink-0">
               {logoUrl ? (
                 <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               ) : (
-                <Cpu className="w-5 h-5 text-white" />
+                <Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               )}
             </div>
-            <div className={cn("flex flex-col transition-all duration-500", scrolled ? "w-0 opacity-0 -ml-4" : "opacity-100")}>
-              <span className="text-sm font-black text-white tracking-tighter uppercase leading-none">Sankalp</span>
-              <span className="text-[8px] font-mono text-blue-400 uppercase tracking-[0.2em] leading-none mt-1">QA Engine</span>
+            <div className="hidden min-[380px]:flex flex-col leading-none">
+              <span className="text-xs sm:text-sm font-black text-white tracking-tight uppercase">Sankalp</span>
+              <span className="text-[8px] font-mono text-blue-400 uppercase tracking-[0.2em] mt-0.5">QA & AI Lead</span>
             </div>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <div className={cn(
-            "hidden lg:flex items-center",
-            scrolled ? "gap-0.5" : "gap-1"
-          )}>
+          {/* Desktop & Laptop Nav Links */}
+          <div className="hidden lg:flex items-center gap-0.5 xl:gap-1.5">
             {NAV_LINKS.map((link) => {
               const isActive = link.type === 'anchor' 
                 ? activeSection === link.href.split('#')[1] && (location.pathname === '/' || location.pathname === `/${language}`)
@@ -156,15 +146,15 @@ export default function Navbar() {
                   to={link.href}
                   onClick={(e) => link.type === 'anchor' ? scrollToAnchor(e, link.href) : undefined}
                   className={cn(
-                    "relative px-4 py-2.5 text-[10px] font-black transition-all uppercase tracking-[0.15em] rounded-full flex items-center justify-center group",
-                    isActive ? "text-white" : "text-slate-400 hover:text-white"
+                    "relative px-2.5 xl:px-3.5 py-1.5 text-[10px] xl:text-[11px] font-bold transition-all uppercase tracking-wider rounded-full flex items-center justify-center group whitespace-nowrap shrink-0",
+                    isActive ? "text-white font-extrabold" : "text-slate-400 hover:text-white"
                   )}
                 >
                   <AnimatePresence>
                     {isActive && (
                       <motion.div
                         layoutId="active-nav-bg"
-                        className="absolute inset-0 bg-blue-600/10 border border-blue-500/20 rounded-full -z-10"
+                        className="absolute inset-0 bg-blue-600/15 border border-blue-500/30 rounded-full -z-10"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -175,7 +165,7 @@ export default function Navbar() {
                   {isActive && (
                     <motion.span 
                       layoutId="active-nav-dot"
-                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"
+                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-blue-400 rounded-full shadow-[0_0_8px_#60a5fa]"
                     />
                   )}
                 </Link>
@@ -183,47 +173,48 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 pl-2">
-            <div className={cn(
-              "hidden md:flex items-center gap-1 border-r border-white/10 pr-2 transition-all",
-              scrolled ? "gap-0" : "gap-1"
-            )}>
+          {/* Right Action Controls */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Social Icons & Resume */}
+            <div className="hidden xl:flex items-center gap-1 border-r border-white/10 pr-2">
                {logoUrl && <AIResumeModal />}
                <a 
                  href="https://linkedin.com/in/sankalpsuman" 
                  target="_blank" 
                  rel="noreferrer"
-                 className="p-2 hover:lg:p-2.5 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95"
+                 className="p-1.5 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-all"
+                 title="LinkedIn Profile"
                >
-                  <Linkedin className="w-4 h-4" />
+                  <Linkedin className="w-3.5 h-3.5" />
                </a>
                <a 
                  href="https://github.com/sankalpsuman" 
                  target="_blank" 
                  rel="noreferrer"
-                 className="p-2 hover:lg:p-2.5 hover:bg-white/5 rounded-full text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-95"
+                 className="p-1.5 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-all"
+                 title="GitHub Profile"
                >
-                  <Github className="w-4 h-4" />
+                  <Github className="w-3.5 h-3.5" />
                </a>
             </div>
 
-            <div className="hidden lg:block relative">
+            {/* Language Selector */}
+            <div className="hidden sm:block relative">
               <button 
                 onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                className="flex items-center gap-2 px-4 py-2 hover:bg-white/5 rounded-full transition-all text-[10px] font-black uppercase tracking-widest text-slate-300 group"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 hover:bg-white/10 rounded-full transition-all text-[10px] font-bold uppercase tracking-wider text-slate-300 group whitespace-nowrap"
               >
-                <Globe className="w-4 h-4 text-blue-400 group-hover:rotate-12 transition-transform" />
+                <Globe className="w-3.5 h-3.5 text-blue-400 group-hover:rotate-12 transition-transform shrink-0" />
                 <span>{LANGUAGES.find(l => l.code === language)?.short}</span>
               </button>
               
               <AnimatePresence>
                 {langDropdownOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-4 w-40 glass-card rounded-3xl overflow-hidden p-2 z-50 border border-white/10 shadow-2xl"
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    className="absolute right-0 mt-3 w-36 glass-card rounded-2xl overflow-hidden p-1.5 z-50 border border-white/15 shadow-2xl bg-[#0b0f19]"
                   >
                     {LANGUAGES.map((lang) => (
                       <button
@@ -233,8 +224,8 @@ export default function Navbar() {
                           setLangDropdownOpen(false);
                         }}
                         className={cn(
-                          "w-full px-4 py-3 rounded-2xl text-left text-[11px] font-black transition-all flex items-center justify-between uppercase tracking-widest",
-                          language === lang.code ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-slate-400 hover:text-white hover:bg-white/5"
+                          "w-full px-3 py-2 rounded-xl text-left text-[10px] font-bold transition-all flex items-center justify-between uppercase tracking-wider",
+                          language === lang.code ? "bg-blue-600 text-white shadow-md shadow-blue-600/30" : "text-slate-400 hover:text-white hover:bg-white/5"
                         )}
                       >
                         {lang.label}
@@ -245,22 +236,23 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
 
+            {/* PWA Install Button */}
+            <InstallPWAButton variant="navbar" className="hidden sm:inline-flex" />
+
+            {/* Inquire Button */}
             <Link 
               to="/#contact"
               onClick={(e) => scrollToAnchor(e, '/#contact')}
-              className={cn(
-                "hidden md:flex items-center gap-2 px-5 lg:px-6 py-2.5 rounded-full font-black transition-all uppercase tracking-[0.2em] text-[10px] border",
-                scrolled 
-                  ? "bg-white text-space-950 border-white hover:bg-transparent hover:text-white" 
-                  : "bg-blue-600 text-white border-blue-600 shadow-[0_0_25px_rgba(37,99,235,0.4)] hover:bg-transparent hover:shadow-none"
-              )}
+              className="hidden sm:inline-flex items-center justify-center px-4 sm:px-5 py-1.5 sm:py-2 rounded-full font-black uppercase tracking-wider text-[10px] sm:text-[11px] bg-white text-slate-950 hover:bg-blue-400 hover:text-white transition-all shadow-md whitespace-nowrap shrink-0"
             >
               {t('nav.inquire')}
             </Link>
 
+            {/* Mobile Hamburger Toggle */}
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2.5 text-slate-300 hover:text-white bg-white/5 rounded-full transition-colors ml-1"
+              className="lg:hidden p-2 text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors shrink-0"
+              aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -361,22 +353,25 @@ export default function Navbar() {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="flex items-center gap-2">
-                  <Link 
-                    to="/#contact"
-                    onClick={(e) => {
-                      scrollToAnchor(e, '/#contact');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold uppercase tracking-wider text-[10px] text-center shadow-lg shadow-blue-600/20 transition-all"
-                  >
-                    {t('nav.inquire')}
-                  </Link>
-                  {logoUrl && (
-                    <div className="[&>button]:py-2 [&>button]:px-3 [&>button]:text-[10px] [&>button]:rounded-xl [&>button]:bg-white/10 [&>button]:hover:bg-white/20">
-                      <AIResumeModal />
-                    </div>
-                  )}
+                <div className="flex flex-col gap-2">
+                  <InstallPWAButton variant="mobile-menu" />
+                  <div className="flex items-center gap-2">
+                    <Link 
+                      to="/#contact"
+                      onClick={(e) => {
+                        scrollToAnchor(e, '/#contact');
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold uppercase tracking-wider text-[10px] text-center shadow-lg shadow-blue-600/20 transition-all"
+                    >
+                      {t('nav.inquire')}
+                    </Link>
+                    {logoUrl && (
+                      <div className="[&>button]:py-2 [&>button]:px-3 [&>button]:text-[10px] [&>button]:rounded-xl [&>button]:bg-white/10 [&>button]:hover:bg-white/20">
+                        <AIResumeModal />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

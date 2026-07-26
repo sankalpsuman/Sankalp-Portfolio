@@ -8,6 +8,10 @@ import { subscribeDocument } from './services/firestoreService';
 import { AIChatbot } from './components/portfolio/AIChatbot';
 import ErrorBoundary from './components/ErrorBoundary';
 import { LanguageProvider } from './hooks/useLanguage';
+import { PWAProvider } from './context/PWAContext';
+import { OfflineBanner } from './components/pwa/OfflineBanner';
+import { IOSInstallModal } from './components/pwa/IOSInstallModal';
+import { PWASplashScreen } from './components/pwa/PWASplashScreen';
 import { lazyRetry } from './lib/lazyRetry';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShieldCheck, Terminal } from 'lucide-react';
@@ -248,10 +252,14 @@ export default function App() {
 
   return (
     <HelmetProvider>
-      <Router>
-        <LanguageProvider>
-          <Toaster position="bottom-right" />
-          <ErrorBoundary>
+      <PWAProvider>
+        <Router>
+          <LanguageProvider>
+            <Toaster position="bottom-right" />
+            <OfflineBanner />
+            <IOSInstallModal />
+            <PWASplashScreen />
+            <ErrorBoundary>
             <AnimatePresence mode="wait">
               {!hasEntered && (
                 <WelcomeGateway onEnter={handleEnter} key="welcome-gateway" />
@@ -307,6 +315,7 @@ export default function App() {
           </ErrorBoundary>
         </LanguageProvider>
       </Router>
-    </HelmetProvider>
+    </PWAProvider>
+  </HelmetProvider>
   );
 }

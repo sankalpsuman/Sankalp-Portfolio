@@ -1,0 +1,48 @@
+{
+  "name": "Sankalp Suman | QA & AI Portfolio",
+  "short_name": "Sankalp Suman",
+  "description": "Advanced AI-Powered QA Engineering, Automation & AI Portfolio",
+  "start_url": "/",
+  "scope": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#0b0f19",
+  "orientation": "portrait-primary",
+  "categories": ["portfolio", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "72x72 96x96 128x128 144x144 152x152 192x192 384x384 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "QA Quality Dashboard",
+      "short_name": "QA Dashboard",
+      "description": "View Live Quality Assurance Metrics",
+      "url": "/#qa-dashboard",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "AI Playground",
+      "short_name": "AI Playground",
+      "description": "Interact with AI Testing Tools",
+      "url": "/#ai-qa",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+    }
+  ]
+}
