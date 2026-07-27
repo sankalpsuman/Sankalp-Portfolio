@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Cpu, Menu, X, Sparkles, Globe, Linkedin, Github, ArrowUp } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -50,6 +51,9 @@ export default function Navbar() {
     const handleScroll = throttle(() => {
       setScrolled(window.scrollY > 20);
     }, 100);
+
+    // Set scroll status immediately on mount
+    setScrolled(window.scrollY > 20);
 
     const observerOptions = {
       root: null,
@@ -213,12 +217,12 @@ export default function Navbar() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     onClick={scrollToTop}
-                    className="p-1.5 px-2 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 border border-blue-500/30 transition-all shadow-sm group cursor-pointer"
+                    className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-md shadow-blue-600/40 border border-blue-400/30 transition-all group cursor-pointer"
                     title="Scroll to Top"
                     aria-label="Scroll to Top"
                   >
-                    <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
-                    <span className="hidden min-[480px]:inline text-[9px] uppercase tracking-wider">Top</span>
+                    <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform shrink-0 stroke-[2.5]" />
+                    <span className="text-[10px] font-extrabold tracking-wider">TOP</span>
                   </motion.button>
                 )}
               </AnimatePresence>
@@ -428,23 +432,27 @@ export default function Navbar() {
         </AnimatePresence>
       </nav>
 
-      {/* Floating Bottom-Right Scroll-To-Top Quick Trigger Button */}
-      <AnimatePresence>
-        {scrolled && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            transition={{ duration: 0.2 }}
-            onClick={scrollToTop}
-            className="fixed bottom-6 right-6 z-40 p-3 bg-blue-600/90 hover:bg-blue-500 text-white rounded-full shadow-2xl shadow-blue-600/40 border border-white/20 backdrop-blur-md cursor-pointer group hover:scale-110 active:scale-95 transition-all"
-            title="Jump to Top"
-            aria-label="Jump to Top"
-          >
-            <ArrowUp className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {/* Floating Bottom-Left Scroll-To-Top Quick Trigger Button (Portaled directly to document.body) */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {scrolled && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              transition={{ duration: 0.2 }}
+              onClick={scrollToTop}
+              className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[99999] px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-2xl shadow-blue-600/50 border border-blue-400/30 backdrop-blur-md cursor-pointer group hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 font-black text-xs uppercase tracking-wider pointer-events-auto"
+              title="Jump to Top"
+              aria-label="Jump to Top"
+            >
+              <ArrowUp className="w-4 h-4 stroke-[3] group-hover:-translate-y-0.5 transition-transform" />
+              <span>TOP</span>
+            </motion.button>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }

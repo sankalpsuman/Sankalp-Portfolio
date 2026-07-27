@@ -268,7 +268,7 @@ export default function App() {
 
               <div className={cn(
                 "transition-all duration-1000 ease-in-out",
-                !hasEntered ? "opacity-0 scale-95 blur-xl pointer-events-none" : "opacity-100 scale-100 blur-0"
+                !hasEntered ? "opacity-0 scale-95 blur-xl pointer-events-none" : "opacity-100"
               )}>
                 <Suspense fallback={<LoadingFallback />}>
                   <Routes>
