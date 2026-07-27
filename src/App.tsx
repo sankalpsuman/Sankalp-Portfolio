@@ -251,71 +251,71 @@ export default function App() {
   }, []);
 
   return (
-    <HelmetProvider>
-      <PWAProvider>
-        <Router>
-          <LanguageProvider>
-            <Toaster position="bottom-right" />
-            <OfflineBanner />
-            <IOSInstallModal />
-            <PWASplashScreen />
-            <ErrorBoundary>
-            <AnimatePresence mode="wait">
-              {!hasEntered && (
-                <WelcomeGateway onEnter={handleEnter} key="welcome-gateway" />
-              )}
-            </AnimatePresence>
+    <Router>
+      <HelmetProvider>
+        <PWAProvider>
+          <ErrorBoundary>
+            <LanguageProvider>
+              <Toaster position="bottom-right" />
+              <OfflineBanner />
+              <IOSInstallModal />
+              <PWASplashScreen />
+              <AnimatePresence mode="wait">
+                {!hasEntered && (
+                  <WelcomeGateway onEnter={handleEnter} key="welcome-gateway" />
+                )}
+              </AnimatePresence>
 
-            <div className={cn(
-              "transition-all duration-1000 ease-in-out",
-              !hasEntered ? "opacity-0 scale-95 blur-xl pointer-events-none" : "opacity-100 scale-100 blur-0"
-            )}>
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
-                  {/* English / Default Base Routes */}
-                  <Route path="/" element={<PortfolioHome />} />
-                  <Route path="/blog" element={<BlogList />} />
-                  <Route path="/blog/:slug" element={<BlogDetail />} />
-                  <Route path="/now" element={<NowPage />} />
+              <div className={cn(
+                "transition-all duration-1000 ease-in-out",
+                !hasEntered ? "opacity-0 scale-95 blur-xl pointer-events-none" : "opacity-100 scale-100 blur-0"
+              )}>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
+                    {/* English / Default Base Routes */}
+                    <Route path="/" element={<PortfolioHome />} />
+                    <Route path="/blog" element={<BlogList />} />
+                    <Route path="/blog/:slug" element={<BlogDetail />} />
+                    <Route path="/now" element={<NowPage />} />
 
-                  {/* Hindi Prefixed Routes */}
-                  <Route path="/hi" element={<PortfolioHome />} />
-                  <Route path="/hi/blog" element={<BlogList />} />
-                  <Route path="/hi/blog/:slug" element={<BlogDetail />} />
-                  <Route path="/hi/now" element={<NowPage />} />
+                    {/* Hindi Prefixed Routes */}
+                    <Route path="/hi" element={<PortfolioHome />} />
+                    <Route path="/hi/blog" element={<BlogList />} />
+                    <Route path="/hi/blog/:slug" element={<BlogDetail />} />
+                    <Route path="/hi/now" element={<NowPage />} />
 
-                  {/* French Prefixed Routes */}
-                  <Route path="/fr" element={<PortfolioHome />} />
-                  <Route path="/fr/blog" element={<BlogList />} />
-                  <Route path="/fr/blog/:slug" element={<BlogDetail />} />
-                  <Route path="/fr/now" element={<NowPage />} />
+                    {/* French Prefixed Routes */}
+                    <Route path="/fr" element={<PortfolioHome />} />
+                    <Route path="/fr/blog" element={<BlogList />} />
+                    <Route path="/fr/blog/:slug" element={<BlogDetail />} />
+                    <Route path="/fr/now" element={<NowPage />} />
 
-                  {/* German Prefixed Routes */}
-                  <Route path="/de" element={<PortfolioHome />} />
-                  <Route path="/de/blog" element={<BlogList />} />
-                  <Route path="/de/blog/:slug" element={<BlogDetail />} />
-                  <Route path="/de/now" element={<NowPage />} />
+                    {/* German Prefixed Routes */}
+                    <Route path="/de" element={<PortfolioHome />} />
+                    <Route path="/de/blog" element={<BlogList />} />
+                    <Route path="/de/blog/:slug" element={<BlogDetail />} />
+                    <Route path="/de/now" element={<NowPage />} />
 
-                  {/* Admin Management System (Non-prefixed) */}
-                  <Route path="/admin/login" element={<AdminLogin />} />
-                  <Route 
-                    path="/admin/*" 
-                    element={
-                      <AdminGuard user={user} authInitialized={authInitialized}>
-                        <AdminDashboard />
-                      </AdminGuard>
-                    } 
-                  />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </Suspense>
-            </div>
-            
-            <AIChatbot />
+                    {/* Admin Management System (Non-prefixed) */}
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route 
+                      path="/admin/*" 
+                      element={
+                        <AdminGuard user={user} authInitialized={authInitialized}>
+                          <AdminDashboard />
+                        </AdminGuard>
+                      } 
+                    />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Suspense>
+              </div>
+              
+              <AIChatbot />
+            </LanguageProvider>
           </ErrorBoundary>
-        </LanguageProvider>
-      </Router>
-    </PWAProvider>
-  </HelmetProvider>
+        </PWAProvider>
+      </HelmetProvider>
+    </Router>
   );
 }

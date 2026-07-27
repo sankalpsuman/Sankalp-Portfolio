@@ -11,6 +11,7 @@ interface SectionProps {
   containerClassName?: string;
   title?: string;
   subtitle?: string;
+  titleHeadingLevel?: 'h2' | 'h3';
 }
 
 // Map of unique tech line-art vectors representing QA and Agile for decorative backgrounds
@@ -47,9 +48,11 @@ export default function Section({
   className, 
   containerClassName,
   title,
-  subtitle 
+  subtitle,
+  titleHeadingLevel = 'h2'
 }: SectionProps) {
   const decor = getSectionDecoration(id);
+  const HeadingTag = motion[titleHeadingLevel];
 
   return (
     <section 
@@ -112,7 +115,7 @@ export default function Section({
             
             {title && (
               <div className="relative inline-block">
-                <motion.h2 
+                <HeadingTag 
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
@@ -120,7 +123,7 @@ export default function Section({
                   className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white font-display will-change-[transform,opacity]"
                 >
                   <AutoTranslate text={title} />
-                </motion.h2>
+                </HeadingTag>
                 
                 {/* Visual Accent Glow bar beneath core headers */}
                 <motion.div 

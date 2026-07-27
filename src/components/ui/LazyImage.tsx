@@ -7,9 +7,11 @@ interface LazyImageProps {
   alt: string;
   className?: string;
   wrapperClassName?: string;
+  width?: number | string;
+  height?: number | string;
 }
 
-export default function LazyImage({ src, alt, className, wrapperClassName }: LazyImageProps) {
+export default function LazyImage({ src, alt, className, wrapperClassName, width, height }: LazyImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState(false);
 
@@ -43,7 +45,9 @@ export default function LazyImage({ src, alt, className, wrapperClassName }: Laz
       ) : (
         <motion.img
           src={src}
-          alt={alt}
+          alt={alt || "Sankalp Suman Portfolio Visual"}
+          width={width}
+          height={height}
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ 
             opacity: isLoaded ? 1 : 0, 
@@ -52,6 +56,7 @@ export default function LazyImage({ src, alt, className, wrapperClassName }: Laz
           transition={{ duration: 0.6, ease: "easeOut" }}
           className={cn("w-full h-full object-cover", className)}
           loading="lazy"
+          decoding="async"
         />
       )}
     </div>

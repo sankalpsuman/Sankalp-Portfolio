@@ -75,6 +75,7 @@ export default function Hero({ data }: { data?: any }) {
             className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tight mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/40 leading-tight px-4"
           >
             {data?.name || 'Sankalp Suman'}
+            <span className="sr-only"> – Software Test Specialist | QA Lead & AI Testing Expert</span>
           </motion.h1>
 
           {/* Subtitle */}

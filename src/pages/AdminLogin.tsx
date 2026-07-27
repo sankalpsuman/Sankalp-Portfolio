@@ -14,9 +14,12 @@ export default function AdminLogin() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user?.email === 'sankalpsmn@gmail.com') {
-        const from = location.state?.from?.pathname + (location.state?.from?.search || '') || localStorage.getItem('lastAdminPath') || '/admin';
-        localStorage.removeItem('lastAdminPath'); // Clear it so it doesn't persist across fresh browser sessions if not needed
-        navigate(from, { replace: true });
+        const stateFrom = location.state?.from;
+        const targetPath = stateFrom?.pathname 
+          ? (stateFrom.pathname + (stateFrom.search || '')) 
+          : (localStorage.getItem('lastAdminPath') || '/admin');
+        localStorage.removeItem('lastAdminPath');
+        navigate(targetPath, { replace: true });
       }
     });
     return unsubscribe;
@@ -32,9 +35,12 @@ export default function AdminLogin() {
     try {
       const result = await signInWithPopup(auth, provider);
       if (result.user.email === 'sankalpsmn@gmail.com') {
-        const from = location.state?.from?.pathname + (location.state?.from?.search || '') || localStorage.getItem('lastAdminPath') || '/admin';
+        const stateFrom = location.state?.from;
+        const targetPath = stateFrom?.pathname 
+          ? (stateFrom.pathname + (stateFrom.search || '')) 
+          : (localStorage.getItem('lastAdminPath') || '/admin');
         localStorage.removeItem('lastAdminPath');
-        navigate(from, { replace: true });
+        navigate(targetPath, { replace: true });
       } else {
         setError('Access Denied. Only authorized administrators are allowed.');
         await auth.signOut();

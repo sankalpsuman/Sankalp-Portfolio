@@ -150,9 +150,9 @@ export default function Skills() {
                   </div>
                   
                   <div className="text-center w-full">
-                    <h4 className="text-[9px] sm:text-[10px] font-bold text-slate-200 uppercase tracking-widest mb-1.5 sm:mb-2 line-clamp-1">
+                    <h3 className="text-[9px] sm:text-[10px] font-bold text-slate-200 uppercase tracking-widest mb-1.5 sm:mb-2 line-clamp-1">
                       {skill.name}
-                    </h4>
+                    </h3>
                     <div className="w-full max-w-[80px] sm:max-w-[96px] mx-auto h-1 bg-white/5 rounded-full overflow-hidden">
                       <motion.div 
                         initial={{ width: 0 }}

@@ -97,6 +97,75 @@ export default function SEO({
       
       {/* Canonical URL */}
       <link rel="canonical" href={currentUrl} />
+
+      {/* JSON-LD Structured Data Schemas */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Person",
+              "@id": "https://sankalp-suman.vercel.app/#person",
+              "name": "Sankalp Suman",
+              "jobTitle": "Software Test Specialist & QA Lead",
+              "worksFor": {
+                "@type": "Organization",
+                "name": "Amdocs"
+              },
+              "url": "https://sankalp-suman.vercel.app/",
+              "image": finalImage,
+              "sameAs": [
+                "https://linkedin.com/in/sankalpsuman",
+                "https://github.com/sankalpsuman"
+              ],
+              "email": "mailto:sankalpsmn@gmail.com",
+              "knowsAbout": [
+                "Software Testing",
+                "Quality Assurance",
+                "API Testing",
+                "Postman",
+                "Selenium",
+                "Python",
+                "Agile Testing",
+                "Scrum Master",
+                "ISTQB Certified",
+                "AI Testing Agents",
+                "Regression Testing",
+                "User Acceptance Testing (UAT)"
+              ],
+              "alumniOf": {
+                "@type": "EducationalOrganization",
+                "name": "Dr. A.P.J. Abdul Kalam Technical University"
+              },
+              "hasCredential": [
+                {
+                  "@type": "EducationalOccupationalCredential",
+                  "name": "ISTQB Foundation Level Certified Tester"
+                }
+              ]
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://sankalp-suman.vercel.app/#website",
+              "url": "https://sankalp-suman.vercel.app/",
+              "name": "Sankalp Suman – Software Test Specialist & QA Lead",
+              "description": finalDescription,
+              "publisher": {
+                "@id": "https://sankalp-suman.vercel.app/#person"
+              }
+            },
+            {
+              "@type": "ProfilePage",
+              "@id": "https://sankalp-suman.vercel.app/#profilepage",
+              "url": currentUrl,
+              "name": siteTitle,
+              "mainEntity": {
+                "@id": "https://sankalp-suman.vercel.app/#person"
+              }
+            }
+          ]
+        })}
+      </script>
     </Helmet>
   );
 }
