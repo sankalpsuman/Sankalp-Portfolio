@@ -4,7 +4,7 @@ import {
   MessageSquare, X, Send, Minus, Maximize2, 
   Linkedin, FileText, Calendar, 
   AlertCircle, ChevronRight, CheckCircle2, RefreshCw,
-  User, Mail, Building
+  User, Mail, Building, Sparkles
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -993,32 +993,49 @@ Please make sure your server environment variables are configured (such as **GEM
                       );
                     })}
 
-                    {isGenerating && (
-                      <div className="flex items-start gap-2 max-w-[80%] self-start animate-fade-in" id="chatbot-typing-indicator">
-                        <div className="h-7 min-w-[28px] px-2.5 rounded-full bg-brand text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm">
-                          Sankalp
-                        </div>
-                        <div className="p-3 rounded-2xl rounded-tl-none text-xs shadow-sm bg-white/5 text-gray-300 border border-white/10">
-                          <div className="flex items-center gap-1.5 py-0.5 px-0.5" id="typing-dots">
-                            <motion.span
-                              animate={{ y: [0, -5, 0] }}
-                              transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0 }}
-                              className="w-1.5 h-1.5 bg-brand-primary rounded-full inline-block"
-                            />
-                            <motion.span
-                              animate={{ y: [0, -5, 0] }}
-                              transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
-                              className="w-1.5 h-1.5 bg-brand-primary rounded-full inline-block"
-                            />
-                            <motion.span
-                              animate={{ y: [0, -5, 0] }}
-                              transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-                              className="w-1.5 h-1.5 bg-brand-primary rounded-full inline-block"
-                            />
+                    <AnimatePresence>
+                      {isGenerating && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex items-start gap-2 max-w-[85%] self-start"
+                          id="chatbot-typing-indicator"
+                        >
+                          {/* Mini Bubble Abbreviation avatar */}
+                          <div className="h-7 min-w-[28px] px-2.5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm">
+                            Sankalp
                           </div>
-                        </div>
-                      </div>
-                    )}
+                          
+                          <div className="p-3.5 rounded-2xl rounded-tl-none text-xs shadow-md bg-[#15192c] text-white border border-white/10 flex flex-col gap-1.5 backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-slate-300">
+                              <Sparkles className="w-3.5 h-3.5 text-blue-400 animate-pulse shrink-0" />
+                              <span className="text-[11px] font-medium tracking-wide text-slate-300">
+                                AI is thinking
+                              </span>
+                              <div className="flex items-center gap-1 pl-0.5" id="typing-dots">
+                                <motion.span
+                                  animate={{ y: [0, -3.5, 0], opacity: [0.4, 1, 0.4] }}
+                                  transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut", delay: 0 }}
+                                  className="w-1.5 h-1.5 bg-blue-400 rounded-full inline-block shadow-[0_0_6px_rgba(96,165,250,0.6)]"
+                                />
+                                <motion.span
+                                  animate={{ y: [0, -3.5, 0], opacity: [0.4, 1, 0.4] }}
+                                  transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+                                  className="w-1.5 h-1.5 bg-blue-400 rounded-full inline-block shadow-[0_0_6px_rgba(96,165,250,0.6)]"
+                                />
+                                <motion.span
+                                  animate={{ y: [0, -3.5, 0], opacity: [0.4, 1, 0.4] }}
+                                  transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+                                  className="w-1.5 h-1.5 bg-blue-400 rounded-full inline-block shadow-[0_0_6px_rgba(96,165,250,0.6)]"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                     <div ref={messagesEndRef} />
                   </div>
 
