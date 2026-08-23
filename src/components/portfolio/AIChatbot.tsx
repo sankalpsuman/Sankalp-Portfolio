@@ -48,7 +48,7 @@ Professional Certifications & Accolades:
 Sankalp's Contact details:
 - Email: sankalpsmn@gmail.com
 - Location: Gurgaon / Delhi NCR, India
-- LinkedIn profile: linkedin.com/in/sankalp-suman
+- LinkedIn profile: in.linkedin.com/in/sankalpsuman
 `;
 
 async function clientFallbackChat(history: ChatMessage[]) {
@@ -724,7 +724,7 @@ Please make sure your server environment variables are configured (such as **GEM
                   Resume Download
                 </a>
                 <a 
-                  href="https://linkedin.com/in/sankalp-suman" 
+                  href="https://in.linkedin.com/in/sankalpsuman" 
                   target="_blank" 
                   rel="noreferrer"
                   className="flex items-center gap-1.5 px-3 py-1 bg-neutral-800/80 text-blue-400 border border-neutral-700 rounded-full hover:bg-neutral-750 transition-all font-medium whitespace-nowrap"

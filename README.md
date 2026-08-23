@@ -167,8 +167,8 @@ The app will be running at **`http://localhost:3000`**.
 ## 👨‍💻 Author
 
 **Sankalp Suman**
-- **LinkedIn**: [linkedin.com/in/sankalp-suman-qa](https://linkedin.com/in/sankalp-suman-qa)
-- **Portfolio**: [Live Portfolio Demo](https://ais-dev-f6bmxsvqedm4r3t2gz5255-638313012041.asia-southeast1.run.app)
+- **LinkedIn**: [in.linkedin.com/in/sankalpsuman](https://in.linkedin.com/in/sankalpsuman)
+- **Live Portfolio**: [sankalp-suman.vercel.app](https://sankalp-suman.vercel.app/)
 - **Role**: Senior Quality Assurance Automation Engineer & SDET
 
 ---
