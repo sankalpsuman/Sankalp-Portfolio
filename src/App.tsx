@@ -176,10 +176,7 @@ import { WelcomeGateway } from './components/portfolio/WelcomeGateway';
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authInitialized, setAuthInitialized] = useState(false);
-  const [hasEntered, setHasEntered] = useState(() => {
-    // Check if user has already entered in this session
-    return sessionStorage.getItem('portfolio_entered') === 'true';
-  });
+  const [hasEntered, setHasEntered] = useState(true);
 
   const handleEnter = () => {
     setHasEntered(true);

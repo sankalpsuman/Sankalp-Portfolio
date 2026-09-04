@@ -537,6 +537,111 @@ RESPOND WITH THE FOLLOWING JSON FORMAT ONLY:
     res.json({ status: 'ok' });
   });
 
+  // Dynamic Sitemap Route
+  app.get('/sitemap.xml', async (req, res) => {
+    try {
+      const baseUrl = 'https://sankalp-suman.vercel.app';
+      const today = new Date().toISOString().split('T')[0];
+
+      let blogUrls = '';
+
+      if (db) {
+        try {
+          const blogsRef = collection(db, 'blogs');
+          const q = query(blogsRef, where('status', '==', 'published'));
+          const querySnapshot = await getDocs(q);
+
+          querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            if (data.slug) {
+              const lastmod = data.publishedAt ? new Date(data.publishedAt).toISOString().split('T')[0] : today;
+              blogUrls += `
+  <url>
+    <loc>${baseUrl}/blog/${data.slug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/blog/${data.slug}"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="${baseUrl}/hi/blog/${data.slug}"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="${baseUrl}/fr/blog/${data.slug}"/>
+    <xhtml:link rel="alternate" hreflang="de" href="${baseUrl}/de/blog/${data.slug}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/blog/${data.slug}"/>
+  </url>`;
+            }
+          });
+        } catch (dbErr) {
+          console.warn('Failed to fetch blogs for sitemap:', dbErr);
+        }
+      }
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Main Home Page -->
+  <url>
+    <loc>${baseUrl}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="${baseUrl}/hi"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="${baseUrl}/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="${baseUrl}/de"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/"/>
+  </url>
+
+  <!-- Localized Home Pages -->
+  <url><loc>${baseUrl}/hi</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>${baseUrl}/fr</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>${baseUrl}/de</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <!-- Main Blog Listing -->
+  <url>
+    <loc>${baseUrl}/blog</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/blog"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="${baseUrl}/hi/blog"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="${baseUrl}/fr/blog"/>
+    <xhtml:link rel="alternate" hreflang="de" href="${baseUrl}/de/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/blog"/>
+  </url>
+
+  <!-- Localized Blog Listings -->
+  <url><loc>${baseUrl}/hi/blog</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>${baseUrl}/fr/blog</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>${baseUrl}/de/blog</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+
+  <!-- Now Page -->
+  <url>
+    <loc>${baseUrl}/now</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/now"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="${baseUrl}/hi/now"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="${baseUrl}/fr/now"/>
+    <xhtml:link rel="alternate" hreflang="de" href="${baseUrl}/de/now"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/now"/>
+  </url>
+
+  <!-- Localized Now Pages -->
+  <url><loc>${baseUrl}/hi/now</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${baseUrl}/fr/now</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${baseUrl}/de/now</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+${blogUrls}
+</urlset>`;
+
+      res.header('Content-Type', 'application/xml; charset=utf-8');
+      res.header('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+      return res.status(200).send(xml);
+    } catch (error) {
+      console.error('Error generating sitemap:', error);
+      return res.status(500).send('Error generating sitemap');
+    }
+  });
+
   app.post('/api/ai/generate', async (req, res) => {
     try {
       const { prompt, userInput } = req.body || {};

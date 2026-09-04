@@ -1,26 +1,113 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Main Home Page -->
   <url>
     <loc>https://sankalp-suman.vercel.app/</loc>
-    <lastmod>2026-07-27</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://sankalp-suman.vercel.app/"/>
-    <xhtml:link rel="alternate" hreflang="hi" href="https://sankalp-suman.vercel.app/hi/"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://sankalp-suman.vercel.app/fr/"/>
-    <xhtml:link rel="alternate" hreflang="de" href="https://sankalp-suman.vercel.app/de/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://sankalp-suman.vercel.app/hi"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sankalp-suman.vercel.app/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://sankalp-suman.vercel.app/de"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://sankalp-suman.vercel.app/"/>
   </url>
+
+  <!-- Hindi Home Page -->
   <url>
-    <loc>https://sankalp-suman.vercel.app/blog</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://sankalp-suman.vercel.app/hi</loc>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- French Home Page -->
+  <url>
+    <loc>https://sankalp-suman.vercel.app/fr</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- German Home Page -->
+  <url>
+    <loc>https://sankalp-suman.vercel.app/de</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Main Blog Listing -->
+  <url>
+    <loc>https://sankalp-suman.vercel.app/blog</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sankalp-suman.vercel.app/blog"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://sankalp-suman.vercel.app/hi/blog"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sankalp-suman.vercel.app/fr/blog"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://sankalp-suman.vercel.app/de/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://sankalp-suman.vercel.app/blog"/>
+  </url>
+
+  <!-- Hindi Blog Listing -->
+  <url>
+    <loc>https://sankalp-suman.vercel.app/hi/blog</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- French Blog Listing -->
+  <url>
+    <loc>https://sankalp-suman.vercel.app/fr/blog</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- German Blog Listing -->
+  <url>
+    <loc>https://sankalp-suman.vercel.app/de/blog</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Now Page -->
   <url>
     <loc>https://sankalp-suman.vercel.app/now</loc>
-    <lastmod>2026-07-27</lastmod>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sankalp-suman.vercel.app/now"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://sankalp-suman.vercel.app/hi/now"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://sankalp-suman.vercel.app/fr/now"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://sankalp-suman.vercel.app/de/now"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://sankalp-suman.vercel.app/now"/>
+  </url>
+
+  <!-- Hindi Now Page -->
+  <url>
+    <loc>https://sankalp-suman.vercel.app/hi/now</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- French Now Page -->
+  <url>
+    <loc>https://sankalp-suman.vercel.app/fr/now</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- German Now Page -->
+  <url>
+    <loc>https://sankalp-suman.vercel.app/de/now</loc>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

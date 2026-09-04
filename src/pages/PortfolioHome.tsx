@@ -75,9 +75,9 @@ export default function PortfolioHome() {
         <main>
           <Hero />
           <About active={welcomeDismissed} />
-          <LazySection id="why-hire-me"><WhyHireMe /></LazySection>
+          <LazySection id="why-hire-me" eager={true}><WhyHireMe /></LazySection>
           
-          <LazySection id="experience"><Experience /></LazySection>
+          <LazySection id="experience" eager={true}><Experience /></LazySection>
           <LazySection id="career-journey"><CareerTimeline /></LazySection>
           <LazySection id="skills"><Skills /></LazySection>
           <LazySection id="ai-qa"><AISection /></LazySection>

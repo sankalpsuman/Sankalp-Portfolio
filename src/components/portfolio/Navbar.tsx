@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cpu, Menu, X, Sparkles, Globe, Linkedin, Github, ArrowUp } from 'lucide-react';
+import { Cpu, Menu, X, Sparkles, Globe, Linkedin, Github, ArrowUp, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getDocument } from '../../services/firestoreService';
@@ -93,14 +93,32 @@ export default function Navbar() {
 
     if (location.pathname === '/' || location.pathname === `/${language}`) {
       e.preventDefault();
-      const element = document.getElementById(targetId);
-      if (element) {
-        setIsNavigating(true);
-        setActiveSection(targetId);
-        element.scrollIntoView({ behavior: 'smooth' });
-        window.history.pushState(null, '', href);
-        setTimeout(() => setIsNavigating(false), 1000);
-      }
+      
+      // Dispatch event to force LazySection to mount immediately before scrolling
+      window.dispatchEvent(new CustomEvent('force-section-visible', { detail: targetId }));
+
+      // Use a short timeout to allow React to mount the section if it was lazy
+      setTimeout(() => {
+        const element = document.getElementById(targetId);
+        if (element) {
+          setIsNavigating(true);
+          setActiveSection(targetId);
+          
+          // Calculate exact position with offset for fixed navbar
+          const navHeight = 80;
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.scrollY - navHeight;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+          
+          window.history.pushState(null, '', href);
+          setTimeout(() => setIsNavigating(false), 1000);
+        }
+      }, 50);
+
       setMobileMenuOpen(false);
     } else {
       e.preventDefault();
@@ -312,120 +330,135 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile & Tablet Menu Popover */}
+        {/* Mobile & Tablet Side Drawer Menu */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <>
-              {/* Click-outside Backdrop */}
+              {/* Backdrop */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
                 onClick={() => setMobileMenuOpen(false)}
-                className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-xs z-40"
+                className="lg:hidden fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
               />
               
+              {/* Drawer */}
               <motion.div
-                initial={{ opacity: 0, y: -12, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -12, scale: 0.95 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="lg:hidden fixed top-16 sm:top-20 right-3 sm:right-6 w-[min(calc(100vw-1.5rem),340px)] glass-card rounded-3xl border border-white/15 p-4 z-50 shadow-2xl bg-[#0b0f19]/95 backdrop-blur-2xl"
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                className="lg:hidden fixed top-0 right-0 bottom-0 w-[75vw] max-w-[280px] z-[201] bg-[#040710] border-l border-white/10 shadow-2xl flex flex-col"
               >
-                {/* Header inside mobile popover */}
-                <div className="flex items-center justify-between pb-2.5 border-b border-white/10 mb-2.5 px-1">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-blue-400 flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3 text-cyan-300" /> Quick Navigation
-                  </span>
+                {/* Header */}
+                <div className="flex items-center justify-between p-3 border-b border-white/5">
+                  <span className="text-[9px] font-mono text-slate-400 uppercase tracking-[0.2em]">Navigation</span>
                   <button
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-1 text-slate-400 hover:text-white rounded-full hover:bg-white/10 transition-colors"
-                    aria-label="Close menu"
+                    className="w-7 h-7 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-full text-white transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                {/* Links List */}
-                <div className="flex flex-col gap-1 mb-3">
-                  {NAV_LINKS.map((link) => {
+                {/* Links List - Staggered */}
+                <div className="flex-1 overflow-y-auto py-2 px-2 flex flex-col gap-0.5">
+                  {NAV_LINKS.map((link, i) => {
                     const isActive = link.type === 'anchor' 
                       ? activeSection === link.href.split('#')[1] && (location.pathname === '/' || location.pathname === `/${language}`)
                       : location.pathname === link.href || location.pathname === `/${language}${link.href}`;
 
                     return (
-                      <Link 
+                      <motion.div
                         key={link.key}
-                        to={link.href}
-                        onClick={(e) => {
-                          if (link.type === 'anchor') {
-                            scrollToAnchor(e, link.href);
-                          } else {
-                            setMobileMenuOpen(false);
-                          }
-                        }}
-                        className={cn(
-                          "flex items-center justify-between py-2 px-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all",
-                          isActive 
-                            ? "bg-blue-600/20 text-blue-400 border border-blue-500/30 font-extrabold" 
-                            : "text-slate-300 hover:text-white hover:bg-white/5"
-                        )}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 + 0.1 }}
                       >
-                        <span>{t(`nav.${link.key}`)}</span>
-                        {isActive && <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_#60a5fa]" />}
-                      </Link>
+                        <Link 
+                          to={link.href}
+                          onClick={(e) => {
+                            if (link.type === 'anchor') {
+                              scrollToAnchor(e, link.href);
+                            } else {
+                              setMobileMenuOpen(false);
+                            }
+                          }}
+                          className={cn(
+                            "group flex items-center justify-between px-3 py-2.5 rounded-lg transition-all",
+                            isActive ? "bg-blue-600/10 border border-blue-500/20" : "hover:bg-white/5 border border-transparent"
+                          )}
+                        >
+                          <span className={cn(
+                            "text-xs font-bold uppercase tracking-widest transition-colors",
+                            isActive ? "text-blue-400" : "text-slate-300 group-hover:text-white"
+                          )}>
+                            {t(`nav.${link.key}`)}
+                          </span>
+                          {isActive ? (
+                            <motion.div layoutId="mobile-active-nav-dot" className="w-1 h-1 rounded-full bg-blue-500 shadow-[0_0_6px_#60a5fa]" />
+                          ) : (
+                            <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 transition-colors" />
+                          )}
+                        </Link>
+                      </motion.div>
                     );
                   })}
                 </div>
 
-                {/* Language Selection & Action Bar */}
-                <div className="pt-2.5 border-t border-white/10 flex flex-col gap-2.5">
-                  <div className="flex items-center justify-between px-1">
-                    <span className="text-[9px] font-mono font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <Globe className="w-3 h-3 text-blue-400" /> Language
-                    </span>
-                    <div className="flex gap-1">
-                      {LANGUAGES.map((lang) => (
-                        <button
-                          key={lang.code}
-                          onClick={() => {
-                            setLanguage(lang.code as any);
-                          }}
-                          className={cn(
-                            "px-2 py-1 rounded-lg text-[9px] font-bold uppercase transition-all cursor-pointer",
-                            language === lang.code 
-                              ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30" 
-                              : "bg-white/5 text-slate-400 hover:text-white hover:bg-white/10"
-                          )}
-                        >
-                          {lang.short}
-                        </button>
-                      ))}
+                {/* Bento Footer */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="p-3 border-t border-white/5 bg-[#02040a] flex flex-col gap-2"
+                >
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="col-span-2 flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+                      <span className="text-[9px] font-mono font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 px-1">
+                        <Globe className="w-3 h-3 text-blue-400" /> Lang
+                      </span>
+                      <div className="flex gap-1">
+                        {LANGUAGES.map((lang) => (
+                          <button
+                            key={lang.code}
+                            onClick={() => setLanguage(lang.code as any)}
+                            className={cn(
+                              "px-2 py-1 rounded-md text-[9px] font-bold uppercase transition-all",
+                              language === lang.code 
+                                ? "bg-blue-600 text-white" 
+                                : "text-slate-400 hover:text-white hover:bg-white/10"
+                            )}
+                          >
+                            {lang.short}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Quick Actions */}
-                  <div className="flex flex-col gap-2">
-                    <InstallPWAButton variant="mobile-menu" />
-                    <div className="flex items-center gap-2">
-                      <Link 
-                        to="/#contact"
-                        onClick={(e) => {
-                          scrollToAnchor(e, '/#contact');
-                          setMobileMenuOpen(false);
-                        }}
-                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold uppercase tracking-wider text-[10px] text-center shadow-lg shadow-blue-600/20 transition-all"
-                      >
-                        {t('nav.inquire')}
-                      </Link>
-                      {logoUrl && (
-                        <div className="[&>button]:py-2 [&>button]:px-3 [&>button]:text-[10px] [&>button]:rounded-xl [&>button]:bg-white/10 [&>button]:hover:bg-white/20">
-                          <AIResumeModal />
-                        </div>
-                      )}
+                    <div className="col-span-2 flex justify-center">
+                      <div className="scale-90 origin-center">
+                        <InstallPWAButton variant="mobile-menu" />
+                      </div>
                     </div>
+
+                    <Link 
+                      to="/#contact"
+                      onClick={(e) => scrollToAnchor(e, '/#contact')}
+                      className="col-span-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-black uppercase tracking-widest text-[9px] text-center shadow-lg shadow-blue-600/30 transition-all flex justify-center items-center"
+                    >
+                      {t('nav.inquire')}
+                    </Link>
+                    
+                    {logoUrl && (
+                      <div className="col-span-1 [&>button]:w-full [&>button]:h-full [&>button]:py-2 [&>button]:px-2 [&>button]:text-[9px] [&>button]:rounded-lg [&>button]:bg-white/10 [&>button]:hover:bg-white/20 [&>button]:border [&>button]:border-white/10">
+                        <AIResumeModal />
+                      </div>
+                    )}
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
             </>
           )}
