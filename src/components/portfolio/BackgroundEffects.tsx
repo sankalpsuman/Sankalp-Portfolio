@@ -32,8 +32,8 @@ export const BackgroundEffects: React.FC<{ active?: boolean }> = memo(({ active 
 
       {/* 2. Pure CSS Subtle Ambient Glows */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-[10%] left-[5%] w-[500px] h-[500px] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[20%] right-[10%] w-[450px] h-[450px] rounded-full bg-purple-600/10 blur-[100px] pointer-events-none" />
+        <div className="absolute top-[10%] left-[5%] w-[300px] h-[300px] md:w-[500px] md:h-[500px] rounded-full bg-blue-600/10 blur-[80px] md:blur-[120px] pointer-events-none transform-gpu translate-z-0 will-change-transform" />
+        <div className="absolute bottom-[20%] right-[10%] w-[250px] h-[250px] md:w-[450px] md:h-[450px] rounded-full bg-purple-600/10 blur-[60px] md:blur-[100px] pointer-events-none transform-gpu translate-z-0 will-change-transform" />
       </div>
 
       {/* 3. Twinkling Stars via Lightweight CSS */}

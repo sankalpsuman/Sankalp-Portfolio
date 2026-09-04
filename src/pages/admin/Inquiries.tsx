@@ -75,7 +75,7 @@ export default function Inquiries() {
   }
 
   return (
-    <div className="h-[calc(100vh-160px)] flex flex-col lg:flex-row gap-6">
+    <div className="h-[calc(100svh-160px)] flex flex-col lg:flex-row gap-6">
       {/* List Area */}
       <div className={cn(
         "flex-1 flex flex-col bg-[#050816] border border-white/5 rounded-2xl overflow-hidden transition-all",

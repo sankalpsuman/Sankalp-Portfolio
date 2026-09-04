@@ -254,8 +254,8 @@ export const AICommandCenterPortrait: React.FC<AICommandCenterPortraitProps> = (
     <div className="relative select-none">
       
       {/* 1. Cinematic Luxury Aura - Dual Blue and Gold Glowing Orbs */}
-      <div className="absolute -inset-16 bg-gradient-to-tr from-blue-600/12 via-amber-500/4 to-cyan-400/10 blur-[90px] rounded-full pointer-events-none opacity-80 z-0 animate-pulse" style={{ animationDuration: '8s' }} />
-      <div className="absolute -inset-4 bg-gradient-to-r from-cyan-400/8 via-amber-500/2 to-purple-600/8 blur-[50px] rounded-full pointer-events-none opacity-60 z-0" />
+      <div className="absolute -inset-16 bg-gradient-to-tr from-blue-600/12 via-amber-500/4 to-cyan-400/10 blur-[50px] md:blur-[90px] rounded-full pointer-events-none opacity-80 z-0 animate-pulse transform-gpu translate-z-0 will-change-transform" style={{ animationDuration: '8s' }} />
+      <div className="absolute -inset-4 bg-gradient-to-r from-cyan-400/8 via-amber-500/2 to-purple-600/8 blur-[30px] md:blur-[50px] rounded-full pointer-events-none opacity-60 z-0 transform-gpu translate-z-0 will-change-transform" />
       
       {/* Dynamic Liquid Morphing Aurora Blob (provides the fluid luxury liquid effect) */}
       <svg viewBox="0 0 200 200" className="absolute w-[140%] h-[140%] -top-[20%] -left-[20%] opacity-40 blur-3xl z-0 pointer-events-none animate-[pulse_10s_infinite]">

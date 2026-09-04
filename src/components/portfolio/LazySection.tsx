@@ -36,7 +36,7 @@ export const LazySection: React.FC<LazySectionProps> = ({ children, id, eager = 
             observer.disconnect();
           }
         },
-        { rootMargin: '500px 0px 500px 0px', threshold: 0.01 }
+        { rootMargin: '500px', threshold: 0.01 }
       );
 
       observer.observe(containerRef.current);

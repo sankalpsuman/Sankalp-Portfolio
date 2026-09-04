@@ -123,8 +123,8 @@ export default function About({ active = true }: { active?: boolean }) {
       className="relative overflow-hidden"
     >
       {/* Decorative Orbs */}
-      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-600/5 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 sm:w-[500px] sm:h-[500px] bg-blue-600/5 blur-[60px] sm:blur-[120px] rounded-full pointer-events-none transform-gpu translate-z-0 will-change-transform" />
+      <div className="absolute bottom-0 right-0 w-48 h-48 sm:w-[400px] sm:h-[400px] bg-purple-600/5 blur-[50px] sm:blur-[100px] rounded-full pointer-events-none transform-gpu translate-z-0 will-change-transform" />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
         {/* Left: Interactive Visual */}

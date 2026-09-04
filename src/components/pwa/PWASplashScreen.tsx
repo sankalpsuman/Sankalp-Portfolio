@@ -35,8 +35,8 @@ export const PWASplashScreen: React.FC = () => {
         className="fixed inset-0 z-50 bg-[#0b0f19] flex flex-col items-center justify-center p-6 text-white font-sans selection:bg-cyan-500/30 overflow-hidden"
       >
         {/* Glow ambient background elements */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-blue-600/15 blur-[90px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-1/3 left-1/2 -translate-x-1/2 w-64 h-64 bg-purple-600/10 blur-[80px] rounded-full pointer-events-none" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-80 sm:h-80 bg-blue-600/15 blur-[60px] sm:blur-[90px] rounded-full pointer-events-none transform-gpu translate-z-0 will-change-transform" />
+        <div className="absolute bottom-1/3 left-1/2 -translate-x-1/2 w-48 h-48 sm:w-64 sm:h-64 bg-purple-600/10 blur-[50px] sm:blur-[80px] rounded-full pointer-events-none transform-gpu translate-z-0 will-change-transform" />
 
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 10 }}

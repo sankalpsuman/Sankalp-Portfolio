@@ -158,7 +158,7 @@ export default function Contact() {
         >
           <div className="glass-card rounded-[2rem] md:rounded-[3rem] p-6 sm:p-8 md:p-12 relative overflow-hidden">
             {/* Ambient Background Glow */}
-            <div className="absolute top-0 right-0 w-[300px] md:w-[400px] h-[300px] md:h-[400px] bg-blue-600/10 blur-[80px] md:blur-[100px] rounded-full pointer-events-none" />
+            <div className="absolute top-0 right-0 w-48 h-48 md:w-[400px] md:h-[400px] bg-blue-600/10 blur-[50px] md:blur-[100px] rounded-full pointer-events-none transform-gpu translate-z-0 will-change-transform" />
             
             <AnimatePresence mode="wait">
               {sent ? (

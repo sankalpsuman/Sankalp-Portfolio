@@ -79,8 +79,8 @@ const LoadingFallback = () => {
   return (
     <div className="min-h-[100svh] bg-[#050816] flex flex-col items-center justify-center p-6 text-white font-sans overflow-hidden relative selection:bg-cyan-500/30">
       {/* Decorative radial gradients for luxury feel */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand/10 blur-[80px] pointer-events-none rounded-full" />
-      <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-cyan-500/5 blur-[90px] pointer-events-none rounded-full" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-96 sm:h-96 bg-brand/10 blur-[60px] sm:blur-[80px] pointer-events-none rounded-full transform-gpu translate-z-0 will-change-transform" />
+      <div className="absolute bottom-1/4 left-1/3 w-48 h-48 sm:w-80 sm:h-80 bg-cyan-500/5 blur-[50px] sm:blur-[90px] pointer-events-none rounded-full transform-gpu translate-z-0 will-change-transform" />
 
       <motion.div 
         initial={{ opacity: 0, scale: 0.96 }}
@@ -265,7 +265,7 @@ export default function App() {
 
               <div className={cn(
                 "transition-all duration-1000 ease-in-out",
-                !hasEntered ? "opacity-0 scale-95 blur-xl pointer-events-none" : "opacity-100"
+                !hasEntered ? "opacity-0 scale-95 pointer-events-none" : "opacity-100"
               )}>
                 <Suspense fallback={<LoadingFallback />}>
                   <Routes>

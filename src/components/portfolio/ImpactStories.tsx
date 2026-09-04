@@ -43,8 +43,8 @@ export default function ImpactStories() {
   return (
     <section id="impact-stories" className="py-24 bg-[#050816] relative overflow-hidden">
        {/* Decorative Elements */}
-       <div className="absolute -top-24 -left-24 w-96 h-96 bg-emerald-600/5 blur-[100px] rounded-full"></div>
-       <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-600/5 blur-[100px] rounded-full"></div>
+       <div className="absolute -top-24 -left-24 w-64 h-64 md:w-96 md:h-96 bg-emerald-600/5 blur-[50px] md:blur-[100px] rounded-full transform-gpu translate-z-0 will-change-transform"></div>
+       <div className="absolute -bottom-24 -right-24 w-64 h-64 md:w-96 md:h-96 bg-blue-600/5 blur-[50px] md:blur-[100px] rounded-full transform-gpu translate-z-0 will-change-transform"></div>
 
        <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">

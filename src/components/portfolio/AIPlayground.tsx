@@ -84,7 +84,7 @@ export default function AIPlayground() {
   return (
     <section id="ai-playground" className="py-24 relative overflow-hidden bg-[#02040a]">
        {/* Ambient Background */}
-       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none"></div>
+       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-[800px] sm:h-[800px] bg-blue-600/5 blur-[60px] sm:blur-[120px] rounded-full pointer-events-none transform-gpu translate-z-0 will-change-transform"></div>
        
        <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="text-center mb-16 space-y-6">

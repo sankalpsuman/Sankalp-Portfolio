@@ -72,10 +72,7 @@ export default function Section({
         }}
       />
 
-      {/* Floating Abstract Cyber Gradient Blobs */}
-      <div className="absolute top-1/4 left-1/12 w-[35rem] h-[35rem] bg-brand/3 rounded-full blur-[140px] pointer-events-none animate-pulse" style={{ animationDuration: '14s' }}></div>
-      <div className="absolute bottom-1/4 right-1/12 w-[40rem] h-[40rem] bg-purple-500/3 rounded-full blur-[160px] pointer-events-none animate-pulse" style={{ animationDuration: '22s' }}></div>
-      <div className="absolute top-1/2 left-1/3 w-[25rem] h-[25rem] bg-cyan-500/2 rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '18s' }}></div>
+      {/* Floating Abstract Cyber Gradient Blobs (Disabled to prevent mobile GPU compositor crash) */}
 
       {/* Subtle Premium Angled Glass Light Reflex Dividers */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />

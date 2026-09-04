@@ -141,7 +141,7 @@ export default function Experience() {
                 <div className="absolute top-0 -left-1/2 w-1/4 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-25 group-hover:left-[150%] transition-all duration-[1000ms] ease-out pointer-events-none" />
 
                 {/* Visual Polish: Background Glow */}
-                <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand/10 blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand/10 blur-[50px] md:blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 transform-gpu translate-z-0 will-change-transform"></div>
                 
                 {/* Accent Line */}
                 <div className={`absolute top-0 ${idx % 2 === 0 ? 'right-0' : 'left-0'} w-40 h-[2px] bg-gradient-to-r ${idx % 2 === 0 ? 'from-transparent via-brand/50 to-brand' : 'from-brand via-brand/50 to-transparent'} opacity-20 group-hover:opacity-100 transition-all duration-500`}></div>

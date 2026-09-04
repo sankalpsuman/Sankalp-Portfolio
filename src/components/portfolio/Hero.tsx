@@ -52,7 +52,7 @@ export default function Hero({ data }: { data?: any }) {
             opacity: [0.3, 0.4, 0.3]
           }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-blue-500/5 blur-[150px]" 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[800px] md:h-[800px] rounded-full bg-blue-500/5 blur-[80px] md:blur-[150px] transform-gpu translate-z-0 will-change-transform" 
         />
       </div>
 

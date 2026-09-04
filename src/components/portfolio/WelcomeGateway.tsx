@@ -34,14 +34,14 @@ export const WelcomeGateway = ({ onEnter }: WelcomeGatewayProps) => {
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0, scale: 1.1, filter: 'blur(20px)' }}
+      exit={{ opacity: 0, scale: 1.1 }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       className="fixed inset-0 z-[200] bg-[#050816] flex items-center justify-center overflow-hidden"
     >
       {/* Dynamic Background Elements */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-600/5 blur-[100px] rounded-full animate-pulse delay-700" />
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 sm:w-[500px] sm:h-[500px] bg-blue-600/10 blur-[60px] sm:blur-[120px] rounded-full animate-pulse transform-gpu translate-z-0 will-change-transform" />
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 sm:w-[400px] sm:h-[400px] bg-purple-600/5 blur-[50px] sm:blur-[100px] rounded-full animate-pulse delay-700 transform-gpu translate-z-0 will-change-transform" />
         
         {/* Grid Overlay */}
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]" />
